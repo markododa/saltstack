@@ -1,0 +1,69 @@
+include:
+  - icinga2
+  - pnp4nagios
+
+install_icingaweb2:
+  pkg.installed:
+    - pkgs:
+      - apache2
+      - icingaweb2
+      - php5-intl
+      - php5-imagick
+
+icingaweb2-feature:
+  cmd.run:
+    - name: icinga2 feature enable command
+  service.running:
+    - name: icinga2
+    - restart: True
+
+time_zone:
+  cmd.run:
+    - name: sed -i '/;date.timezone =/ a\date.timezone = "Europe/Skopje"' /etc/php5/apache2/php.ini
+  service.running:
+    - name: apache2
+    - restart: True
+
+{% set dbpass = salt['pillar.get']('icingaweb2dbpass') %}
+
+icingaweb2-db:
+  cmd.run:
+    - name: echo "CREATE DATABASE icingaweb2; GRANT SELECT, INSERT, UPDATE, DELETE, DROP, CREATE VIEW, INDEX, EXECUTE ON icingaweb2.* TO 'icingaweb2'@'localhost' IDENTIFIED BY '{{ dbpass }}';" | mysql -uroot
+    - unless: echo 'show databases;' | mysql -uroot |grep -q icingaweb2
+
+icingaweb-db-populate:
+  cmd.run:
+    - name: mysql -uroot icingaweb2 < /usr/share/icingaweb2/etc/schema/mysql.schema.sql
+    - unless: echo 'show tables;' | mysql -uroot icingaweb2 |grep -q icingaweb_user
+
+icinga2web-autoconfigure:
+    file.recurse:
+        - name: /etc/icingaweb2
+        - source: salt://files/icingaweb2/
+        - makedirs: True
+        - user: www-data
+        - group: icingaweb2
+        - dir_mode: 750
+        - file_mode: 644
+        - include_empty: True
+
+enable-module:
+  cmd.run:
+    - name: ln -s /usr/share/icingaweb2/modules/monitoring /etc/icingaweb2/enabledModules/monitoring
+    - onlyif: test ! -e /etc/icingaweb2/enabledModules/monitoring
+
+
+ido-pass:
+  cmd.run:
+    - name: sed -i "s#IDODBPASS#\"`awk -F= '/dbc_dbpass=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
+
+icingaweb2-pass:
+    file.replace:
+    - name: /etc/icingaweb2/resources.ini
+    - pattern: ICINGAWEB2DBPASS
+    - repl: {{ dbpass }}
+
+admin-user:
+  cmd.run:
+    - name: echo "INSERT INTO icingaweb_user (name, active, password_hash) VALUES ('admin', 1, '$(openssl passwd -1 {{ salt['pillar.get']('icingaweb2pass') }})' );" | mysql -u icingaweb2 -p{{ dbpass }} icingaweb2
+    - unless: echo 'SELECT * FROM icingaweb_user;' | mysql -uroot icingaweb2 |grep -q admin
