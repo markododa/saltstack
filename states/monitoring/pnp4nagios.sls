@@ -25,5 +25,28 @@ install_pnp4nagios:
   file.managed:
     - source: salt://files/rra.cfg
 
-npcd:
-  service.running: []
+
+pnp4nagios_pass:
+  cmd.run:
+    - name: htpasswd -b -c /etc/pnp4nagios/htpasswd.users admin {{ salt['pillar.get']('icingaweb2pass') }}
+
+/etc/apache2/conf-available/pnp4nagios.conf:
+  file.replace:
+    - pattern: /etc/icinga/htpasswd.users
+    - repl: /etc/pnp4nagios/htpasswd.users
+
+icinga_restart:
+  pkg.installed:
+    - name: icinga2
+    - service.running:
+      - name: icinga2
+      - watch:
+        - pkg: pnp4nagios
+
+npcd_restart:
+  pkg.installed:
+    - name: pnp4nagios
+    - service.running:
+      - name: npcd
+      - watch:
+        - pkg: pnp4nagios
