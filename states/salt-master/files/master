@@ -741,9 +741,11 @@ rest_cherrypy:
   debug: True
   host: 0.0.0.0
 
+keystone.auth_url: http://OSHOST:35357/v2.0
+
 external_auth:
-  pam:
-    saltapi:
+  keystone:
+    admin:
       - .*
 
 reactor:
