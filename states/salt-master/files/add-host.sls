@@ -30,16 +30,5 @@ instance_type:
     - expr_form: grain
     - arg:
       - name: /etc/icinga2/conf.d/{{ data['name'] }}.conf
-      - pattern: {INSTANCE_TYPE}
+      - pattern: '{INSTANCE_TYPE}'
       - repl: {{ data['profile'] }}
-
-
-#{% for x in data %}
-#  {{ x }}:
-#    local.file.append:
-#      - tgt: 'role:monitoring'
-#      - expr_form: grain
-#      - arg:
-#        - name: /root/output
-#        - text: {{ x }}
-#{% endfor %}
