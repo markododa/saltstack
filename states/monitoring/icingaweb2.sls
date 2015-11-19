@@ -83,3 +83,6 @@ admin-user:
   cmd.run:
     - name: echo "INSERT INTO icingaweb_user (name, active, password_hash) VALUES ('admin', 1, '$(openssl passwd -1 {{ salt['pillar.get']('icingaweb2pass') }})' );" | mysql -u icingaweb2 -p{{ dbpass }} icingaweb2
     - unless: echo 'SELECT * FROM icingaweb_user;' | mysql -uroot icingaweb2 |grep -q admin
+
+'rm /etc/apache2/sites-enabled/000-default.conf':
+  cmd.run
