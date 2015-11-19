@@ -7,7 +7,7 @@ install_nrpe:
 /usr/lib/nagios/plugins/check_linux_stats.pl:
   file.managed:
     - source:
-      - salt://nrpe/check_linux_stats.pl
+      - salt://nrpe/files/check_linux_stats.pl
     - user: root
     - group: root
     - mode: 755
@@ -15,7 +15,7 @@ install_nrpe:
 /etc/nagios/nrpe.d/va.cfg:
   file.managed:
     - source:
-      - salt://nrpe/va.cfg
+      - salt://nrpe/files/va.cfg
     - user: root
     - group: root
     - mode: 644
