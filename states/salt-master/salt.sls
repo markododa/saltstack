@@ -8,10 +8,6 @@ install_salt-pkgs:
       - python-novaclient
       - python-glanceclient
 
-saltapi:
-  user.present:
-    - password: {{ salt['pillar.get']('saltapipass')}}
-
 restart_salt:
   service.running:
     - name: salt-master
@@ -25,12 +21,12 @@ restart_api:
 cloud-profiles:
     file.recurse:
         - name: /etc/salt/cloud.profiles.d/
-        - source: salt://files/cloud.profiles.d/
+        - source: salt://salt-master/files/cloud.profiles.d/
 
 configure_salt-cloud:
   file.managed:
     - name: /etc/salt/cloud.providers.d/openstack.conf
-    - source: salt://files/cloud.providers.d/openstack.conf
+    - source: salt://salt-cloud/files/cloud.providers.d/openstack.conf
     - file_mode: 644
     - user: root
     - group: root

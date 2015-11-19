@@ -399,14 +399,8 @@ auto_accept: True
 # reliably ensured. A base environment is required to house the top file.
 # Example:
 file_roots:
-    monitoring:
-      - /srv/salt/state/monitoring
-    directory:
-      - /srv/salt/state/directory
-    owncloud:
-      - /srv/salt/state/owncloud
     base:
-      - /srv/salt/state
+      - /srv/salt/states
 #   dev:
 #     - /srv/salt/dev/services
 #     - /srv/salt/dev/states
@@ -527,11 +521,6 @@ file_roots:
 pillar_roots:
   base:
     - /srv/salt/pillar
-  monitoring:
-    - /srv/salt/pillar/monitoring
-
-  directory:
-    - /srv/salt/pillar/directory 
 #
 #ext_pillar:
 #  - hiera: /etc/hiera.yaml
