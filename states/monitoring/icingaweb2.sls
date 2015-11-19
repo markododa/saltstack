@@ -20,9 +20,6 @@ icingaweb2-feature:
 time_zone:
   cmd.run:
     - name: sed -i '/;date.timezone =/ a\date.timezone = "Europe/Skopje"' /etc/php5/apache2/php.ini
-  service.running:
-    - name: apache2
-    - restart: True
 
 {% set dbpass = salt['pillar.get']('icingaweb2dbpass') %}
 
@@ -99,3 +96,9 @@ remove_rewrite:
     - name: /etc/apache2/conf-enabled/icingaweb2.conf
     - pattern: RewriteBase /icingaweb2/
     - repl: RewriteBase /
+
+apache2:
+  service.running:
+    - reload: True
+    - watch:
+      - file: /etc/apache2/conf-enabled/icingaweb2.conf
