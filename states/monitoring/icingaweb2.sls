@@ -39,13 +39,21 @@ icingaweb-db-populate:
 icinga2web-autoconfigure:
     file.recurse:
         - name: /etc/icingaweb2
-        - source: salt://files/icingaweb2/
+        - source: salt://monitoring/files/icingaweb2/
         - makedirs: True
         - user: www-data
         - group: icingaweb2
         - dir_mode: 750
         - file_mode: 644
         - include_empty: True
+
+/etc/icingaweb2/enabledModules/:
+  file.directory:
+    - makedirs: True
+    - user: www-data
+    - group: icingaweb2
+    - makedirs: True
+    - dir_mode: 750
 
 enable-module:
   cmd.run:

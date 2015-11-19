@@ -23,7 +23,7 @@ install_pnp4nagios:
 
 /etc/pnp4nagios/rra.cfg:
   file.managed:
-    - source: salt://files/rra.cfg
+    - source: salt://monitoring/files/rra.cfg
 
 
 pnp4nagios_pass:

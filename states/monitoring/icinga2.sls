@@ -38,7 +38,7 @@ icinga2-feature:
 configure-icinga2:
     file.recurse:
         - name: /etc/icinga2/conf.d/
-        - source: salt://files/icinga2
+        - source: salt://monitoring/files/icinga2
 
 create-ca:
   cmd.run:
