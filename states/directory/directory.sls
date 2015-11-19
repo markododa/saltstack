@@ -22,7 +22,7 @@ install_peewee:
 
 /vapour/vapourapps-samba-api.tar.gz:
   file.managed:
-    - source: salt://files/vapourapps-samba-api.tar.gz
+    - source: salt://directory/files/vapourapps-samba-api.tar.gz
 
 install_samba-api:
   pip.installed:
