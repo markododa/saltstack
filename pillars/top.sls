@@ -6,6 +6,6 @@ base:
   'role:directory':
     - match: grain
     - directory
-  'role:owncloud':
+  'role:va.storage':
     - match: grain
     - owncloud
