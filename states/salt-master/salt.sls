@@ -26,7 +26,7 @@ cloud-profiles:
 configure_salt-cloud:
   file.managed:
     - name: /etc/salt/cloud.providers.d/openstack.conf
-    - source: salt://salt-cloud/files/cloud.providers.d/openstack.conf
+    - source: salt://salt-master/files/cloud.providers.d/openstack.conf
     - file_mode: 644
     - user: root
     - group: root
