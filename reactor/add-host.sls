@@ -3,7 +3,7 @@ add_host:
     - tgt: 'role:monitoring'
     - expr_form: grain
     - arg:
-      - /srv/salt/state/monitoring/files/va_host.conf
+      - /srv/salt//monitoring/files/va_host.conf
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
 
 instance_name:
@@ -12,7 +12,7 @@ instance_name:
     - expr_form: grain
     - arg:
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
-      - pattern='{INSTANCE_NAME}'
+      - pattern="{INSTANCE_NAME}"
       - repl='{{ data['name'] }}'
 
 instance_ip:
@@ -21,7 +21,7 @@ instance_ip:
     - expr_form: grain
     - arg:
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
-      - pattern='{INSTANCE_IP}'
+      - pattern="{INSTANCE_IP}"
       - repl='{{ data['name']}}.novalocal'
 
 instance_type:
@@ -30,5 +30,5 @@ instance_type:
     - expr_form: grain
     - arg:
       - name: /etc/icinga2/conf.d/{{ data['name'] }}.conf
-      - pattern: '{INSTANCE_TYPE}'
-      - repl: {{ data['profile'] }}
+      - pattern="{INSTANCE_TYPE}"
+      - repl={{ data['profile'] }}
