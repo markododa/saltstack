@@ -1,9 +1,9 @@
 base:
-  'role:monitoring':
+  'role:va-monitoring':
     - match: grain
     - icingaweb2
     - salt
-  'role:directory':
+  'role:va-directory':
     - match: grain
     - directory
   'role:va-storage':
