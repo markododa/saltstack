@@ -35,7 +35,7 @@ configure_salt-cloud:
 /etc/salt/cloud.providers.d/openstack.conf:
   file.replace:
     - pattern: SALTMASTER
-    - repl: {{ salt['cmd.run']('hostname -f') }}
+    - repl: {{ salt['network.ip_addrs']('eth0').__getitem__(0) }}
 
 openstack_host:
   file.replace:
