@@ -68,6 +68,8 @@
 #pki_dir: /etc/salt/pki/master
 
 # Directory to store job and cache data:
+# This directory may contain sensitive data and should be protected accordingly.
+# 
 #cachedir: /var/cache/salt/master
 
 # Directory for custom modules. This directory can contain subdirectories for
@@ -212,7 +214,7 @@
 
 # Enable auto_accept, this setting will automatically accept all incoming
 # public keys from the minions. Note that this is insecure.
-auto_accept: True
+auto_accept: False
 
 # Time in minutes that a incoming public key with a matching name found in
 # pki_dir/minion_autosign/keyid is automatically accepted. Expired autosign keys
@@ -354,12 +356,12 @@ auto_accept: True
 # If this is set to True the first newline after a Jinja block is removed
 # (block, not variable tag!). Defaults to False, corresponds to the Jinja
 # environment init variable "trim_blocks".
-# jinja_trim_blocks: False
+#jinja_trim_blocks: False
 #
 # If this is set to True leading spaces and tabs are stripped from the start
 # of a line to a block. Defaults to False, corresponds to the Jinja
 # environment init variable "lstrip_blocks".
-# jinja_lstrip_blocks: False
+#jinja_lstrip_blocks: False
 
 # The failhard option tells the minions to stop immediately after the first
 # failure detected in the state execution, defaults to False
@@ -379,13 +381,18 @@ auto_accept: True
 #state_output: full
 
 # Automatically aggregate all states that have support for mod_aggregate by
-# setting to True. Or pass a list of state module names to automatically
+# setting to 'True'. Or pass a list of state module names to automatically
 # aggregate just those types.
 #
 # state_aggregate:
 #   - pkg
 #
 #state_aggregate: False
+
+# Send progress events as each function in a state run completes execution
+# by setting to 'True'. Progress events are in the format
+# 'salt/job/<JID>/prog/<MID>/<RUN NUM>'.
+#state_events: False
 
 #####      File Server settings      #####
 ##########################################
@@ -398,9 +405,9 @@ auto_accept: True
 # roots cannot match, otherwise the downloaded files will not be able to be
 # reliably ensured. A base environment is required to house the top file.
 # Example:
-file_roots:
-    base:
-      - /srv/salt/states
+# file_roots:
+#   base:
+#     - /srv/salt/
 #   dev:
 #     - /srv/salt/dev/services
 #     - /srv/salt/dev/states
@@ -408,6 +415,26 @@ file_roots:
 #     - /srv/salt/prod/services
 #     - /srv/salt/prod/states
 #
+#file_roots:
+#  base:
+#    - /srv/salt
+#
+
+# When using multiple environments, each with their own top file, the
+# default behaviour is an unordered merge. To prevent top files from
+# being merged together and instead to only use the top file from the
+# requested environment, set this value to 'same'. 
+#top_file_merging_strategy: merge
+
+# To specify the order in which environments are merged, set the ordering
+# in the env_order option. Given a conflict, the last matching value will
+# win.
+#env_order: ['base', 'dev', 'prod']
+
+# If top_file_merging_strategy is set to 'same' and an environment does not
+# contain a top file, the top file in the environment specified by default_top
+# will be used instead.
+#default_top: base
 
 # The hash_type is the hash to use when discovering the hash of a file on
 # the master server. The default is md5, but sha1, sha224, sha256, sha384
@@ -518,9 +545,9 @@ file_roots:
 # Pillar is laid out in the same fashion as the file server, with environments,
 # a top file and sls files. However, pillar data does not need to be in the
 # highstate format, and is generally just key/value pairs.
-pillar_roots:
-  base:
-    - /srv/salt/pillar
+#pillar_roots:
+#  base:
+#    - /srv/pillar
 #
 #ext_pillar:
 #  - hiera: /etc/hiera.yaml
@@ -543,7 +570,7 @@ pillar_roots:
 # master config file that can then be used on minions.
 #pillar_opts: False
 
-# The pillar_safe_render_error option prevents the master from passing piller
+# The pillar_safe_render_error option prevents the master from passing pillar
 # render errors to the minion. This is set on by default because the error could
 # contain templating data which would give that minion information it shouldn't
 # have, like a password! When set true the error message will only show:
@@ -563,10 +590,11 @@ pillar_roots:
 #####          Syndic settings       #####
 ##########################################
 # The Salt syndic is used to pass commands through a master from a higher
-# master. Using the syndic is simple, if this is a master that will have
-# syndic servers(s) below it set the "order_masters" setting to True, if this
-# is a master that will be running a syndic daemon for passthrough the
-# "syndic_master" setting needs to be set to the location of the master server
+# master. Using the syndic is simple. If this is a master that will have
+# syndic servers(s) below it, then set the "order_masters" setting to True.
+#
+# If this is a master that will be running a syndic daemon for passthrough, then
+# the "syndic_master" setting needs to be set to the location of the master server
 # to receive commands from.
 
 # Set the order_masters setting to True if this master will command lower
@@ -602,6 +630,7 @@ pillar_roots:
 #  foo.example.com:
 #    - test.*
 #    - pkg.*
+#
 # This will allow all minions to execute all commands:
 #peer:
 #  .*:
@@ -663,6 +692,10 @@ pillar_roots:
 
 # The level of messages to send to the console.
 # One of 'garbage', 'trace', 'debug', info', 'warning', 'error', 'critical'.
+#
+# The following log levels are considered INSECURE and may log sensitive data:
+# ['garbage', 'trace', 'debug']
+#
 #log_level: warning
 
 # The level of messages to send to the log file.
@@ -677,7 +710,21 @@ pillar_roots:
 
 # The format of the console logging messages. Allowed formatting options can
 # be seen here: http://docs.python.org/library/logging.html#logrecord-attributes
+#
+# Console log colors are specified by these additional formatters:
+#
+# %(colorlevel)s
+# %(colorname)s
+# %(colorprocess)s
+# %(colormsg)s
+#
+# Since it is desirable to include the surrounding brackets, '[' and ']', in
+# the coloring of the messages, these color formatters also include padding as
+# well.  Color LogRecord attributes are only available for console logging.
+#
+#log_fmt_console: '%(colorlevel)s %(colormsg)s'
 #log_fmt_console: '[%(levelname)-8s] %(message)s'
+#
 #log_fmt_logfile: '%(asctime)s,%(msecs)03.0f [%(name)-17s][%(levelname)-8s] %(message)s'
 
 # This can be used to control logging levels more specificically.  This
@@ -731,7 +778,6 @@ rest_cherrypy:
   host: 0.0.0.0
 
 keystone.auth_url: http://OSHOST:35357/v2.0
-
 external_auth:
   keystone:
     admin:
@@ -739,5 +785,8 @@ external_auth:
 
 reactor:
   - 'salt/cloud/*/created':
-    - /srv/salt/reactor/startup-state.sls
-    - /srv/salt/reactor/add-host.sls
+    - /srv/reactor/startup-state.sls
+  - 'salt/nrpe-agent/installed':
+    - /srv/reactor/add-host.sls
+  - 'salt/cloud/*/destroyed':
+    - /srv/reactor/rm-host.sls
