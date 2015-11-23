@@ -11,3 +11,6 @@ base:
   'role:va-storage':
     - match: grain
     - owncloud
+  'role:va-backup'
+    - match: grain
+    - backuppc

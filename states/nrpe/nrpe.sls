@@ -29,3 +29,10 @@ nagios-nrpe-server:
   service.running:
   - watch:
     - file: /etc/nagios/nrpe.cfg
+
+salt/nrpe-agent/installed:
+  event.send:
+    - data:
+        name: {{ grains['id'] }} 
+        ip: {{ grains['fqdn'] }}
+        type: {{ grains['role'] }}

@@ -1,2 +1,0 @@
-backuppc:
-  pkg.installed

@@ -1,9 +1,11 @@
+{% set data = data['data'] %}
+
 add_host:
   local.file.copy:
     - tgt: 'role:monitoring'
     - expr_form: grain
     - arg:
-      - /srv/salt//monitoring/files/va_host.conf
+      - /srv/salt/monitoring/files/va_host.conf
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
 
 instance_name:
@@ -22,13 +24,20 @@ instance_ip:
     - arg:
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
       - pattern="{INSTANCE_IP}"
-      - repl='{{ data['name']}}.novalocal'
+      - repl='{{ data['ip']}}'
 
 instance_type:
   local.file.replace:
     - tgt: 'role:monitoring'
     - expr_form: grain
     - arg:
-      - name: /etc/icinga2/conf.d/{{ data['name'] }}.conf
+      - /etc/icinga2/conf.d/{{ data['name'] }}.conf
       - pattern="{INSTANCE_TYPE}"
-      - repl={{ data['profile'] }}
+      - repl={{ data['type'] }}
+
+restart_icinga2:
+  local.service.reload:
+    - tgt: 'role:monitoring'
+    - expr_form: grain
+    - arg:
+      - icinga2
