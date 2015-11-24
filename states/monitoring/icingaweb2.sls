@@ -87,13 +87,13 @@ admin-user:
 
 remove_alias:
   file.replace:
-    - name: /etc/apache2/conf-enabled/icingaweb2.conf
+    - name: /etc/apache2/conf-available/icingaweb2.conf
     - pattern: Alias /icingaweb2 "/usr/share/icingaweb2/public"
     - repl: DocumentRoot /usr/share/icingaweb2/public
 
 remove_rewrite:
   file.replace:
-    - name: /etc/apache2/conf-enabled/icingaweb2.conf
+    - name: /etc/apache2/conf-available/icingaweb2.conf
     - pattern: RewriteBase /icingaweb2/
     - repl: RewriteBase /
 
@@ -101,4 +101,4 @@ apache2:
   service.running:
     - reload: True
     - watch:
-      - file: /etc/apache2/conf-enabled/icingaweb2.conf
+      - file: /etc/apache2/conf-available/icingaweb2.conf
