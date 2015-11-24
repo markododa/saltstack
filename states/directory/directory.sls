@@ -34,5 +34,5 @@ install_samba-api:
 
 create_domain:
   cmd.run:
-    - name: rm /etc/samba/smb.conf && samba-tool domain provision --use-rfc2307 --use-xattrs=yes --realm dc.{{ domain }} --domain {{ domain }} --server-role dc --adminpass "{{ adminpass }}" && touch /vapour/.domain-set
+    - name: rm /etc/samba/smb.conf && samba-tool domain provision --use-rfc2307 --use-xattrs=yes --realm dc.{{ domain }} --domain {{ domain }} --server-role dc -N && touch /vapour/.domain-set
     - onlyif: test ! -e /vapour/.domain-set

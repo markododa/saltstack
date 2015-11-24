@@ -45,3 +45,20 @@ backuppc_config:
     - user: {{ backuppc.server.user }}
     - group: {{ backuppc.server.group }}
 
+'rm /etc/apache2/sites-enabled/000-default.conf':
+  cmd.run:
+    - onlyif: test -e /etc/apache2/sites-enabled/000-default.conf
+
+remove_alias:
+  file.replace:
+    - name: /etc/apache2/conf-available/backuppc.conf
+    - pattern: Alias /backuppc /usr/share/backuppc/cgi-bin/
+    - repl: |
+        Alias /backuppc/image /usr/share/backuppc/image
+        DocumentRoot /usr/share/backuppc/cgi-bin/
+apache2:
+  service.running:
+    - reload: True
+    - watch:
+      - file: /etc/apache2/conf-available/backuppc.conf
+
