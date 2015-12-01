@@ -1,6 +1,7 @@
 base:
   '*':
     - nrpe.nrpe
+    - default
   'role:va-monitoring':
     - match: grain
     - monitoring.icingaweb2

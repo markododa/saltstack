@@ -62,3 +62,12 @@ apache2:
     - watch:
       - file: /etc/apache2/conf-available/backuppc.conf
 
+generate_ssh-key:
+  cmd.run:
+    - name: ssh-keygen -q -f $HOME/.ssh/id_rsa -N ''
+    - user: backuppc
+
+copy_pubkey:
+  file.copy:
+    - name: salt://backuppc
+    - source: /var/lib/backuppc/.ssh/id_rsa
