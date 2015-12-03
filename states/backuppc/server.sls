@@ -66,8 +66,14 @@ generate_ssh-key:
   cmd.run:
     - name: ssh-keygen -q -f $HOME/.ssh/id_rsa -N ''
     - user: backuppc
+    - onlyif: test ! -e /var/lib/backuppc/.ssh/id_rsa
 
-copy_pubkey:
-  file.copy:
-    - name: salt://backuppc
-    - source: /var/lib/backuppc/.ssh/id_rsa
+#copy_pubkey:
+#  file.copy:
+#    - name: salt://backuppc
+#    - source: /var/lib/backuppc/.ssh/id_rsa
+
+backuppc/pubkey:
+  event.send:
+    - data:
+      pubkey: {{salt['cmd.run']('cat /var/lib/backuppc/.ssh/id_rsa.pub')}}
