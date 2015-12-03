@@ -81,3 +81,15 @@ backuppc/pubkey:
 /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
   file.managed:
     - source: salt://backuppc/files/JSON.pm
+
+libjson-perl:
+  pkg.installed: []
+
+libxml-rss-perl:
+  pkg.installed: []
+
+/usr/share/backuppc/lib/realindex.cgi:
+  file.blockreplace:
+    - marker_start: '"rss"                        => "RSS",' 
+    - marker_end: ');'
+    - content: '    "json"                       => "JSON",'
