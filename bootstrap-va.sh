@@ -12,8 +12,8 @@ cp -R pillars/* /srv/pillar
 cp /srv/salt/salt-master/files/master /etc/salt/master
 service salt-master restart
 apt-get install salt-minion
-echo "master: $(hostname -f)" >> /etc/salt/minion
+echo "master: `hostname -f`" >> /etc/salt/minion
 echo "role: va-monitoring" >> /etc/salt/grains
 service salt-minion restart
-salt-key -y -a va-monitoring.novalocal
+salt-key -y -a `hostname -f`
 salt '*' state.highstate
