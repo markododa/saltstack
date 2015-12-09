@@ -76,7 +76,7 @@ generate_ssh-key:
 backuppc/pubkey:
   event.send:
     - data:
-      pubkey: {{salt['cmd.run']('cat /var/lib/backuppc/.ssh/id_rsa.pub')}}
+        pubkey: {{salt['cmd.run']('cat /var/lib/backuppc/.ssh/id_rsa.pub')}}
 
 /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
   file.managed:
