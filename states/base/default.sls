@@ -21,7 +21,7 @@ install_packages:
 
 /etc/motd:
   file.managed:
-    - source: salt://files/motd
+    - source: salt://base/files/motd
 
 hostname:
   file.replace:

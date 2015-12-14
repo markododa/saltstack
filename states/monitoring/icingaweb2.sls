@@ -2,6 +2,9 @@ include:
   - monitoring.icinga2
   - monitoring.pnp4nagios
 
+exclude:
+  - base.nrpe
+
 install_icingaweb2:
   pkg.installed:
     - pkgs:

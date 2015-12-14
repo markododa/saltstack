@@ -1,17 +1,17 @@
 base:
   '*':
-    - nrpe.nrpe
-    - default
-  'role:va-monitoring':
+    - base.nrpe
+    - base.default
+  'role:monitoring':
     - match: grain
     - monitoring.icingaweb2
     - salt-master.salt
-  'role:va-directory':
+  'role:directory':
     - match: grain
     - directory.directory
-  'role:va-storage':
+  'role:storage':
     - match: grain
     - owncloud
-  'role:va-backup':
+  'role:backup':
     - match: grain
     - backuppc
