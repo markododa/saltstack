@@ -60,3 +60,11 @@ openstack_tenant:
     - name: /etc/salt/cloud.providers.d/openstack.conf
     - pattern: OPENSTACKTENANT
     - repl: {{ salt['pillar.get']('openstacktenant')}}
+
+keystone-token-auth:
+  file.managed:
+    - name: /usr/lib/python2.7/dist-packages/salt/auth/keystone-token.py
+    - source: salt://salt-master/files/keystone-token.py
+    - file_mode: 644
+    - user: root
+    - group: root

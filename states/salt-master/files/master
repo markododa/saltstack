@@ -779,7 +779,7 @@ rest_cherrypy:
 
 keystone.auth_url: http://OSHOST:35357/v2.0
 external_auth:
-  keystone:
+  keystone-token:
     admin:
       - .*
 
@@ -790,3 +790,8 @@ reactor:
     - /srv/reactor/add-host.sls
   - 'salt/cloud/*/destroyed':
     - /srv/reactor/rm-host.sls
+  - 'backuppc/pubkey':
+    - /srv/reactor/pubkey.sls
+  - 'backuppc/copykey':
+    - /srv/reactor/copykey.sls
+
