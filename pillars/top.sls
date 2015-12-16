@@ -1,14 +1,16 @@
 base:
-  'role:va-monitoring':
+  'role:monitoring':
     - match: grain
     - icingaweb2
     - salt
-  'role:va-directory':
+  'role:directory':
     - match: grain
     - directory
-  'role:va-storage':
+  'role:storage':
     - match: grain
     - owncloud
-  'role:va-backup':
+  'role:backup':
     - match: grain
     - backuppc
+  '*':
+    - base

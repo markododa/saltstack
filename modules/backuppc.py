@@ -30,10 +30,10 @@ def add_folder(hostname, folder):
 
 def rm_folder(hostname, folder):
 	if __salt__['file.line'](path='/etc/backuppc/pc/'+hostname+'.pl',content='\''+folder+'\',',mode='delete'):
+		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
 		return 'Folder '+folder+' has been deleted from backup list'
 	else:
 		return 'Folder not in backup list'
-        __salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
 
 def list_folders(hostname):
 	folders = []
