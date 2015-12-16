@@ -34,3 +34,10 @@ def rm_folder(hostname, folder):
 	else:
 		return 'Folder not in backup list'
         __salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
+
+def list_folders(hostname):
+	folders = []
+	config_file = open('/etc/backuppc/'+hostname+'.pl', 'r').read().splitlines()
+	for folder in config_file[config_file.index('$Conf{RsyncShareName} = [')+1:config_file.index('];')]:
+		folders.append(folder.split('\'')[1])
+	return { __grains__['id']: folders }
