@@ -14,3 +14,4 @@ mine_functions:
     - mem_total
     - ip4_interfaces
     - virtual
+    - fqdn
