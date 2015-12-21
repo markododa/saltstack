@@ -23,25 +23,28 @@ def add_folder(hostname, folder):
 		return 'Folder is already put to be backuped up'
 	elif __salt__['cmd.retcode'](cmd=sshcmd+'test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
 		__salt__['file.replace']('/etc/backuppc/pc/'+hostname+'.pl', pattern="\$Conf\{RsyncShareName\} \= \[", repl="$Conf{RsyncShareName} = [\n  '"+folder+'\',')
+		__salt__['service.reload']('backuppc')
+		return 'Folder has been added to backup'
 	else:
 		return 'Folder not found'
-	__salt__['service.reload']('backuppc')
-	return 'Folder has been added to backup'
 
 def rm_folder(hostname, folder):
-	if __salt__['file.line'](path='/etc/backuppc/pc/'+hostname+'.pl',content='\''+folder,mode='delete'):
+	if os.path.exists('/etc/backuppc/'+hostname+'.pl') and __salt__['file.line'](path='/etc/backuppc/pc/'+hostname+'.pl',content='\''+folder,mode='delete'):
 		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
+		if list_folders([hostname])[hostname] == []:
+			rm_host(hostname)
 		return 'Folder '+folder+' has been deleted from backup list'
 	else:
 		return 'Folder not in backup list'
+	
 
 def list_folders(hostnames):
-	folders_list = []
+	folders_list = dict()
 	for hostname in hostnames:
 		folders = []
 		if os.path.exists('/etc/backuppc/'+hostname+'.pl'):
 			config_file = open('/etc/backuppc/'+hostname+'.pl', 'r').read().splitlines()
 			for folder in config_file[config_file.index('$Conf{RsyncShareName} = [')+1:config_file.index('];')]:
 				folders.append(folder.split('\'')[1])
-		folders_list.append({'host': hostname, 'folders': folders })
+		folders_list[hostname] = folders
 	return folders_list
