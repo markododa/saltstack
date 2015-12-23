@@ -36,6 +36,8 @@ def rm_folder(hostname, folder):
 		return 'Folder '+folder+' has been deleted from backup list'
 	else:
 		return 'Folder not in backup list'
+
+def backup_count()
 	
 
 def list_folders(hostnames):

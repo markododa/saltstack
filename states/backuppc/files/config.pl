@@ -2022,7 +2022,7 @@ EOF
 #    --> administrative users are only craig and celia'.
 #
 $Conf{CgiAdminUserGroup} = 'backuppc';
-$Conf{CgiAdminUsers}     = 'backuppc';
+$Conf{CgiAdminUsers}     = 'admin';
 
 #
 # URL of the BackupPC_Admin CGI script.  Used for email messages.
