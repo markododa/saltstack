@@ -37,7 +37,7 @@ def rm_folder(hostname, folder):
 	else:
 		return 'Folder not in backup list'
 
-def backup_count()
+#def backup_count():
 	
 
 def list_folders(hostnames):

@@ -1,5 +1,7 @@
-owncloud_password: owncloud_password
+owncloud_password: owncloud_password 
 owncloud_user: owncloud_user
 owncloud_database: owncloud_mysql_database
 owncloud_dbuser: owncloud_mysql_user
 owncloud_dbpass: owncloud_mysql_pass
+owncloud_api_user: admin
+owncloud_api_user: tezokpass
