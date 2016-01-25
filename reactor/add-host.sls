@@ -16,6 +16,7 @@ instance_name:
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
       - pattern="{INSTANCE_NAME}"
       - repl='{{ data['name'] }}'
+      - backup=False
 
 instance_ip:
   local.file.replace:
@@ -25,6 +26,7 @@ instance_ip:
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
       - pattern="{INSTANCE_IP}"
       - repl='{{ data['ip']}}'
+      - backup=False
 
 instance_type:
   local.file.replace:
@@ -34,6 +36,7 @@ instance_type:
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
       - pattern="{INSTANCE_TYPE}"
       - repl={{ data['type'] }}
+      - backup=False
 
 restart_icinga2:
   local.service.reload:
