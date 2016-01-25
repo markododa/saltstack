@@ -52,5 +52,5 @@ user:
 password:
   file.replace:
     - name: /var/www/owncloud/config/autoconfig.php
-    - pattern: PASSWORD
+    - pattern: PASS
     - repl: "{{ salt['pillar.get']('owncloud_password', '') }}"
