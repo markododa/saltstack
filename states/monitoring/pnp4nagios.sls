@@ -10,7 +10,7 @@ install_pnp4nagios:
     - pkgs:
       - pnp4nagios
       - rrdcached
-      - python-rddtool
+      - python-rrdtool
 
 /etc/default/npcd:
   file.replace:
