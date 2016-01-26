@@ -3,7 +3,9 @@ import salt, os.path, subprocess, json
 #For some reason, using /shares or /users only gives you some information. You have to manually iterate through users or shares to get data like quota. This is done through salt for efficiency. 
 def owncloud_shares():
 	url = 'http://admin:tezokpass@localhost/owncloud/ocs/v1.php/apps/files_sharing/api/v1/shares?format=json'
-	files = json.loads(subprocess.check_output(['curl',url]))['ocs']['data']
+	files = subprocess.check_output(['curl',url])
+	files = json.loads(files)['ocs']['data']
+	if not files : return []
 	files_list = []
 	for file in files:
 		new_file = json.loads(subprocess.check_output(['curl', 'http://admin:tezokpass@localhost/owncloud/ocs/v1.php/apps/files_sharing/api/v1/shares/' + str(file['id']) + '?format=json']))['ocs']['data']['element']

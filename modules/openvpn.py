@@ -31,3 +31,6 @@ def get_config(username):
 	cert = open('/etc/openvpn/pki/issued/'+username+'.crt','r').read().split('-----BEGIN CERTIFICATE-----\n')[1]
 	key = open('/etc/openvpn/pki/private/'+username+'.key','r').read()
 	return config+'\n<ca>\n'+ca+'</ca>'+'\n<cert>\n-----BEGIN CERTIFICATE-----\n'+cert+'</cert>\n'+'<key>\n'+key+'</key>'
+
+def get_status():
+	return open('/run/openvpn/openvpn-status.log','r').read()
