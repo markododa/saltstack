@@ -9,7 +9,8 @@ def add_user(username):
 def revoke_user(username):
 	if __salt__['cmd.retcode']('echo yes | /etc/openvpn/easyrsa/easyrsa revoke '+username,cwd='/etc/openvpn/easyrsa',python_shell=True) == 0:
 		__salt__['cmd.run']('/etc/openvpn/easyrsa/easyrsa gen-crl',cwd='/etc/openvpn/easyrsa')
-                __salt__['cmd.run']('cp /etc/openvpn/easyrsa/pki/crl.pem /etc/openvpn/crl.pem && chown nobody:nogroup /etc/openvpn/crl.pem')
+                __salt__['cmd.run']('cp /etc/openvpn/easyrsa/pki/crl.pem /etc/openvpn/')
+                __salt__['cmd.run']('chown nobody:nogroup /etc/openvpn/crl.pem')
 		return True
 	else:
 		return False
