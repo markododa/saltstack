@@ -35,4 +35,4 @@ salt/nrpe-agent/installed:
     - data:
         name: {{ grains['id'] }} 
         ip: {{ grains['fqdn'] }}
-        type: {{ grains['role'] }}
+        type: {{ grains['roles'] }}
