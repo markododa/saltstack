@@ -12,5 +12,8 @@ base:
   'role:backup':
     - match: grain
     - backuppc
+  'role:lamp':
+    - match: grain
+    - lamp
   '*':
     - base
