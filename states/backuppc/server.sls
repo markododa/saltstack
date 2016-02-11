@@ -62,21 +62,11 @@ apache2:
     - watch:
       - file: /etc/apache2/conf-available/backuppc.conf
 
-generate_ssh-key:
-  cmd.run:
-    - name: ssh-keygen -q -f $HOME/.ssh/id_rsa -N ''
-    - user: backuppc
-    - onlyif: test ! -e /var/lib/backuppc/.ssh/id_rsa
-
-#copy_pubkey:
-#  file.copy:
-#    - name: salt://backuppc
-#    - source: /var/lib/backuppc/.ssh/id_rsa
 
 backuppc/pubkey:
   event.send:
     - data:
-        pubkey: {{salt['cmd.run']('cat /var/lib/backuppc/.ssh/id_rsa.pub')}}
+        pubkey: {{salt['cmd.run']("test -e /var/lib/backuppc/.ssh/id_rsa || ssh-keygen -q -f $HOME/.ssh/id_rsa -N '' && cat /var/lib/backuppc/.ssh/id_rsa.pub",runas="backuppc")}}
 
 /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
   file.managed:
