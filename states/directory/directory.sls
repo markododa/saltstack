@@ -1,7 +1,9 @@
 install_samba:
   pkg.installed:
-    - name: samba
-
+    - pkgs:
+      - samba
+      - krb5-user
+      - ntp
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set adminpass = salt['pillar.get']('adminpass') %}
