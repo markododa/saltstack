@@ -9,6 +9,9 @@ base:
   'role:directory':
     - match: grain
     - directory.directory
+  'role:fileshare':
+    - match: grain
+    - fileshare.setup
   'role:storage':
     - match: grain
     - owncloud
