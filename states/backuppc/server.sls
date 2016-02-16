@@ -16,10 +16,6 @@ backuppc_htpasswd:
 backuppc:
   pkg.installed:
     - name: {{ backuppc.server.pkg }}
-    {% if os_family == 'Debian' and backuppc_password %}
-    - require:
-      - debconf: backuppc_debconf
-    {% endif %}
 
 backuppc_config:
   file.managed:
