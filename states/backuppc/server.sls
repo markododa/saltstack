@@ -9,7 +9,6 @@ backuppc_htpasswd:
   webutil.user_exists:
     - name: {{ backuppc.server.webuser }} 
     - htpasswd_file: {{ backuppc.server.configdir }}/htpasswd
-    - option: d
     - force: true
 {% endif %}
 
