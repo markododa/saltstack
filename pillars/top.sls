@@ -17,6 +17,7 @@ base:
     - lamp
   'role:fileshare':
     - match: grain
+    - fileshare
     - directory
   '*':
     - base
