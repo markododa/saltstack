@@ -11,7 +11,7 @@ base:
     - directory.directory
   'role:fileshare':
     - match: grain
-    - fileshare.setup
+    - fileshare.fileshare
   'role:storage':
     - match: grain
     - owncloud
@@ -20,4 +20,4 @@ base:
     - backuppc
   'role:lamp':
     - match: grain
-    - lamp.setup
+    - lamp.lamp

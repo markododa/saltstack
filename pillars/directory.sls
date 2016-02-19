@@ -1,4 +1,4 @@
 #Domain name in UPPERCASE!
-domain: VAPOUR-APPS.COM
+domain: DOMEJN.MK
 adminpass: cedevita1@
-dcip: 192.168.50.2
+dcip: 192.168.80.38

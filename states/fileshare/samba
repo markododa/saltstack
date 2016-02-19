@@ -1,0 +1,4 @@
+session	required			pam_mkhomedir.so skel=/etc/skel/ umask=0022 
+@include common-auth
+@include common-account
+@include common-session-noninteractive

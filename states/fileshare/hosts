@@ -1,3 +1,4 @@
+# This file is locked from updates with: chattr +i /etc/resolv.conf
 127.0.0.1	localhost
 MYIP	HOSSST.DOMAIN HOSSST
 
