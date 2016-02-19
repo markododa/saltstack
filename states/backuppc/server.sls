@@ -2,40 +2,22 @@
 
 {% set os = salt['grains.get']('os', None) %}
 {% set os_family = salt['grains.get']('os_family', None) %}
-{% set backuppc_password = salt['pillar.get']('backuppc:server:backuppc_password', salt['grains.get']('server_id')) %}
-
-{% if backuppc_password %}
-{% if os_family == 'Debian' %}
-backuppc_debconf_utils:
-  pkg.installed:
-    - name: {{ backuppc.server.debconf_utils }}
-
-backuppc_debconf:
-  debconf.set:
-    - name: backuppc
-    - data: 
-        'backuppc/tmppass': {'type': 'password', 'value': '{{ backuppc_password }}'}
-    - require_in:
-      - pkg: backuppc
-    - require:
-      - pkg: backuppc_debconf_utils
-{% elif os_family == 'RedHat' or 'Suse' %}
-backuppc_htpasswd:
-  webutil.user_exists:
-    - name: {{ backuppc.server.webuser }} 
-    - htpasswd_file: {{ backuppc.server.configdir }}/htpasswd
-    - option: d
-    - force: true
-{% endif %}
-{% endif %}
+{% set backuppc_password = salt['pillar.get']('admin_password') %}
 
 backuppc:
   pkg.installed:
     - name: {{ backuppc.server.pkg }}
-    {% if os_family == 'Debian' and backuppc_password %}
+
+{% if backuppc_password %}
+backuppc_htpasswd:
+  webutil.user_exists:
+    - name: {{ backuppc.server.webuser }} 
+    - htpasswd_file: {{ backuppc.server.configdir }}/htpasswd
+    - password: {{ backuppc_password }}
+    - force: true
     - require:
-      - debconf: backuppc_debconf
-    {% endif %}
+      - pkg: backuppc
+{% endif %}
 
 backuppc_config:
   file.managed:
@@ -66,7 +48,9 @@ apache2:
 backuppc/pubkey:
   event.send:
     - data:
-        pubkey: {{salt['cmd.run']("test -e /var/lib/backuppc/.ssh/id_rsa || ssh-keygen -q -f $HOME/.ssh/id_rsa -N '' && cat /var/lib/backuppc/.ssh/id_rsa.pub",runas="backuppc")}}
+        pubkey: {{salt['cmd.run']('su -s /bin/bash -c "test -e /var/lib/backuppc/.ssh/id_rsa || ssh-keygen -q -f /var/lib/backuppc/.ssh/id_rsa -N \'\' && cat /var/lib/backuppc/.ssh/id_rsa.pub" -l backuppc') }}
+    - require:
+      - pkg: backuppc
 
 /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
   file.managed:
@@ -83,3 +67,8 @@ libxml-rss-perl:
     - marker_start: '"rss"                        => "RSS",' 
     - marker_end: ');'
     - content: '    "json"                       => "JSON",'
+
+backuppc-restart:
+  service.running:
+    - name: backuppc
+    - reload: True

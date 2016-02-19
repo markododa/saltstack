@@ -1,22 +1,23 @@
 base:
   'role:monitoring':
     - match: grain
-    - icingaweb2
-    - salt
+    - credentials
+    - openstack
   'role:directory':
     - match: grain
     - directory
   'role:storage':
     - match: grain
     - owncloud
-  'role:backup':
-    - match: grain
-    - backuppc
   'role:lamp':
     - match: grain
     - lamp
+  'role:backup':
+    - match: grain
+    - credentials
   'role:fileshare':
     - match: grain
+    - fileshare
     - directory
   '*':
     - base
