@@ -1,4 +1,0 @@
-openstackuser:
-openstackpass:
-openstackhost:
-openstacktenant:

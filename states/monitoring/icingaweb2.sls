@@ -24,7 +24,7 @@ time_zone:
   cmd.run:
     - name: sed -i '/;date.timezone =/ a\date.timezone = "Europe/Skopje"' /etc/php5/apache2/php.ini
 
-{% set dbpass = salt['pillar.get']('icingaweb2dbpass') %}
+{% set dbpass = salt['grains.get_or_set_hash']('icingaweb2dbpass') %}
 
 icingaweb2-db:
   cmd.run:
@@ -81,7 +81,7 @@ icingaweb2-pass:
 
 admin-user:
   cmd.run:
-    - name: echo "INSERT INTO icingaweb_user (name, active, password_hash) VALUES ('admin', 1, '$(openssl passwd -1 {{ salt['pillar.get']('icingaweb2pass') }})' );" | mysql -u icingaweb2 -p{{ dbpass }} icingaweb2
+    - name: echo "INSERT INTO icingaweb_user (name, active, password_hash) VALUES ('admin', 1, '$(openssl passwd -1 {{ salt['pillar.get']('admin_password') }})' );" | mysql -u icingaweb2 -p{{ dbpass }} icingaweb2
     - unless: echo 'SELECT * FROM icingaweb_user;' | mysql -uroot icingaweb2 |grep -q admin
 
 'rm /etc/apache2/sites-enabled/000-default.conf':

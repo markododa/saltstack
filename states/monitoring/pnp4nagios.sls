@@ -29,7 +29,7 @@ install_pnp4nagios:
 
 pnp4nagios_pass:
   cmd.run:
-    - name: htpasswd -b -c /etc/pnp4nagios/htpasswd.users admin {{ salt['pillar.get']('icingaweb2pass') }}
+    - name: htpasswd -b -c /etc/pnp4nagios/htpasswd.users admin {{ salt['pillar.get']('admin_password') }}
 
 /etc/apache2/conf-available/pnp4nagios.conf:
   file.replace:
