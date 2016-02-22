@@ -60,9 +60,9 @@ install_samba:
 #    - mode: 777
  
 
-writableresolve:
-  cmd.run:
-    - name: chattr -i /etc/resolv.conf
+#writableresolve:
+#  cmd.run:
+#    - name: chattr -i /etc/resolv.conf
 
 
 /etc/resolv.conf:
@@ -180,19 +180,7 @@ smbshortdm:
     - pattern: DOMEJN
     - repl: {{ shortdomain }}
 
-{% if domain != None %}
-
-join_domain:
-  cmd.run:
-    - name: net ads join -U Administrator%{{ adminpass }} && touch /vapour/.fileshare-set
-#    - name: samba-tool domain join {{ domain }} --password={{ adminpass }} -Uadministrator MEMBER && touch /vapour/.fileshare-set
-#    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ domain }} --password={{ adminpass }} -Uadministrator MEMBER && touch /vapour/.fileshare-set
-    - onlyif: test ! -e /vapour/.fileshare-set
-
-{% endif %}
-
-
-    
+       
     
 /etc/pam.d/common-account:
   file.managed:
@@ -228,7 +216,35 @@ join_domain:
     - user: root
     - group: root
     - mode: 644
+    
 
+   
+
+{% if domain != None %}
+
+needreboot:
+  cmd.run:
+    - name: shutdown -r +1 "<< Reboot needed after joining domain >>"; echo " "
+    - onlyif: test ! -e /vapour/.fileshare-set
+
+    
+join_domain:
+  cmd.run:
+    - name: net ads join -U Administrator%{{ adminpass }} && touch /vapour/.fileshare-set
+    - onlyif: test ! -e /vapour/.fileshare-set
+
+{% endif %}
+
+    
+#reloadsmbd:
+#  cmd.run:
+#    - name: service smbd restart
+#    - onlyif: test -e /etc/samba/smb.conf      
+    
+#reloadnmbd:
+#  cmd.run:
+#    - name: service nmbd restart
+#    - onlyif: test -e /etc/samba/smb.conf    
     
 reloadsmbconf:
   cmd.run:
