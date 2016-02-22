@@ -7,11 +7,13 @@ install_samba:
       - nfs-kernel-server 
       - smbclient 
       - winbind
+      - acl
 # https://www.stefanwienert.de/blog/2014/07/02/samba-4-active-directory-controller-with-windows-7-roaming-profiles-plus-linux-login-the-definitive-guide/
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set adminpass = salt['pillar.get']('adminpass') %}
 {% set dcip = salt['pillar.get']('dcip') %}
+{% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set myip = salt['grains.get']('ipv4')[0] %}
 
 {% if myip == '127.0.0.1' %}    
@@ -35,6 +37,13 @@ install_samba:
     - user: root
     - group: root
     - mode: 644
+    
+/etc/nsswitch.conf:
+  file.managed:
+    - source: salt://fileshare/nsswitch.conf
+    - user: root
+    - group: root
+    - mode: 644
 
 /etc/hosts:
   file.managed:
@@ -43,19 +52,19 @@ install_samba:
     - group: root
     - mode: 644
 
-/usr/local/sbin/mkhomedir.sh:
-  file.managed:
-    - source: salt://fileshare/mkhomedir.sh
-    - user: root
-    - group: root
-    - mode: 777
+#/usr/local/sbin/mkhomedir.sh:
+#  file.managed:
+#    - source: salt://fileshare/mkhomedir.sh
+#    - user: root
+#    - group: root
+#    - mode: 777
  
 
 writableresolve:
   cmd.run:
     - name: chattr -i /etc/resolv.conf
 
- 
+
 /etc/resolv.conf:
   file.managed:
     - source: salt://fileshare/resolv.conf
@@ -79,11 +88,11 @@ readableresolve:
   cmd.run:
     - name: chattr +i /etc/resolv.conf 
  
-mkdir:
-  file.replace:
-    - name: /usr/local/sbin/mkhomedir.sh
-    - pattern: DOMAIN
-    - repl: {{ domain }}
+#mkdir:
+#  file.replace:
+#    - name: /usr/local/sbin/mkhomedir.sh
+#    - pattern: DOMAIN
+#    - repl: {{ domain }}
 
     
 ntpcnf:
@@ -112,7 +121,6 @@ hostsmyip:
 #    - repl: {{ salt['grains.get']('ipv4')[0] }}
     - repl: {{ myip }}
 
-
     
 hostsmyhostname:
   file.replace:
@@ -137,7 +145,12 @@ nsswitchw2:
   file.directory:
     - makedirs: True
 
-/home/Public/:
+/vapour/Public/:
+  file.directory:
+    - makedirs: True
+    - mode: 777
+    
+/vapour/Share/:
   file.directory:
     - makedirs: True
     - mode: 777
@@ -161,6 +174,12 @@ smbnetbios:
     - pattern: HOST
     - repl: {{ grains['localhost'] }}
 
+smbshortdm:
+  file.replace:
+    - name: /etc/samba/smb.conf
+    - pattern: DOMEJN
+    - repl: {{ shortdomain }}
+
 {% if domain != None %}
 
 join_domain:
@@ -172,6 +191,9 @@ join_domain:
 
 {% endif %}
 
+
+    
+    
 /etc/pam.d/common-account:
   file.managed:
     - source: salt://fileshare/common-account
@@ -199,6 +221,16 @@ join_domain:
     - user: root
     - group: root
     - mode: 644
+    
+/etc/pam.d/common-session-noninteractive:
+  file.managed:
+    - source: salt://fileshare/common-session-noninteractive
+    - user: root
+    - group: root
+    - mode: 644
 
     
-    
+reloadsmbconf:
+  cmd.run:
+    - name: smbcontrol all reload-config
+    - onlyif: test -e /etc/samba/smb.conf
