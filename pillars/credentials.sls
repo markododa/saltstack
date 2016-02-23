@@ -1,6 +1,5 @@
-admin_password: test
+admin_password: cedevita1@
 #Domain name in UPPERCASE!
 domain: DOMEJN.MK
 shortdomain: DOMEJN
-adminpass: cedevita1@
 dcip: 192.168.80.38

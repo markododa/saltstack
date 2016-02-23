@@ -6,7 +6,7 @@ install_samba:
       - ntp
 
 {% set domain = salt['pillar.get']('domain') %}
-{% set adminpass = salt['pillar.get']('adminpass') %}
+{% set admin_password = salt['pillar.get']('admin_password') %}
   
 /vapour/data/:
   file.directory:

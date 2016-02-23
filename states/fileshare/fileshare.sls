@@ -11,7 +11,7 @@ install_samba:
 # https://www.stefanwienert.de/blog/2014/07/02/samba-4-active-directory-controller-with-windows-7-roaming-profiles-plus-linux-login-the-definitive-guide/
 
 {% set domain = salt['pillar.get']('domain') %}
-{% set adminpass = salt['pillar.get']('adminpass') %}
+{% set admin_password = salt['pillar.get']('admin_password') %}
 {% set dcip = salt['pillar.get']('dcip') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set myip = salt['grains.get']('ipv4')[0] %}
@@ -232,7 +232,7 @@ reloadsmbconf:
         
 join_domain:
   cmd.run:
-    - name: net ads join -U Administrator%{{ adminpass }} && touch /vapour/.fileshare-set && shutdown -r +1 "<< Reboot needed after joining domain >>" &
+    - name: net ads join -U Administrator%{{ admin_password }} && touch /vapour/.fileshare-set && shutdown -r +1 "<< Reboot needed after joining domain >>" &
     - onlyif: test ! -e /vapour/.fileshare-set
 
 {% endif %}
