@@ -7,9 +7,7 @@ install_samba:
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set adminpass = salt['pillar.get']('adminpass') %}
- 
-#ova vo smb.conf idmap_ldb:use rfc2307 = yes
- 
+  
 /vapour/data/:
   file.directory:
     - makedirs: True

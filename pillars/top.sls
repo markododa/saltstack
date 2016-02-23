@@ -5,7 +5,7 @@ base:
     - openstack
   'role:directory':
     - match: grain
-    - directory
+    - credentials
   'role:storage':
     - match: grain
     - owncloud
@@ -17,7 +17,6 @@ base:
     - credentials
   'role:fileshare':
     - match: grain
-    - fileshare
-    - directory
+    - credentials
   '*':
     - base

@@ -16,6 +16,8 @@ install_samba:
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set myip = salt['grains.get']('ipv4')[0] %}
 
+# needs to find the interface for reaching domain controller
+
 {% if myip == '127.0.0.1' %}    
 {% set myip = salt['grains.get']('ipv4')[1] %}
 {% endif %}    
@@ -220,17 +222,17 @@ smbshortdm:
 
    
 
+    
 {% if domain != None %}
 
-needreboot:
+reloadsmbconf:
   cmd.run:
-    - name: shutdown -r +1 "<< Reboot needed after joining domain >>"; echo " "
-    - onlyif: test ! -e /vapour/.fileshare-set
-
-    
+    - name: smbcontrol all reload-config
+    - onlyif: test -e /etc/samba/smb.conf
+        
 join_domain:
   cmd.run:
-    - name: net ads join -U Administrator%{{ adminpass }} && touch /vapour/.fileshare-set
+    - name: net ads join -U Administrator%{{ adminpass }} && touch /vapour/.fileshare-set && shutdown -r +1 "<< Reboot needed after joining domain >>" &
     - onlyif: test ! -e /vapour/.fileshare-set
 
 {% endif %}
@@ -246,7 +248,4 @@ join_domain:
 #    - name: service nmbd restart
 #    - onlyif: test -e /etc/samba/smb.conf    
     
-reloadsmbconf:
-  cmd.run:
-    - name: smbcontrol all reload-config
-    - onlyif: test -e /etc/samba/smb.conf
+
