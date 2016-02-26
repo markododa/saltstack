@@ -147,12 +147,12 @@ nsswitchw2:
   file.directory:
     - makedirs: True
 
-/vapour/Public/:
+/home/{{ domain }}/Public/:
   file.directory:
     - makedirs: True
     - mode: 777
     
-/vapour/Share/:
+/home/{{ domain }}/Share/:
   file.directory:
     - makedirs: True
     - mode: 777
