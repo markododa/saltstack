@@ -24,7 +24,7 @@ time_zone:
   cmd.run:
     - name: sed -i '/;date.timezone =/ a\date.timezone = "Europe/Skopje"' /etc/php5/apache2/php.ini
 
-{% set dbpass = salt['grains.get_or_set_hash']('icingaweb2dbpass') %}
+{% set dbpass = salt['grains.get_or_set_hash']('icingaweb2dbpass',chars='abcdefghijklmnopqrstuvwxyz0123456789', length=10) %}
 
 icingaweb2-db:
   cmd.run:
@@ -77,7 +77,7 @@ icingaweb2-pass:
     file.replace:
     - name: /etc/icingaweb2/resources.ini
     - pattern: ICINGAWEB2DBPASS
-    - repl: {{ dbpass }}
+    - repl: "{{ dbpass }}"
 
 admin-user:
   cmd.run:

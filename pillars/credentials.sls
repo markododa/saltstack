@@ -1,4 +1,4 @@
-admin_password: cedevita1@
+admin_password: test
 #Domain name in UPPERCASE!
 domain: DOMEJN.MK
 shortdomain: DOMEJN

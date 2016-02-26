@@ -34,5 +34,5 @@ salt/nrpe-agent/installed:
   event.send:
     - data:
         name: {{ grains['id'] }} 
-        ip: {{ grains['fqdn'] }}
+        ip: {{ grains['ipv4'][0] }}
         type: {{ grains['role'] }}
