@@ -8,6 +8,8 @@ install_samba:
       - smbclient 
       - winbind
       - acl
+      - libnss-winbind
+      - libpam-winbind
 # https://www.stefanwienert.de/blog/2014/07/02/samba-4-active-directory-controller-with-windows-7-roaming-profiles-plus-linux-login-the-definitive-guide/
 
 {% set domain = salt['pillar.get']('domain') %}

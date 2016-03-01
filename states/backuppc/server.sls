@@ -40,7 +40,6 @@ remove_alias:
         DocumentRoot /usr/share/backuppc/cgi-bin/
 apache2:
   service.running:
-    - reload: True
     - watch:
       - file: /etc/apache2/conf-available/backuppc.conf
 
@@ -71,4 +70,5 @@ libxml-rss-perl:
 backuppc-restart:
   service.running:
     - name: backuppc
-    - reload: True
+    - watch:
+      - file: /etc/apache2/conf-available/backuppc.conf
