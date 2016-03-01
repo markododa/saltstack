@@ -8,8 +8,6 @@ install_samba:
       - smbclient 
       - winbind
       - acl
-      - libnss-winbind
-      - libpam-winbind
 # https://www.stefanwienert.de/blog/2014/07/02/samba-4-active-directory-controller-with-windows-7-roaming-profiles-plus-linux-login-the-definitive-guide/
 
 {% set domain = salt['pillar.get']('domain') %}
@@ -149,15 +147,43 @@ nsswitchw2:
   file.directory:
     - makedirs: True
 
-/vapour/Public/:
+/home/{{ domain }}/Public/:
+  file.directory:
+    - makedirs: True
+    - mode: 777
+
+/home/{{ domain }}/Public/Tools/:
   file.directory:
     - makedirs: True
     - mode: 777
     
-/vapour/Share/:
+/home/{{ domain }}/Share/:
   file.directory:
     - makedirs: True
     - mode: 777
+
+/home/{{ domain }}/Public/Tools/tools.tar.gz:
+  file.managed:
+    - source: salt://fileshare/wintools/tools.tar.gz
+    - user: root
+    - group: root
+    - mode: 644        
+
+extracttools:
+  cmd.run:
+    - name: tar -xf /home/{{ domain }}/Public/Tools/tools.tar.gz -C /home/{{ domain }}/Public/Tools ; chown Administrator:'domain users' -R /home/{{ domain }}/Public/Tools/* ; chmod 755 -R /home/{{ domain }}/Public/Tools/
+  
+fixbat_mp:
+  file.replace:
+    - name: /home/{{ domain }}/Public/Tools/mp.bat
+    - pattern: DOMEJN
+    - repl: {{ shortdomain }}   
+    
+fixbat_mt:
+  file.replace:
+    - name: /home/{{ domain }}/Public/Tools/mt.bat
+    - pattern: DOMEJN
+    - repl: {{ shortdomain }}
     
 /etc/samba/smb.conf:
   file.managed:

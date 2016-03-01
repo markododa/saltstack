@@ -6,6 +6,7 @@ install_samba:
       - ntp
       - dnsutils
       - winbind
+      - smbclient
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
