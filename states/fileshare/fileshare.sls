@@ -8,6 +8,7 @@ install_samba:
       - smbclient 
       - winbind
       - acl
+      - dnsutils
 # https://www.stefanwienert.de/blog/2014/07/02/samba-4-active-directory-controller-with-windows-7-roaming-profiles-plus-linux-login-the-definitive-guide/
 
 {% set domain = salt['pillar.get']('domain') %}
@@ -171,7 +172,7 @@ nsswitchw2:
 
 extracttools:
   cmd.run:
-    - name: tar -xf /home/{{ domain }}/Public/Tools/tools.tar.gz -C /home/{{ domain }}/Public/Tools ; chown Administrator:'domain users' -R /home/{{ domain }}/Public/Tools/* ; chmod 755 -R /home/{{ domain }}/Public/Tools/
+    - name: tar -xf /home/{{ domain }}/Public/Tools/tools.tar.gz -C /home/{{ domain }}/Public/Tools ; chown Administrator:'domain users' -R /home/{{ domain }}/Public/Tools ; chmod 755 -R /home/{{ domain }}/Public/Tools/
   
 fixbat_mp:
   file.replace:
