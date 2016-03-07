@@ -49,6 +49,7 @@ configure_salt-cloud:
       password: {{ salt['pillar.get']('openstackpass')}}
       tenant: {{ salt['pillar.get']('openstacktenant')}}
       ssh_key: {{ salt['pillar.get']('ssh_key')}}
+      net_id: {{ salt['pillar.get']('net_id')}}
 
 keystone-token-auth:
   file.managed:
