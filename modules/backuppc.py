@@ -13,7 +13,7 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder):
+def add_folder(hostname, folder, ip=''):
 	sshcmd='ssh -oStrictHostKeyChecking=no root@'+hostname+' '
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		add_host(hostname)

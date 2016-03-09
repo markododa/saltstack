@@ -21,3 +21,6 @@ base:
   'role:lamp':
     - match: grain
     - lamp.lamp
+  'role:email':
+    - match: grain
+    - mail
