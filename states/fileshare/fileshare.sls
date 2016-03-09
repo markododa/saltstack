@@ -55,14 +55,6 @@ install_samba:
     - group: root
     - mode: 644
 
-#/usr/local/sbin/mkhomedir.sh:
-#  file.managed:
-#    - source: salt://fileshare/mkhomedir.sh
-#    - user: root
-#    - group: root
-#    - mode: 777
- 
-
 #writableresolve:
 #  cmd.run:
 #    - name: chattr -i /etc/resolv.conf
@@ -91,13 +83,7 @@ readableresolve:
   cmd.run:
     - name: chattr +i /etc/resolv.conf 
  
-#mkdir:
-#  file.replace:
-#    - name: /usr/local/sbin/mkhomedir.sh
-#    - pattern: DOMAIN
-#    - repl: {{ domain }}
-
-    
+   
 ntpcnf:
   file.replace:
     - name: /etc/ntp.conf
@@ -121,7 +107,6 @@ hostsmyip:
   file.replace:
     - name: /etc/hosts
     - pattern: MYIP
-#    - repl: {{ salt['grains.get']('ipv4')[0] }}
     - repl: {{ myip }}
 
     
@@ -248,9 +233,6 @@ smbshortdm:
     - group: root
     - mode: 644
     
-
-   
-
     
 {% if domain != None %}
 
@@ -277,4 +259,3 @@ join_domain:
 #    - name: service nmbd restart
 #    - onlyif: test -e /etc/samba/smb.conf    
     
-
