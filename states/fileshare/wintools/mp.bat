@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 set DOM=DOMEJN
 net use * /DELETE /Y >nul 2>&1
 echo ## Enter username in format: %DOM%\username  

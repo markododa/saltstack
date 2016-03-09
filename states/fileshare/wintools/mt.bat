@@ -1,4 +1,4 @@
-﻿@echo off
+@echo off
 set DOM=DOMEJN
 echo ## Enter Username: 
 set /p UNAME=""

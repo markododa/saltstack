@@ -1,1 +1,0 @@
-﻿runas /netonly /user:domejn\Administrator "Explorer++Portable.exe"
