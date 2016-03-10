@@ -2,19 +2,23 @@
 #export SALTTREE=salt-tree.tar.gz
 wget -O - https://repo.saltstack.com/apt/debian/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
 echo 'deb http://repo.saltstack.com/apt/debian/latest jessie main' > /etc/apt/sources.list.d/salt.list
-apt-get update
-apt-get install --no-install-recommends salt-master
+apt-get update -y
+apt-get install --no-install-recommends salt-master -y
 #tar xzfv $SALTTREE -C /srv
-mkdir /srv/{salt,pillar,reactor}
+mkdir /srv/{salt,pillar,reactor,_modules}
 cp -R states/* /srv/salt
 cp -R pillars/* /srv/pillar
 cp -R reactor/* /srv/reactor
+cp -R modules/* /srv/salt/_modules
 #setup pillars
-cp /srv/salt/salt-master/files/master /etc/salt/master
+cp *.sls /srv/pillar
+cp /srv/salt/salt-master/files/master /etc/salt/master 
 service salt-master restart
-apt-get install salt-minion
+apt-get install salt-minion -y
 echo "master: `hostname -f`" >> /etc/salt/minion
-echo "role:monitoring" >> /etc/salt/grains
+echo "role: monitoring" > /etc/salt/grains
 service salt-minion restart
+sleep 5
 salt-key -y -a `hostname -f`
+sleep 5
 salt '*' state.highstate
