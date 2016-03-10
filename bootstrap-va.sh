@@ -5,7 +5,8 @@ echo 'deb http://repo.saltstack.com/apt/debian/latest jessie main' > /etc/apt/so
 apt-get update -y
 apt-get install --no-install-recommends salt-master -y
 #tar xzfv $SALTTREE -C /srv
-mkdir /srv/{salt,pillar,reactor,_modules}
+cd "$(dirname "$0")"
+mkdir /srv/{salt,pillar,reactor,salt/_modules}
 cp -R states/* /srv/salt
 cp -R pillars/* /srv/pillar
 cp -R reactor/* /srv/reactor
