@@ -24,7 +24,7 @@ time_zone:
   cmd.run:
     - name: sed -i '/;date.timezone =/ a\date.timezone = "Europe/Skopje"' /etc/php5/apache2/php.ini
 
-{% set dbpass = salt['grains.get_or_set_hash']('icingaweb2dbpass',chars='abcdefghijklmnopqrstuvwxyz0123456789', length=10) %}
+{% set dbpass = salt['grains.get_or_set_hash']('icingaweb2dbpass') %}
 
 icingaweb2-db:
   cmd.run:
@@ -46,13 +46,6 @@ icinga2web-autoconfigure:
         - dir_mode: 750
         - file_mode: 644
         - include_empty: True
-        - template: Jinja
-        - defaults:
-          icingaweb2dbpass: {{ dbpass }}
-          idodbname: {{ salt['cmd.run']('awk -F= '/dbc_dbname=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf')}}
-          idodbuser: {{ salt['cmd.run']('awk -F= '/dbc_dbuser=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf')}}
-          idodbpass: {{ salt['cmd.run']('awk -F= '/dbc_dbpass=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf')}}
-          
 
 /etc/icingaweb2/enabledModules/:
   file.directory:
@@ -68,23 +61,23 @@ enable-module:
     - onlyif: test ! -e /etc/icingaweb2/enabledModules/monitoring
 
 
-#ido-pass:
-#  cmd.run:
-#    - name: sed -i "s#IDODBPASS#\"`awk -F= '/dbc_dbpass=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
+ido-pass:
+  cmd.run:
+    - name: sed -i "s#IDODBPASS#\"`awk -F= '/dbc_dbpass=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
 
-#ido-user:
-#  cmd.run:
-#    - name: sed -i "s#IDODBUSER#\"`awk -F= '/dbc_dbuser=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
+ido-user:
+  cmd.run:
+    - name: sed -i "s#IDODBUSER#\"`awk -F= '/dbc_dbuser=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
 
-#ido-dbname:
-#  cmd.run:
-#    - name: sed -i "s#IDODBNAME#\"`awk -F= '/dbc_dbname=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
+ido-dbname:
+  cmd.run:
+    - name: sed -i "s#IDODBNAME#\"`awk -F= '/dbc_dbname=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
 
-#icingaweb2-pass:
-#    file.replace:
-#    - name: /etc/icingaweb2/resources.ini
-#    - pattern: ICINGAWEB2DBPASS
-#    - repl: "{{ dbpass }}"
+icingaweb2-pass:
+    file.replace:
+    - name: /etc/icingaweb2/resources.ini
+    - pattern: ICINGAWEB2DBPASS
+    - repl: {{ dbpass }}
 
 admin-user:
   cmd.run:
