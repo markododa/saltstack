@@ -63,15 +63,15 @@ enable-module:
 
 ido-pass:
   cmd.run:
-    - name: sed -i "s#IDODBPASS#\"`awk -F= '/dbc_dbpass=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
+    - name: sed -i "s#"IDODBPASS"#\"`awk -F= '/dbc_dbpass=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
 
 ido-user:
   cmd.run:
-    - name: sed -i "s#IDODBUSER#\"`awk -F= '/dbc_dbuser=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
+    - name: sed -i "s#"IDODBUSER"#\"`awk -F= '/dbc_dbuser=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
 
 ido-dbname:
   cmd.run:
-    - name: sed -i "s#IDODBNAME#\"`awk -F= '/dbc_dbname=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
+    - name: sed -i "s#"IDODBNAME"#\"`awk -F= '/dbc_dbname=/{print substr($2,2, length($2)-2) }' /etc/dbconfig-common/icinga2-ido-mysql.conf`\"#" /etc/icingaweb2/resources.ini
 
 icingaweb2-pass:
     file.replace:
