@@ -21,5 +21,5 @@ echo "role: monitoring" > /etc/salt/grains
 service salt-minion restart
 sleep 5
 salt-key -y -a `hostname -f`
-sleep 5
+sleep 20
 salt '*' state.highstate
