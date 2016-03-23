@@ -88,6 +88,11 @@ admin-user:
   cmd.run:
     - onlyif: test -e /etc/apache2/sites-enabled/000-default.conf
 
+{% set multisite = salt['pillar.get']('multisite') %}
+'echo {{ multisite }}':
+  cmd.run: []
+
+{% if multisite != True %}
 remove_alias:
   file.replace:
     - name: /etc/apache2/conf-available/icingaweb2.conf
@@ -105,3 +110,5 @@ apache2:
     - reload: True
     - watch:
       - file: /etc/apache2/conf-available/icingaweb2.conf
+
+{% endif %}
