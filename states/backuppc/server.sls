@@ -27,6 +27,10 @@ backuppc_config:
     - user: {{ backuppc.server.user }}
     - group: {{ backuppc.server.group }}
 
+{% set multisite = salt['pillar.get']('multisite') %}
+
+{% if multisite != True %}
+
 'rm /etc/apache2/sites-enabled/000-default.conf':
   cmd.run:
     - onlyif: test -e /etc/apache2/sites-enabled/000-default.conf
@@ -42,6 +46,7 @@ apache2:
   service.running:
     - watch:
       - file: /etc/apache2/conf-available/backuppc.conf
+{% endif %}
 
 
 backuppc/pubkey:

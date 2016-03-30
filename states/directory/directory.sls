@@ -50,14 +50,14 @@ create_domain:
 
 setpassword:
   cmd.run:
-    - name: |
-        samba-tool domain passwordsettings set --complexity=off
-        samba-tool user setpassword Administrator --newpassword={{ admin_password }}
+    - name: samba-tool domain passwordsettings set --complexity=off && samba-tool user setpassword Administrator --newpassword={{ admin_password }}
 
 /etc/resolv.conf:
   file.managed:
-    - source: salt://directory.files/resolv.conf
+    - source: salt://directory/files/resolv.conf
     - template: jinja
+    - context:
+      domain: {{ domain }}
 
 chattr:
   cmd.run:
@@ -67,7 +67,9 @@ chattr:
   file.blockreplace:
     - marker_start: '[global]'
     - marker_end: 'workgroup'
-    - source: salt://directory/files/config 
+    - source: salt://directory/files/config
 
+'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
+  cmd.run
         
 {% endif %}

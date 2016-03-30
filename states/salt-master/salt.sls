@@ -61,4 +61,5 @@ keystone-token-auth:
 
 /etc/hosts:
   file.append:
-    
+    - text:
+      - {{ salt['pillar.get']('openstackhost')}} {{ salt['pillar.get']('endpointurl')}}
