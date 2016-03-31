@@ -77,3 +77,16 @@ backuppc-restart:
     - name: backuppc
     - watch:
       - file: /etc/apache2/conf-available/backuppc.conf
+
+/dev/vdb:
+  blockdev.formatted
+
+/mnt/va-backup:
+  mount.mounted:
+    - device: /dev/vdb
+    - fstype: ext4
+    - mkmnt: True
+
+'mv /var/lib/backuppc /mnt/va-backup/ && ln -s /mnt/va-backup/backuppc /var/lib/backuppc':
+  cmd.run:
+    - unless: test -e /mnt/va-backup/backuppc 

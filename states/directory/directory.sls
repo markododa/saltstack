@@ -71,5 +71,16 @@ chattr:
 
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run
+
+dnsquery_user:
+  cmd.run:
+    - name: echo "dnsquery:`openssl rand -hex 10`" > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '`
+    - unless: test -e /vapour/dnsquery
+
+restart_samba:
+  cmd.run:
+    - name: /etc/init.d/samba restart
+    - watch:
+      - file: /etc/samba/smb.conf
         
 {% endif %}
