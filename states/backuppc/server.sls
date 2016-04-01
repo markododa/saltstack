@@ -72,12 +72,6 @@ libxml-rss-perl:
     - marker_end: ');'
     - content: '    "json"                       => "JSON",'
 
-backuppc-restart:
-  service.running:
-    - name: backuppc
-    - watch:
-      - file: /etc/apache2/conf-available/backuppc.conf
-
 /dev/vdb:
   blockdev.formatted
 
@@ -87,6 +81,16 @@ backuppc-restart:
     - fstype: ext4
     - mkmnt: True
 
-'mv /var/lib/backuppc /mnt/va-backup/ && ln -s /mnt/va-backup/backuppc /var/lib/backuppc':
+'mv /var/lib/backuppc /mnt/va-backup/':
   cmd.run:
-    - unless: test -e /mnt/va-backup/backuppc 
+    - unless: test -e /mnt/va-backup/backuppc
+
+/var/lib/backuppc:
+  file.symlink:
+    - target: /mnt/va-backup/backuppc
+
+backuppc-restart:
+  service.running:
+    - name: backuppc
+    - watch:
+      - file: /var/lib/backuppc
