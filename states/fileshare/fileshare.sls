@@ -4,11 +4,13 @@ install_samba:
       - samba
       - krb5-user
       - ntp
-      - nfs-kernel-server 
-      - smbclient 
-      - winbind
-      - acl
       - dnsutils
+      - winbind
+      - smbclient 
+      - acl
+
+     # - nfs-kernel-server 
+     
 # https://www.stefanwienert.de/blog/2014/07/02/samba-4-active-directory-controller-with-windows-7-roaming-profiles-plus-linux-login-the-definitive-guide/
 
 {% set domain = salt['pillar.get']('domain') %}
@@ -29,28 +31,28 @@ install_samba:
 
 /etc/krb5.conf:
   file.managed:
-    - source: salt://fileshare/krb5.conf
+    - source: salt://fileshare/files/krb5.conf
     - user: root
     - group: root
     - mode: 644
 
 /etc/ntp.conf:
   file.managed:
-    - source: salt://fileshare/ntp.conf
+    - source: salt://fileshare/files/ntp.conf
     - user: root
     - group: root
     - mode: 644
     
 /etc/nsswitch.conf:
   file.managed:
-    - source: salt://fileshare/nsswitch.conf
+    - source: salt://fileshare/files/nsswitch.conf
     - user: root
     - group: root
     - mode: 644
 
 /etc/hosts:
   file.managed:
-    - source: salt://fileshare/hosts
+    - source: salt://fileshare/files/hosts
     - user: root
     - group: root
     - mode: 644
@@ -62,7 +64,7 @@ install_samba:
 
 /etc/resolv.conf:
   file.managed:
-    - source: salt://fileshare/resolv.conf
+    - source: salt://fileshare/files/resolv.conf
     - user: root
     - group: root
     - mode: 777
@@ -173,7 +175,7 @@ fixbat_mt:
     
 /etc/samba/smb.conf:
   file.managed:
-    - source: salt://fileshare/smb.conf
+    - source: salt://fileshare/files/smb.conf
     - user: root
     - group: root
     - mode: 644
@@ -200,35 +202,35 @@ smbshortdm:
     
 /etc/pam.d/common-account:
   file.managed:
-    - source: salt://fileshare/common-account
+    - source: salt://fileshare/files/common-account
     - user: root
     - group: root
     - mode: 644
     
 /etc/pam.d/common-auth:
   file.managed:
-    - source: salt://fileshare/common-auth
+    - source: salt://fileshare/files/common-auth
     - user: root
     - group: root
     - mode: 644
     
 /etc/pam.d/common-password:
   file.managed:
-    - source: salt://fileshare/common-password
+    - source: salt://fileshare/files/common-password
     - user: root
     - group: root
     - mode: 644
     
 /etc/pam.d/common-session:
   file.managed:
-    - source: salt://fileshare/common-session
+    - source: salt://fileshare/files/common-session
     - user: root
     - group: root
     - mode: 644
     
 /etc/pam.d/common-session-noninteractive:
   file.managed:
-    - source: salt://fileshare/common-session-noninteractive
+    - source: salt://fileshare/files/common-session-noninteractive
     - user: root
     - group: root
     - mode: 644
