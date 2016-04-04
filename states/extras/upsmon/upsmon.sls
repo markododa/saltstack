@@ -10,6 +10,16 @@ install_samba:
       # upsc UPSserver
       # upscmd -l UPSserver
       # needs reboot or sudo upsdrvctl -u root start ?
+      # upsmon -c fsd (simulate power failure)
+     # sudo upsmon -c stop 
+      
+      
+      # For best results, you should create a new normal user like "nutmon",
+# and make it a member of a "nut" group or similar.  Then specify it
+# here and grant read access to the upsmon.conf for that group.
+#
+# This user should not have write access to upsmon.conf.
+      
       
 # To find out if your driver supports any extra settings, start it with
 # the -h option and/or read the driver's documentation.
