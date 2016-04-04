@@ -72,8 +72,25 @@ libxml-rss-perl:
     - marker_end: ');'
     - content: '    "json"                       => "JSON",'
 
+/dev/vdb:
+  blockdev.formatted
+
+/mnt/va-backup:
+  mount.mounted:
+    - device: /dev/vdb
+    - fstype: ext4
+    - mkmnt: True
+
+'mv /var/lib/backuppc /mnt/va-backup/':
+  cmd.run:
+    - unless: test -e /mnt/va-backup/backuppc
+
+/var/lib/backuppc:
+  file.symlink:
+    - target: /mnt/va-backup/backuppc
+
 backuppc-restart:
   service.running:
     - name: backuppc
     - watch:
-      - file: /etc/apache2/conf-available/backuppc.conf
+      - file: /var/lib/backuppc

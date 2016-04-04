@@ -16,7 +16,7 @@ cp *.sls /srv/pillar
 cp /srv/salt/salt-master/files/master /etc/salt/master 
 service salt-master restart
 apt-get install salt-minion -y
-echo "master: `hostname -f`" >> /etc/salt/minion
+echo "master: `hostname`" >> /etc/salt/minion
 echo "role: monitoring" > /etc/salt/grains
 service salt-minion restart
 sleep 5
