@@ -1,0 +1,2 @@
+watchfor /\|connect\|ok\|sysvol/
+  exec /root/update.sh "$_"
