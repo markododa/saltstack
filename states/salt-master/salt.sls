@@ -51,6 +51,9 @@ configure_salt-cloud:
       ssh_key: {{ salt['pillar.get']('ssh_key')}}
       net_id: {{ salt['pillar.get']('net-id')}}
 
+salt-cloud -u:
+  cmd.run
+
 keystone-token-auth:
   file.managed:
     - name: /usr/lib/python2.7/dist-packages/salt/auth/keystone-token.py
