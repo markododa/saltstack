@@ -9,6 +9,7 @@ base:
   'role:directory':
     - match: grain
     - directory.directory
+    - openvpn
   'role:fileshare':
     - match: grain
     - fileshare.fileshare

@@ -64,10 +64,12 @@ chattr:
     - name: chattr +i /etc/resolv.conf
 
 /etc/samba/smb.conf:
-  file.blockreplace:
-    - marker_start: '[global]'
-    - marker_end: 'workgroup'
-    - source: salt://directory/files/config
+  file.managed:
+    - source: salt://directory/files/smb.conf
+    - template: jinja
+    - context:
+      domain: {{ domain }}
+      shortdomain: {{ shortdomain }} 
 
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run

@@ -6,6 +6,7 @@ base:
   'role:directory':
     - match: grain
     - credentials
+    - openvpn
   'role:storage':
     - match: grain
     - owncloud
