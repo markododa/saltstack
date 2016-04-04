@@ -7,7 +7,7 @@ base:
     - match: grain
     - credentials
     - openvpn
-  'role:storage':
+  'role:owncloud':
     - match: grain
     - owncloud
   'role:lamp':
