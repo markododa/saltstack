@@ -12,15 +12,6 @@ install_nrpe:
     - group: root
     - mode: 755
 
-/usr/lib/nagios/plugins/check_snmp_int.pl:
-  file.managed:
-    - source:
-      - salt://base/files/nrpe/check_snmp_int.pl
-    - user: root
-    - group: root
-    - mode: 755
-
-
 /etc/nagios/nrpe.d/va.cfg:
   file.managed:
     - source:
