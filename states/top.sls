@@ -13,7 +13,7 @@ base:
   'role:fileshare':
     - match: grain
     - fileshare.fileshare
-  'role:storage':
+  'role:owncloud':
     - match: grain
     - owncloud
   'role:backup':

@@ -12,6 +12,15 @@ install_nrpe:
     - group: root
     - mode: 755
 
+/usr/lib/nagios/plugins/check_snmp_int.pl:
+  file.managed:
+    - source:
+      - salt://base/files/nrpe/check_snmp_int.pl
+    - user: root
+    - group: root
+    - mode: 755
+
+
 /etc/nagios/nrpe.d/va.cfg:
   file.managed:
     - source:
@@ -34,5 +43,5 @@ salt/nrpe-agent/installed:
   event.send:
     - data:
         name: {{ grains['id'] }} 
-        ip: {{ grains['ipv4'][0] }}
+        ip: {{ grains['ip4_interfaces']['eth0'][0] }}
         type: {{ grains['role'] }}
