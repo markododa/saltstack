@@ -8,6 +8,8 @@ install_samba:
       - winbind
       - smbclient 
       - acl
+      - libpam-winbind
+      - libnss-winbind
 
      # - nfs-kernel-server 
      
@@ -15,7 +17,7 @@ install_samba:
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
-{% set dcip = salt['pillar.get']('dcip') %}
+{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set myip = salt['grains.get']('ipv4')[0] %}
 

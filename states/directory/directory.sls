@@ -8,6 +8,8 @@ install_samba:
       - winbind
       - smbclient
       - swatch
+      - libnss-winbind
+      - libpam-winbind
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
