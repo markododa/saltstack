@@ -76,7 +76,7 @@ chattr:
 
 dnsquery_user:
   cmd.run:
-    - name: echo "dnsquery:`openssl rand -hex 10`" > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '`
+    - name: echo "dnsquery:`openssl rand -hex 10`" > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers DnsAdmins dnsquery
     - unless: test -e /vapour/dnsquery
 
     
