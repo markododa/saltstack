@@ -196,9 +196,7 @@ smbshortdm:
   file.replace:
     - name: /etc/samba/smb.conf
     - pattern: DOMEJN
-    - repl: {{ shortdomain }}
-
-       
+    - repl: {{ shortdomain }}   
     
 /etc/pam.d/common-account:
   file.managed:
@@ -250,14 +248,3 @@ join_domain:
 
 {% endif %}
 
-    
-#reloadsmbd:
-#  cmd.run:
-#    - name: service smbd restart
-#    - onlyif: test -e /etc/samba/smb.conf      
-    
-#reloadnmbd:
-#  cmd.run:
-#    - name: service nmbd restart
-#    - onlyif: test -e /etc/samba/smb.conf    
-    

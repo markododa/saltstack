@@ -7,6 +7,7 @@ install_samba:
       - dnsutils
       - winbind
       - smbclient
+      - swatch
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
@@ -148,6 +149,34 @@ nsswitchw2:
     - group: root
     - mode: 644
 
+    
+### these 3 are for last loging tracking:
+
+/root/.swatchrc:
+  file.managed:
+    - source: salt://directory/files/swatchrc
+    - user: root
+    - group: root
+    - mode: 770
+    
+/root/update.sh:
+  file.managed:
+    - source: salt://directory/files/update.sh
+    - user: root
+    - group: root
+    - mode: 770  
+    
+/etc/rc.local:
+  file.managed:
+    - source: salt://directory/files/rc.local
+    - user: root
+    - group: root
+    - mode: 755
+    
+start_swatch:
+  cmd.run:
+    - name: /usr/bin/swatch --config-file=/root/.swatchrc --tail-file=/var/log/user.log --daemon
+      
 #### end exotics
     
 restart_samba:
