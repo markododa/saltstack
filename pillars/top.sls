@@ -10,6 +10,7 @@ base:
   'role:owncloud':
     - match: grain
     - owncloud
+    - credentials
   'role:lamp':
     - match: grain
     - lamp
@@ -17,6 +18,9 @@ base:
     - match: grain
     - credentials
   'role:fileshare':
+    - match: grain
+    - credentials
+  'role:email':
     - match: grain
     - credentials
   '*':

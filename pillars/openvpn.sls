@@ -1,7 +1,7 @@
 # See https://openvpn.net/index.php/open-source/documentation/howto.html#examples
 # for configuration details
 # Important: Replace all '-' in names on left side with '_'!
-
+{% import_yaml '/srv/pillar/credentials.sls' as credentials %}
 # Defaults can be overwritten, see openvpn/map.jinja for default values
 # openvpn:
 #   lookup:
@@ -11,10 +11,10 @@ openvpn:
   server:
     srvr:
       server: '10.18.0.0 255.255.255.0'
-      port: 443
+      port: 8443
       status: /run/openvpn/openvpn-status.log
-      crl: /etc/openvpn/easyrsa/pki/crl.pem
+      crl: /etc/openvpn/crl.pem
   client:
     client:
       remote:
-        - 'va-backup 443'
+        - {{ credentials.domain }} 8443
