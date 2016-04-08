@@ -163,6 +163,18 @@ extracttools:
   cmd.run:
     - name: tar -xf /home/{{ domain }}/Public/Tools/tools.tar.gz -C /home/{{ domain }}/Public/Tools ; chown Administrator:'domain users' -R /home/{{ domain }}/Public/Tools ; chmod 755 -R /home/{{ domain }}/Public/Tools/
   
+fixbat_server:
+  file.replace:
+    - name: /home/{{ domain }}/Public/Tools/server.bat
+    - pattern: DCIP
+    - repl: {{ dcip }}     
+
+fixbat_server2:
+  file.replace:
+    - name: /home/{{ domain }}/Public/Tools/server.bat
+    - pattern: DOMEJN
+    - repl: {{ shortdomain }}      
+
 fixbat_mp:
   file.replace:
     - name: /home/{{ domain }}/Public/Tools/mp.bat

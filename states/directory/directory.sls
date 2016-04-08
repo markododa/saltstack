@@ -79,12 +79,17 @@ chattr:
 
 dnsquery_user:
   cmd.run:
-    - name: echo "dnsquery:`openssl rand -hex 10`" > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers DnsAdmins dnsquery
+#    - name: echo "dnsquery:`openssl rand -hex 10`" > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers DnsAdmins dnsquery
+    - name: echo "dnsquery:"$(< /dev/urandom tr -dc '@#$.' | head -c4)$(< /dev/urandom tr -dc _0-9-A-Z | head -c10)$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --days=0
     - unless: test -e /vapour/dnsquery
 
 query_user:
   cmd.run:
-    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}}
+    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry dnsquery --days=0
+   
+changepsswdpolicy:
+  cmd.run:
+    - name: samba-tool domain passwordsettings set --max-pwd-age=0
     
 ## exotics    
 /etc/krb5.conf:
