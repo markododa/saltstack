@@ -17,4 +17,4 @@ openvpn:
   client:
     client:
       remote:
-        - {{ credentials.domain }} 8443
+        - vpn.{{ credentials.domain }} 8443
