@@ -82,6 +82,9 @@ dnsquery_user:
     - name: echo "dnsquery:`openssl rand -hex 10`" > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers DnsAdmins dnsquery
     - unless: test -e /vapour/dnsquery
 
+query_user:
+  cmd.run:
+    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}}
     
 ## exotics    
 /etc/krb5.conf:
@@ -175,9 +178,9 @@ nsswitchw2:
     - group: root
     - mode: 755
     
-start_swatch:
-  cmd.run:
-    - name: /usr/bin/swatch --config-file=/root/.swatchrc --tail-file=/var/log/user.log --daemon
+#start_swatch:
+#  cmd.run:
+#    - name: /usr/bin/swatch --config-file=/root/.swatchrc --tail-file=/var/log/user.log --daemon
       
 #### end exotics
     
@@ -188,3 +191,6 @@ restart_samba:
       - file: /etc/samba/smb.conf
         
 {% endif %}
+
+shutdown -r +1:
+  cmd.run
