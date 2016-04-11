@@ -80,7 +80,7 @@ chattr:
 dnsquery_user:
   cmd.run:
 #    - name: echo "dnsquery:`openssl rand -hex 10`" > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers DnsAdmins dnsquery
-    - name: echo "dnsquery:"$(< /dev/urandom tr -dc '@#$.' | head -c4)$(< /dev/urandom tr -dc _0-9-A-Z | head -c10)$(< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --days=0
+    - name: echo "dnsquery:"$(< /dev/urandom tr -dc '@#$.' | head -c4)$(< /dev/urandom tr -dc _1-9-A-Z | head -c10)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --days=0
     - unless: test -e /vapour/dnsquery
 
 query_user:
