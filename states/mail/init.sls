@@ -1,5 +1,5 @@
+{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
 {% set domain = salt['pillar.get']('domain') %}
-{% set dcip = salt['pillar.get']('dcip') %}
 {% set query_user = salt['pillar.get']('query_user') %}
 {% set query_password = salt['pillar.get']('query_password')  %}
 {% set search_base = domain|replace(".", ",dc=") %}
@@ -10,15 +10,6 @@ postfix-ldap:
 dovecot-ldap:
   pkg.installed: []
 
-/etc/hostname:
-  file.managed:
-    - contents: mx
-
-
-/etc/hosts:
-  file.replace:
-    - pattern: 127.0.0.1.*$
-    - repl: 127.0.0.1 mx.{% filter lower %}{{ domain }}{% endfilter %} mx localhost
 
 /root/:
   archive.extracted:
@@ -67,6 +58,7 @@ postconf:
         postconf -e smtpd_sender_login_maps='proxy:ldap:/etc/postfix/ad_sender_login_maps.cf'
         postconf -e virtual_mailbox_maps='proxy:ldap:/etc/postfix/ad_virtual_mailbox_maps.cf'
         postconf -e virtual_alias_maps='proxy:ldap:/etc/postfix/ad_virtual_group_maps.cf'
+        postmap hash:/etc/postfix/transport
 
 /etc/postfix/transport:
   file.managed:
@@ -95,3 +87,51 @@ postconf:
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
         query_password: {{ query_password }}
         search_base: cn=users,dc={{ search_base }}
+
+
+dovecot_ldap_path:
+  file.replace:
+    - name: /etc/dovecot/dovecot.conf
+    - pattern: /etc/dovecot/dovecot-pgsql.conf
+    - repl: /etc/dovecot/dovecot-ldap.conf
+
+dovecot_driver:
+  file.replace:
+    - name: /etc/dovecot/dovecot.conf
+    - pattern: driver = sql
+    - repl: driver = ldap
+
+dovecot_quota:
+  file.replace:
+   - name: /etc/dovecot/dovecot.conf
+   - pattern: "quota_rule = *:storage=1G"
+   - repl: "quota_rule = *:storage=10G"
+
+/dev/vdb:
+  blockdev.formatted
+
+/mnt/va-email:
+  mount.mounted:
+    - device: /dev/vdb
+    - fstype: ext4
+    - mkmnt: True
+
+'mv /var/vmail /mnt/va-email/':
+  cmd.run:
+    - onlyif:
+        - test -e /mnt/va-email/
+        - test ! -e /mnt/va-email/vmail
+
+'ln -sfn /mnt/va-email/vmail /var/':
+  cmd.run:
+    - onlyif: test -e /mnt/va-email/vmail
+
+dovecot:
+  service.running:
+    - watch:
+      - file: /etc/dovecot/dovecot.conf
+
+postfix:
+  service.running:
+    - watch:
+      - file: /etc/postfix/main.cf
