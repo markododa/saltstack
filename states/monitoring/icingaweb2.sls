@@ -89,8 +89,6 @@ admin-user:
     - onlyif: test -e /etc/apache2/sites-enabled/000-default.conf
 
 {% set multisite = salt['pillar.get']('multisite') %}
-'echo {{ multisite }}':
-  cmd.run: []
 
 {% if multisite != True %}
 remove_alias:

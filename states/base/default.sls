@@ -46,3 +46,10 @@ contact:
     - name: /etc/motd
     - pattern: CONTACT
     - repl: 'contact: support@vapour-apps.com'
+
+hosts_file:
+  host.present:
+    - ip: 127.0.1.1
+    - names:
+      - {{ grains['host'] }}
+      - {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
