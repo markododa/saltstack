@@ -16,10 +16,11 @@ cp *.sls /srv/pillar
 cp /srv/salt/salt-master/files/master /etc/salt/master 
 service salt-master restart
 apt-get install salt-minion -y
-echo "master: `hostname`" >> /etc/salt/minion
+echo "master: localhost" >> /etc/salt/minion
 echo "role: monitoring" > /etc/salt/grains
 service salt-minion restart
 sleep 5
-salt-key -y -a `hostname -f`
+salt-key -y -a `hostname`
 sleep 20
 salt '*' state.highstate
+echo -e "127.0.1.1\t`hostname`.`awk '/^domain:/{ print $NF}' /srv/pillar/credentials.sls` `hostname`" >> /etc/hosts
