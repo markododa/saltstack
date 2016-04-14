@@ -14,6 +14,7 @@ openvpn:
       port: 8443
       status: /run/openvpn/openvpn-status.log
       crl: /etc/openvpn/crl.pem
+      log: /var/log/openvpn.log
   client:
     client:
       remote:
