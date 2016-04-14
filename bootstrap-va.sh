@@ -22,5 +22,5 @@ service salt-minion restart
 sleep 5
 salt-key -y -a `hostname`
 sleep 20
-salt '*' state.highstate
 echo -e "127.0.1.1\t`hostname`.`awk '/^domain:/{ print $NF}' /srv/pillar/credentials.sls` `hostname`" >> /etc/hosts
+salt '*' state.highstate
