@@ -24,6 +24,14 @@ def open_and_parse_log(log_file):
     log_file = open(log_file, 'r').read()
     return parse_data(log_file)
 
+def get_logins(log_file = 'var/log/openvpn.log'):
+    data = open(log_file, 'r').read()
+    data = [x.split(' ') for x in data.split('\n') if 'Peer Connection Initiated' in x]
+    return [{'login_time' : ' '.join(x[0:4]), 'ip_address' : x[5], 'username' : x[6][1:-1]} for x in data]
+
+def get_logins_for_user(username, log_file = 'var/log/openvpn.log'):
+    return [x for x in get_logins(log_file) if x['username'] == username]
+
 def main():
     log_file = sys.argv[1]
     print open_and_parse_log(log_file)

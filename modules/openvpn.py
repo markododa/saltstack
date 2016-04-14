@@ -36,3 +36,6 @@ def get_config(username):
 
 def get_status():
 	return vpn_parser.open_and_parse_log('/run/openvpn/openvpn-status.log')
+
+def list_user_logins(user):
+        return vpn_parser.get_logins_for_user(user) 

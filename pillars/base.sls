@@ -15,3 +15,6 @@ mine_functions:
     - ip4_interfaces
     - virtual
     - fqdn
+  address:
+    mine_function: network.ip_addrs
+    cidr: 10.0.1.0/24
