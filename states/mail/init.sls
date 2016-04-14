@@ -121,10 +121,13 @@ dovecot_quota:
     - onlyif:
         - test -e /mnt/va-email/
         - test ! -e /mnt/va-email/vmail
+        - ! mount | grep -q /mnt/va-email/
 
 'ln -sfn /mnt/va-email/vmail /var/':
   cmd.run:
-    - onlyif: test -e /mnt/va-email/vmail
+    - onlyif:
+        - test -e /mnt/va-email/vmail
+        - ! mount | grep -q /mnt/va-email/
 
 dovecot:
   service.running:
