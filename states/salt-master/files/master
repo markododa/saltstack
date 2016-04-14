@@ -13,6 +13,7 @@ reactor:
     - /srv/reactor/startup-state.sls
   - 'salt/nrpe-agent/installed':
     - /srv/reactor/add-host.sls
+    - /srv/reactor/add-backup.sls
   - 'salt/cloud/*/destroyed':
     - /srv/reactor/rm-host.sls
   - 'backuppc/pubkey':
