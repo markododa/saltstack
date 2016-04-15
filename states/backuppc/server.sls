@@ -83,17 +83,22 @@ libxml-rss-perl:
 
 'mv /var/lib/backuppc /mnt/va-backup/':
   cmd.run:
-    - unless: test -e /mnt/va-backup/backuppc
+    - onlyif:
+      - test -e /mnt/va-backup/
+      - test ! -e /mnt/va-backup/backuppc
+      - mount | grep -q /mnt/va-email
 
-/var/lib/backuppc:
-  file.symlink:
-    - target: /mnt/va-backup/backuppc
+'ln -sfn /mnt/va-backup/backuppc /var/lib/backuppc':
+  cmd.run:
+    - onlyif:
+        - test -e /mnt/va-backup/backuppc
+        - mount | grep -q /mnt/va-backup
 
 backuppc-restart:
   service.running:
     - name: backuppc
     - watch:
-      - file: /var/lib/backuppc
+      - event: salt/backup/installed
 
 salt/backup/installed:
   event.send

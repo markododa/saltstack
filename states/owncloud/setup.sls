@@ -66,11 +66,16 @@ password:
 
 'mv /var/www/owncloud /mnt/va-owncloud/':
   cmd.run:
-    - unless: test -e /mnt/va-owncloud/owncloud
+    - onlyif:
+      - test -e /mnt/va-owncloud
+      - test ! -e /mnt/va-owncloud/owncloud
+      - mount | grep -q /mnt/va-owncloud
 
-/var/www/owncloud:
-  file.symlink:
-    - target: /mnt/va-owncloud/owncloud
+'ln -sfn /mnt/va-owncloud/owncloud /var/www/owncloud':
+  cmd.run:
+    - onlyif:
+        - test -e /mnt/va-owncloud/owncloud
+        - mount | grep -q /mnt/va-owncloud
 
 {% set multisite = salt['pillar.get']('multisite') %}
 

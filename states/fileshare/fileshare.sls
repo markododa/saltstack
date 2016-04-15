@@ -262,3 +262,24 @@ join_domain:
 
 {% endif %}
 
+/dev/vdb:
+  blockdev.formatted
+
+/mnt/va-fileshare:
+  mount.mounted:
+    - device: /dev/vdb
+    - fstype: ext4
+    - mkmnt: True
+
+'mv /home /mnt/va-fileshare/':
+  cmd.run:
+    - onlyif:
+        - test -e /mnt/va-fileshare/
+        - test ! -e /mnt/va-fileshare/home
+        - mount | grep -q /mnt/va-fileshare
+
+'ln -sfn /mnt/va-fileshare/home /home':
+  cmd.run:
+    - onlyif:
+        - test -e /mnt/va-fileshare/home
+        - mount | grep -q /mnt/va-fileshare
