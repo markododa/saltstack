@@ -2,6 +2,7 @@ base:
   '*':
     - base.nrpe
     - base.default
+    - base.backup
   'role:monitoring':
     - match: grain
     - monitoring.icingaweb2

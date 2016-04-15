@@ -1,6 +1,6 @@
 {% set data = data['data'] %}
 
-remove:
+copypubkey:
   local.file.write:
     - tgt: 'role:monitoring'
     - expr_form: grain

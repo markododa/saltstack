@@ -94,3 +94,6 @@ backuppc-restart:
     - name: backuppc
     - watch:
       - file: /var/lib/backuppc
+
+salt/backup/installed:
+  event.send

@@ -85,7 +85,7 @@ dnsquery_user:
 
 query_user:
   cmd.run:
-    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry dnsquery --days=0
+    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry {{salt['pillar.get']('query_user')}} --days=0
    
 changepsswdpolicy:
   cmd.run:
