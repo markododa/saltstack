@@ -53,3 +53,6 @@ hosts_file:
     - names:
       - {{ grains['host'] }}
       - {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
+
+saltutil.sync_grains:
+  module.run

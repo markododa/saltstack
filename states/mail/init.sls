@@ -28,7 +28,7 @@ dovecot-ldap:
 generate_passwords:
   cmd.run:
     - name: for x in $(seq $(grep random_password /root/iRedMail-0.9.4/config |wc -l)); do sed -i "0,/random_password/s//`openssl rand -hex 10`/" /root/iRedMail-0.9.4/config; done
-
+    - unless: test -e /var/vmail
 install_iredmail:
   cmd.run:
     - name: bash iRedMail.sh
@@ -43,6 +43,7 @@ install_iredmail:
       - AUTO_CLEANUP_RESTART_IPTABLES: 'y'
       - AUTO_CLEANUP_REPLACE_MYSQL_CONFIG: 'y'
       - AUTO_CLEANUP_RESTART_POSTFIX: 'n'
+    - unless: test -e /var/vmail
 
 postconf:
   cmd.run:
@@ -138,3 +139,8 @@ postfix:
   service.running:
     - watch:
       - file: /etc/postfix/main.cf
+
+fail2ban:
+  service.running:
+   - watch:
+     - file: /root/iRedMail-0.9.4/config

@@ -16,12 +16,19 @@
 {% set folders = ['/root/.va/backup'] %}
 {% endif %}
 
+create_file:
+  local.backuppc.add_host:
+    - tgt: 'role:backup'
+    - expr_form: grain
+    - arg:
+      - {{ data['fqdn'] }}
+
 {% for folder in folders %}
 {{ folder }}:
   local.backuppc.add_folder:
     - tgt: 'role:backup'
     - expr_form: grain
     - arg:
-      - {{ data['fqdn']}} 
+      - {{ data['fqdn'] }} 
       - {{ folder }}
 {% endfor %}
