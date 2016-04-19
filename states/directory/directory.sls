@@ -181,7 +181,11 @@ nsswitchw2:
     - user: root
     - group: root
     - mode: 755
-    
+  
+touch /var/log/lastlogin.log:
+  cmd.run
+
+
 #start_swatch:
 #  cmd.run:
 #    - name: /usr/bin/swatch --config-file=/root/.swatchrc --tail-file=/var/log/user.log --daemon

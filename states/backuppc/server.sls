@@ -48,13 +48,12 @@ apache2:
       - file: /etc/apache2/conf-available/backuppc.conf
 {% endif %}
 
-
-backuppc/pubkey:
-  event.send:
-    - data:
-        pubkey: {{salt['cmd.run']('su -s /bin/bash -c "test -e /var/lib/backuppc/.ssh/id_rsa || ssh-keygen -q -f /var/lib/backuppc/.ssh/id_rsa -N \'\' && cat /var/lib/backuppc/.ssh/id_rsa.pub" -l backuppc') }}
+create_key:
+  cmd.run:
+    - name: su -s /bin/bash -c "ssh-keygen -q -f /var/lib/backuppc/.ssh/id_rsa -N ''" -l backuppc && salt-call event.send  backuppc/pubkey pubkey="`cat /var/lib/backuppc/.ssh/id_rsa.pub`"
     - require:
       - pkg: backuppc
+    - onlyif: test ! -e /var/lib/backuppc/.ssh/id_rsa
 
 /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
   file.managed:
