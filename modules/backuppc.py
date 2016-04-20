@@ -1,5 +1,8 @@
 import salt, os.path
 
+sshcmd='ssh -oStrictHostKeyChecking=no root@'
+rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
+
 default_paths = {
     'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'], 
     'va-directory' : ['/root/.va/backup', '/etc/openvpn'], 
@@ -22,6 +25,7 @@ def hosts_file_add(hostname):
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
 def add_host(hostname):
+	
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		hosts_file_add(hostname)
     		__salt__['file.touch']('/etc/backuppc/pc/'+hostname+'.pl')
@@ -29,7 +33,8 @@ def add_host(hostname):
     		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
     		__salt__['file.append']('/etc/backuppc/hosts', hostname+'       0       backuppc')
         	__salt__['event.send']('backuppc/copykey', fqdn=hostname)
-                __salt__['cmd.retcode'](cmd=sshcmd+'exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+                __salt__['cmd.retcode'](cmd=rm_key+hostname, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+                __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
 	return True
 
 def rm_host(hostname):
@@ -39,17 +44,20 @@ def rm_host(hostname):
     return __salt__['service.reload']('backuppc')
 
 def add_folder(hostname, folder):
-	sshcmd='ssh -oStrictHostKeyChecking=no root@'+hostname+' '
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		add_host(hostname)
 	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'\','):
 		return False
-	elif __salt__['cmd.retcode'](cmd=sshcmd+'test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
+	elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
 		__salt__['file.replace']('/etc/backuppc/pc/'+hostname+'.pl', pattern="\$Conf\{RsyncShareName\} \= \[", repl="$Conf{RsyncShareName} = [\n  '"+folder+'\',')
 		__salt__['service.reload']('backuppc')
 		return True
 	else:
 		return False
+
+def add_folder_list(hostname, folder_list):
+	for folder in folder_list:
+		add_folder(hostname, folder)
  
 def rm_folder(hostname, folder):
 	if os.path.exists('/etc/backuppc/'+hostname+'.pl') and __salt__['file.line'](path='/etc/backuppc/pc/'+hostname+'.pl',content='\''+folder,mode='delete'):

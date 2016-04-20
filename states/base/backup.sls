@@ -5,3 +5,4 @@ salt/backup/new:
         ip: {{ grains['ip4_interfaces']['eth0'][0] }}
         type: {{ grains['role'] }}
         fqdn: {{ grains['fqdn'] }}
+    - order: last
