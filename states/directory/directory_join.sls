@@ -15,7 +15,7 @@ install_samba:
 {% set domain = salt['pillar.get']('domain') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
-{% set dcip = '127.0.0.1' %}
+{% set dcip = salt['pillar.get']('dcip') %}
   
 /vapour/data/:
   file.directory:
@@ -43,7 +43,6 @@ install_peewee:
     
 {% if domain != None %}
 
-
 /etc/resolv.conf:
   file.managed:
     - source: salt://directory/files/resolv.conf
@@ -51,7 +50,7 @@ install_peewee:
     - context:
       domain: {{ domain }}
       dcip: {{ dcip }} 
-      
+
 chattr:
   cmd.run:
     - name: chattr +i /etc/resolv.conf
@@ -62,12 +61,12 @@ install_samba-api:
 
 create_domain:
   cmd.run:
-    - name: rm /etc/samba/smb.conf && samba-tool domain provision --use-rfc2307 --use-xattrs=yes --realm {{ domain }} --domain {{ shortdomain }} --server-role dc && touch /vapour/.domain-set
+    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ shortdomain }} DC -U Administrator%{{ admin_password }} --realm {{ domain }} && touch /vapour/.domain-set
     - onlyif: test ! -e /vapour/.domain-set
 
-setpassword:
-  cmd.run:
-    - name: samba-tool domain passwordsettings set --complexity=off && samba-tool user setpassword Administrator --newpassword={{ admin_password }}
+# setpassword:
+  # cmd.run:
+    # - name: samba-tool domain passwordsettings set --complexity=off && samba-tool user setpassword Administrator --newpassword={{ admin_password }}
 
 /etc/samba/smb.conf:
   file.managed:
@@ -80,10 +79,10 @@ setpassword:
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run
 
+ #check if this user alrady exist?
 dnsquery_user:
   cmd.run:
-    - name: echo "dnsquery:"$(< /dev/urandom tr -dc '@#$.' | head -c4)$(< /dev/urandom tr -dc _1-9-A-Z | head -c10)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry 
-    #--days=0
+    - name: echo "dnsquery:"$(< /dev/urandom tr -dc '@#$.' | head -c4)$(< /dev/urandom tr -dc _1-9-A-Z | head -c10)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
     - unless: test -e /vapour/dnsquery
 
 query_user:
@@ -126,6 +125,12 @@ nsswitchw2:
     - name: /etc/nsswitch.conf
     - pattern: winbind winbind
     - repl: winbind
+    
+nopdc:
+  file.replace:
+    - name: /etc/samba/smb.conf
+    - pattern: domain master = yes
+    - repl: domain master = no
     
 /etc/pam.d/common-account:
   file.managed:
