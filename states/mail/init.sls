@@ -76,7 +76,7 @@ postconf:
     - defaults:
         dcip: {{ dcip }}
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
-        query_password: {{ query_password }}
+        query_password: '{{ query_password }}'
         search_base: cn=users,dc={{ search_base }}
 
 /etc/dovecot/dovecot-ldap.conf:
@@ -86,7 +86,7 @@ postconf:
     - defaults:
         dcip: {{ dcip }}
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
-        query_password: {{ query_password }}
+        query_password: '{{ query_password }}'
         search_base: cn=users,dc={{ search_base }}
 
 
@@ -107,6 +107,17 @@ dovecot_quota:
    - name: /etc/dovecot/dovecot.conf
    - pattern: "quota_rule = *:storage=1G"
    - repl: "quota_rule = *:storage=10G"
+
+/etc/default/iptables:
+  file.blockreplace:
+    - marker_start: "#-A INPUT -p tcp --dport 5280 -j ACCEPT"
+    - marker_end: "COMMIT"
+    - content: "\n-A INPUT -p tcp --dport 5666 -j ACCEPT\n\n"
+
+iptables:
+  service.running:
+    - watch:
+      - file: /etc/default/iptables
 
 /dev/vdb:
   blockdev.formatted
@@ -140,7 +151,10 @@ postfix:
     - watch:
       - file: /etc/postfix/main.cf
 
-fail2ban:
+{% set services = ['amavis-mc','amavis','amavisd-snmp-subagent','clamav-freshclam','fail2ban','nginx','php5-fpm','sogo'] %}
+{% for service in services %}
+{{ service }}:
   service.running:
-   - watch:
-     - file: /root/iRedMail-0.9.4/config
+    - watch:
+      - file: /root/iRedMail-0.9.4/config
+{% endfor %}
