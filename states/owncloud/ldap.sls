@@ -12,8 +12,8 @@ setup:
         ./occ ldap:create-empty-config
         ./occ ldap:set-config '' ldapAgentName '{{ salt['pillar.get']('query_user', '') }}@{{domain}}'
         ./occ ldap:set-config '' ldapAgentPassword '{{ salt['pillar.get']('query_password', '') }}'
-        ./occ ldap:set-config '' ldapBase 'cn=Users,dc={{ search_base }}'
-        ./occ ldap:set-config '' ldapBaseGroups 'cn=Groups,dc={{ search_base }}'
+        ./occ ldap:set-config '' ldapBase 'dc={{ search_base }}'
+        ./occ ldap:set-config '' ldapBaseGroups ''
         ./occ ldap:set-config '' ldapBaseUsers 'cn=Users,dc={{ search_base }}'
         ./occ ldap:set-config '' ldapConfigurationActive '1'
         ./occ ldap:set-config '' ldapGroupFilter '(objectClass=group)'
