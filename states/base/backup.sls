@@ -1,6 +1,6 @@
 {% set script = None %}
 
-{% if salt['cmd.retcode']("which mysqld") == 0 %}
+{% if salt['cmd.retcode']("which mysqld") == 0 or grains['host'] in ['va-owncloud','va-monitoring'] %}
 {% set script = "/root/.va/db-backup.sh" %}
 
 /root/.va/backup:
