@@ -3,15 +3,14 @@
 {% if salt['cmd.retcode']("which mysqld") == 0 %}
 {% set script = "/root/.va/db-backup.sh" %}
 
-/root/.va/backup:
-  file.directory:
-    - order: last
-
 /root/.va/db-backup.sh:
   file.managed:
     - source: salt://base/files/db-backup.sh
     - mode: 755
     - makedirs: True
+
+/root/.va/backup:
+  file.directory:
     - order: last
 
 {% endif %}
