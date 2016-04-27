@@ -45,17 +45,15 @@ create-ca:
     - name: icinga2 pki new-ca
     - onlyif: test ! -e /var/lib/icinga2/ca/
 
-{% set hostname = salt['cmd.run']('hostname -f') %}
-
 create-cert:
   cmd.run:
-    - name: chown nagios:nagios /etc/icinga2/pki/ && icinga2 pki new-cert --cn {{ hostname }} --csr /etc/icinga2/pki/{{ hostname }}.csr --key /etc/icinga2/pki/{{ hostname }}.key
-    - onlyif: test ! -e /etc/icinga2/pki/{{ hostname }}.csr -a /etc/icinga2/pki/{{ hostname }}.key
+    - name: chown nagios:nagios /etc/icinga2/pki/ && icinga2 pki new-cert --cn `hostname -f` --csr /etc/icinga2/pki/`hostname -f`.csr --key /etc/icinga2/pki/` hostname -f`.key
+    - onlyif: test ! -e /etc/icinga2/pki/`hostname -f`.csr -a /etc/icinga2/pki/`hostname -f`.key
 
 create-crt:
   cmd.run:
-    - name: icinga2 pki sign-csr --csr /etc/icinga2/pki/{{ hostname }}.csr --cert /etc/icinga2/pki/{{ hostname }}.crt
-    - onlyif: test ! -e /etc/icinga2/pki/{{ hostname }}.crt
+    - name: icinga2 pki sign-csr --csr /etc/icinga2/pki/`hostname -f`.csr --cert /etc/icinga2/pki/`hostname -f`.crt
+    - onlyif: test ! -e /etc/icinga2/pki/`hostname -f`.crt
 
 cp /var/lib/icinga2/ca/ca.crt /etc/icinga2/pki/ && chown nagios:nagios /etc/icinga2/pki/ca.crt && service icinga2 stop:
   cmd.run:
