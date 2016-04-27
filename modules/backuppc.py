@@ -24,7 +24,7 @@ def hosts_file_add(hostname):
     address = address[address.keys()[0]][0]
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
-def add_host(hostname,script=''):
+def add_host(hostname,script="None"):
 	
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		hosts_file_add(hostname)
@@ -35,7 +35,7 @@ def add_host(hostname,script=''):
         	__salt__['event.send']('backuppc/copykey', fqdn=hostname)
                 __salt__['cmd.retcode'](cmd=rm_key+hostname, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
                 __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-		if script != '':
+		if script != "None":
 			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+script+'\';')
 	return True
 
@@ -45,7 +45,7 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder,script=''):
+def add_folder(hostname, folder,script="None"):
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		add_host(hostname,script)
 	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
@@ -57,7 +57,7 @@ def add_folder(hostname, folder,script=''):
 	else:
 		return False
 
-def add_folder_list(hostname, folder_list,script=''):
+def add_folder_list(hostname, folder_list,script="None"):
 	for folder in folder_list:
 		add_folder(hostname, folder,script)
  
