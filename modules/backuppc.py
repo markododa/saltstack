@@ -24,7 +24,7 @@ def hosts_file_add(hostname):
     address = address[address.keys()[0]][0]
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
-def add_host(hostname):
+def add_host(hostname,script=''):
 	
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		hosts_file_add(hostname)
@@ -35,6 +35,8 @@ def add_host(hostname):
         	__salt__['event.send']('backuppc/copykey', fqdn=hostname)
                 __salt__['cmd.retcode'](cmd=rm_key+hostname, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
                 __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+		if script != '':
+			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+script+'\';')
 	return True
 
 def rm_host(hostname):
@@ -43,10 +45,10 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder):
+def add_folder(hostname, folder,script=''):
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		add_host(hostname)
-	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'\','):
+		add_host(hostname,script)
+	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
 		return False
 	elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
 		__salt__['file.replace']('/etc/backuppc/pc/'+hostname+'.pl', pattern="\$Conf\{RsyncShareName\} \= \[", repl="$Conf{RsyncShareName} = [\n  '"+folder+'\',')
@@ -55,9 +57,9 @@ def add_folder(hostname, folder):
 	else:
 		return False
 
-def add_folder_list(hostname, folder_list):
+def add_folder_list(hostname, folder_list,script=''):
 	for folder in folder_list:
-		add_folder(hostname, folder)
+		add_folder(hostname, folder,script)
  
 def rm_folder(hostname, folder):
 	if os.path.exists('/etc/backuppc/'+hostname+'.pl') and __salt__['file.line'](path='/etc/backuppc/pc/'+hostname+'.pl',content='\''+folder,mode='delete'):

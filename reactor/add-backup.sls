@@ -23,3 +23,4 @@ add_folders_to_backup:
     - arg:
       - {{ data['fqdn'] }} 
       - {{ folders }}
+      - {{ data['script'] }}
