@@ -3,7 +3,7 @@
 {% if data['type'] == 'monitoring' %}
 {% set folders = ['/etc/icinga2','/root/.va/backup','/var/lib/pnp4nagios/perfdata/'] %}
 {% elif data['type'] == 'directory' %}
-{% set folders = ['/etc/openvpn','/root/.va/backup'] %}
+{% set folders = ['/etc/openvpn','/root/.va/backup','/var/lib/samba/sysvol/','/etc/samba'] %}
 {% elif data['type'] == 'backup' %}
 {% set folders = ['/etc/backuppc'] %}
 {% elif data['type'] == 'owncloud' %}
