@@ -19,7 +19,6 @@ apt-get install salt-minion -y
 echo "master: localhost" >> /etc/salt/minion
 echo "role: monitoring" > /etc/salt/grains
 service salt-minion restart
-sleep 5
+sleep 30
+salt-call --local state.highstate -l quiet
 salt-key -y -a `hostname`
-sleep 20
-salt '*' state.highstate
