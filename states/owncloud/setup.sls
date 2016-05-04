@@ -97,3 +97,53 @@ apache2:
 {% set ipaddrss = salt['network.ip_addrs']()[0] %}
 curl {{ipaddrss}} > /dev/null:
   cmd.run
+  
+# fixredirect2contactsplus:
+  # file.replace:
+    # - name: /var/www/owncloud/.htaccess
+    # - pattern: /remote.php/carddav/
+    # - repl: /remote.php/contactsplus/  
+    
+# fixredirect2calendarplus:
+  # file.replace:
+    # - name: /var/www/owncloud/.htaccess
+    # - pattern: /remote.php/caldav/
+    # - repl: /remote.php/calendarplus/calendars/  
+
+# sudo -u www-data php /var/www/owncloud/occ app:disable calendar
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:disable contacts
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:disable firstrunwizard
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:disable gallery
+  # cmd.run
+
+
+
+# sudo -u www-data php /var/www/owncloud/occ app:enable calendarplus
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:enable contactsplus
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:enable conversations
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:enable galleryplus
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:enable ocusagecharts
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:enable tasksplus
+  # cmd.run
+
+# sudo -u www-data php /var/www/owncloud/occ app:enable files_share_qr
+  # cmd.run
+
+#generating sertificate/installing  
+#http://codereview.stackexchange.com/questions/117956/automated-owncloud-installation-script
