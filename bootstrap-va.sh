@@ -20,5 +20,5 @@ echo "master: localhost" >> /etc/salt/minion
 echo "role: monitoring" > /etc/salt/grains
 service salt-minion restart
 sleep 30
-salt-call --local state.highstate -l quiet
 salt-key -y -a `hostname`
+salt-call --local state.highstate -l quiet
