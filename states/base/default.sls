@@ -47,12 +47,17 @@ contact:
     - pattern: CONTACT
     - repl: 'contact: support@vapour-apps.com'
 
-hosts_file:
+fqdn:
+  host.present:
+    - ip: 127.0.1.1
+    - names:
+      - {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
+
+self_hostname:
   host.present:
     - ip: 127.0.1.1
     - names:
       - {{ grains['host'] }}
-      - {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
 
 saltutil.sync_grains:
   module.run
