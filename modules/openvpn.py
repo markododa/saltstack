@@ -1,10 +1,8 @@
 import salt, vpn_parser
 
 def add_user(username):
-	if __salt__['cmd.retcode']('/etc/openvpn/easyrsa/easyrsa build-client-full '+username+' nopass',cwd='/etc/openvpn/easyrsa') == 0:
-		return True
-	else:
-		return False
+	result =  __salt__['cmd.retcode']('/etc/openvpn/easyrsa/easyrsa build-client-full '+username+' nopass',cwd='/etc/openvpn/easyrsa')
+	return result == 0
 
 def revoke_user(username):
 	if __salt__['cmd.retcode']('echo yes | /etc/openvpn/easyrsa/easyrsa revoke '+username,cwd='/etc/openvpn/easyrsa',python_shell=True) == 0:

@@ -50,10 +50,15 @@ apache2:
 
 create_key:
   cmd.run:
-    - name: su -s /bin/bash -c "ssh-keygen -q -f /var/lib/backuppc/.ssh/id_rsa -N ''" -l backuppc && salt-call event.send  backuppc/pubkey pubkey="`cat /var/lib/backuppc/.ssh/id_rsa.pub`"
+    - name: su -s /bin/bash -c "ssh-keygen -q -f /var/lib/backuppc/.ssh/id_rsa -N ''" -l backuppc
     - require:
       - pkg: backuppc
     - onlyif: test ! -e /var/lib/backuppc/.ssh/id_rsa
+
+push-key:
+  cmd.run:
+    - name: salt-call event.send  backuppc/pubkey pubkey="`cat /var/lib/backuppc/.ssh/id_rsa.pub`"
+    - onlyif: test -e /var/lib/backuppc/.ssh/id_rsa
 
 /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
   file.managed:

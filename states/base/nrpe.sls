@@ -37,3 +37,4 @@ salt/nrpe-agent/installed:
         ip: {{ grains['ip4_interfaces']['eth0'][0] }}
         type: {{ grains['role'] }}
         fqdn: {{ grains['fqdn'] }}
+    - order: last

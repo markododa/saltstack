@@ -43,6 +43,9 @@ install_peewee:
     
 {% if domain != None %}
 
+editresolv:
+  cmd.run:
+    - name: chattr -i /etc/resolv.conf
 
 /etc/resolv.conf:
   file.managed:
@@ -52,7 +55,7 @@ install_peewee:
       domain: {{ domain }}
       dcip: {{ dcip }} 
       
-chattr:
+resolv-ro:
   cmd.run:
     - name: chattr +i /etc/resolv.conf
       
