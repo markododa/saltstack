@@ -39,6 +39,18 @@ def add_host(hostname,script="None"):
 			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+script+'\';')
 	return True
 
+# $Conf{ClientCharset} = 'cp1252';
+# $Conf{RsyncShareName} = [
+  # '/cygdrive/c/VapourApps/Backup'
+# ];
+# $Conf{XferMethod} = 'rsync';
+# SCRIPT PRERUN FOR MSSQLEXPRESS
+# $Conf{DumpPreUserCmd} = '$sshPath -q -x -l SvcCOPSSH $host /cygdrive/c/VapourApps/DBbackup.bat';
+# $Conf{RsyncClientCmd} = '$sshPath -q -x -l SvcCOPSSH $host $rsyncPath $argList+';
+# $Conf{RsyncClientPath} = '/cygdrive/c/VapourApps/rsyncd/bin/rsync';
+# $Conf{RsyncClientRestoreCmd} = '$sshPath -q -x -l SvcCOPSSH $host $rsyncPath $argList+';
+
+
 def rm_host(hostname):
     __salt__['file.remove']('/etc/backuppc/pc/'+hostname+'.pl')
     __salt__['file.line'](path='/etc/backuppc/hosts',content=hostname+'       0       backuppc', mode='delete')
