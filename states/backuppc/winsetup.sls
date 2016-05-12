@@ -1,10 +1,12 @@
-c:\VapourApps\:
+c:\\VapourApps:
   file.directory:
     - makedirs: True
 
-c:\VapourApps\:
+# no acl permission support by minions on win. protection of changes of bat/scripts needed ?
+c:\\VapourApps:
   file.recurse:
     - source: salt://backuppc/winsetup
+    - makedirs: True
 
 startsetup:
   cmd.run:
