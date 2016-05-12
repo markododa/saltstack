@@ -1,4 +1,4 @@
-import salt, vpn_parser
+import salt, vpn_parser, va_samba_api
 
 def add_user(username):
 	result =  __salt__['cmd.retcode']('/etc/openvpn/easyrsa/easyrsa build-client-full '+username+' nopass',cwd='/etc/openvpn/easyrsa')
@@ -13,7 +13,7 @@ def revoke_user(username):
 	else:
 		return False
 
-def list_users():
+def list_users(list_samba_users = False, get_user_status = False):
 	certs = open('/etc/openvpn/easyrsa/pki/index.txt', 'r')
 	next(certs)
 	active = []
@@ -23,7 +23,12 @@ def list_users():
 			active = active + [line.split('CN=')[1].strip()]
 		elif line[:1] == 'R':
 			revoked = revoked + [line.split('CN=')[1].strip()]
-	return {'active' : active, 'revoked' : revoked}
+	result = {'active' : active, 'revoked' : revoked}
+	if list_samba_users:
+		result['samba_users'] = va_samba_api.list_users()
+	if get_user_status :
+		result['status'] = get_status()
+	return result
 
 def get_config(username):
 	config = open('/etc/openvpn/client.conf','r').read()
