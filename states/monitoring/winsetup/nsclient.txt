@@ -1,0 +1,292 @@
+﻿; THIS IS APPENDED TO THE FINAL INI FILE
+
+; CACHE ALLOWED HOSTS - If host names (DNS entries) should be cached, improves speed and security somewhat but won't allow you to have dynamic IPs for your Nagios server.
+cache allowed hosts = 1
+
+; TIMEOUT - Timeout when reading packets on incoming sockets. If the data has not arrived within this time we will bail out.
+timeout = 30
+
+
+; Undocumented section
+[/settings/NRPE/server]
+
+; Undocumented key
+ssl options = no-sslv2,no-sslv3
+
+; Undocumented key
+;password = 12345
+;verify mode = peer-cert
+
+; Undocumented key
+insecure = true
+;false
+
+; ENABLE SSL ENCRYPTION - This option controls if SSL should be enabled.
+use ssl = false
+
+; PORT NUMBER - Port to use for NRPE.
+port = 5666
+
+; COMMAND ALLOW NASTY META CHARS - This option determines whether or not the we will allow clients to specify nasty (as in |`&><'"\[]{}) characters in arguments.
+allow nasty characters = 1
+
+; COMMAND ARGUMENT PROCESSING - This option determines whether or not the we will allow clients to specify arguments to commands that are executed.
+allow arguments = 1
+
+; EXTENDED RESPONSE - Send more then 1 return packet to allow response to go beyond payload size (requires modified client if legacy is true this defaults to false).
+extended response = 1
+
+
+; Undocumented section
+[/modules]
+
+; Undocumented key
+CheckExternalScripts = 1
+
+; Undocumented key
+CheckHelpers = 1
+
+; Undocumented key
+CheckEventLog = 1
+
+; Undocumented key
+CheckNSCP = 1
+
+; Undocumented key
+CheckDisk = 1
+
+; Undocumented key
+CheckSystem = 1
+
+; Undocumented key
+NRPEServer = 1
+
+WEBServer = 0
+; Configure which services has to be in which state
+[/settings/system/windows/service mapping]
+
+
+; A set of filters to use in real-time mode
+[/settings/system/windows/real-time/checks]
+
+
+; A set of options to configure the real time checks
+[/settings/system/windows/real-time]
+
+
+; Add counters to check
+[/settings/system/windows/counters]
+
+
+; Section for system checks and system settings
+[/settings/system/windows]
+
+; DEFAULT LENGTH - Used to define the default interval for range buffer checks (ie. CPU).
+default buffer length = 1h
+
+
+; Configure log properties.
+[/settings/log]
+
+; LOG LEVEL - Log level to use. Available levels are error,warning,info,debug,trace
+level = info
+
+; DATEMASK - The size of the buffer to use when getting messages this affects the speed and maximum size of messages you can recieve.
+date format = %Y-%m-%d %H:%M:%S
+
+; FILENAME - The file to write log data to. Set this to none to disable log to file.
+file name = ${exe-path}/nsclient.log
+
+
+; Configure log file properties.
+[/settings/log/file]
+
+; MAXIMUM FILE SIZE - When file size reaches this it will be truncated to 50% if set to 0 (default) truncation will be disabled
+max size = 0
+
+
+; A set of options to configure the real time checks
+[/settings/eventlog/real-time]
+
+; REAL TIME CHECKING - Spawns a background thread which detects issues and reports them back instantly.
+enabled = 0
+
+; STARTUP AGE - The initial age to scan when starting NSClient++
+startup age = 30m
+
+; LOGS TO CHECK - Comma separated list of logs to check
+log = application,system
+
+; DEBUG - Log missed records (useful to detect issues with filters) not useful in production as it is a bit of a resource hog.
+debug = 0
+
+
+; Section for configuring the shared session.
+[/settings/shared session]
+
+; ENABLE THE SAHRED SESSION - This is currently not added in 0.4.x
+enabled = false
+
+
+; Section for configuring the crash handler.
+[/settings/crash]
+
+; RESTART SERVICE NAME - The url to submit crash reports to
+restart target = NSCP
+
+; CRASH ARCHIVE LOCATION - The folder to archive crash dumps in
+archive folder = ${shared-path}/crash-dumps
+
+; SUBMIT CRASHREPORTS - Submit crash reports to nsclient.org (or your configured submission server)
+submit = false
+
+; RESTART - Submit crash reports to nsclient.org (or your configured submission server)
+restart = true
+
+; SUBMISSION URL - The url to submit crash reports to
+submit url = https://crash.nsclient.org/post
+
+; ARCHIVE CRASHREPORTS - Archive crash reports in the archive folder
+archive = true
+
+
+; Section for external scripts configuration options (CheckExternalScripts).
+[/settings/external scripts]
+
+; COMMAND TIMEOUT - The maximum time in seconds that a command can execute. (if more then this execution will be aborted). NOTICE this only affects external commands not internal ones.
+timeout = 60
+
+; COMMAND ALLOW NASTY META CHARS - This option determines whether or not the we will allow clients to specify nasty (as in |`&><'"\[]{}) characters in arguments.
+allow nasty characters = 1
+
+; COMMAND ARGUMENT PROCESSING - This option determines whether or not the we will allow clients to specify arguments to commands that are executed.
+allow arguments = 1
+
+
+; Files to be included in the configuration
+[/includes]
+
+
+; Section for the EventLog Checker (CheckEventLog.dll).
+[/settings/eventlog]
+
+; BUFFER_SIZE - The size of the buffer to use when getting messages this affects the speed and maximum size of messages you can recieve.
+buffer size = 131072
+
+; LOOKUP NAMES - Lookup the names of eventlog files
+lookup names = 1
+
+; DEBUG - Log more information when filtering (useful to detect issues with filters) not useful in production as it is a bit of a resource hog.
+debug = 0
+
+
+; A list of scripts available to run from the CheckExternalScripts module. Syntax is: <command>=<script> <arguments>
+[/settings/external scripts/scripts]
+
+
+; A list of aliases available.
+;An alias is an internal command that has been predefined to provide a single command without arguments. Be careful so you don't create loops (ie check_loop=check_a, check_a=check_loop)
+[/settings/external scripts/alias]
+
+; alias_sched_all - Alias for alias_sched_all. To configure this item add a section called: /settings/external scripts/alias/alias_sched_all
+alias_sched_all = check_tasksched show-all "syntax=${title}: ${exit_code}" "crit=exit_code ne 0"
+
+; alias_file_size - Alias for alias_file_size. To configure this item add a section called: /settings/external scripts/alias/alias_file_size
+alias_file_size = check_files "path=$ARG1$" "crit=size > $ARG2$" "top-syntax=${list}" "detail-syntax=${filename] ${size}" max-dir-depth=10
+
+; alias_process_hung - Alias for alias_process_hung. To configure this item add a section called: /settings/external scripts/alias/alias_process_hung
+alias_process_hung = check_process "filter=is_hung" "crit=count>0"
+
+; alias_process - Alias for alias_process. To configure this item add a section called: /settings/external scripts/alias/alias_process
+alias_process = check_process "process=$ARG1$" "crit=state != 'started'"
+
+; alias_service_ex - Alias for alias_service_ex. To configure this item add a section called: /settings/external scripts/alias/alias_service_ex
+alias_service_ex = check_service "exclude=Net Driver HPZ12" "exclude=Pml Driver HPZ12" exclude=stisvc
+
+; alias_event_log - Alias for alias_event_log. To configure this item add a section called: /settings/external scripts/alias/alias_event_log
+alias_event_log = check_eventlog
+
+; alias_volumes_loose - Alias for alias_volumes_loose. To configure this item add a section called: /settings/external scripts/alias/alias_volumes_loose
+alias_volumes_loose = check_drivesize
+
+; alias_volumes - Alias for alias_volumes. To configure this item add a section called: /settings/external scripts/alias/alias_volumes
+alias_volumes = check_drivesize
+
+; alias_disk - Alias for alias_disk. To configure this item add a section called: /settings/external scripts/alias/alias_disk
+alias_disk = check_drivesize
+
+; alias_up - Alias for alias_up. To configure this item add a section called: /settings/external scripts/alias/alias_up
+alias_up = check_uptime
+
+; alias_file_age - Alias for alias_file_age. To configure this item add a section called: /settings/external scripts/alias/alias_file_age
+alias_file_age = check_files "path=$ARG1$" "crit=written > $ARG2$" "top-syntax=${list}" "detail-syntax=${filename] ${written}" max-dir-depth=10
+
+; alias_cpu_ex - Alias for alias_cpu_ex. To configure this item add a section called: /settings/external scripts/alias/alias_cpu_ex
+alias_cpu_ex = check_cpu "warn=load > $ARG1$" "crit=load > $ARG2$" time=5m time=1m time=30s
+
+; alias_process_stopped - Alias for alias_process_stopped. To configure this item add a section called: /settings/external scripts/alias/alias_process_stopped
+alias_process_stopped = check_process "process=$ARG1$" "crit=state != 'stopped'"
+
+; alias_service - Alias for alias_service. To configure this item add a section called: /settings/external scripts/alias/alias_service
+alias_service = check_service
+
+; alias_cpu - Alias for alias_cpu. To configure this item add a section called: /settings/external scripts/alias/alias_cpu
+alias_cpu = check_cpu
+
+; alias_mem - Alias for alias_mem. To configure this item add a section called: /settings/external scripts/alias/alias_mem
+alias_mem = check_memory
+
+; alias_process_count - Alias for alias_process_count. To configure this item add a section called: /settings/external scripts/alias/alias_process_count
+alias_process_count = check_process "process=$ARG1$" "warn=count > $ARG2$" "crit=count > $ARG3$"
+
+; alias_sched_task - Alias for alias_sched_task. To configure this item add a section called: /settings/external scripts/alias/alias_sched_task
+alias_sched_task = check_tasksched show-all "filter=title eq '$ARG1$'" "detail-syntax=${title} (${exit_code})" "crit=exit_code ne 0"
+
+; alias_disk_loose - Alias for alias_disk_loose. To configure this item add a section called: /settings/external scripts/alias/alias_disk_loose
+alias_disk_loose = check_drivesize
+
+; alias_sched_long - Alias for alias_sched_long. To configure this item add a section called: /settings/external scripts/alias/alias_sched_long
+alias_sched_long = check_tasksched "filter=status = 'running'" "detail-syntax=${title} (${most_recent_run_time})" "crit=most_recent_run_time < -$ARG1$"
+
+
+; A list of wrapped scripts (ie. scruts using a template mechanism). The template used will be defined by the extension of the script.
+[/settings/external scripts/wrapped scripts]
+
+
+; A list of templates for wrapped scripts.
+;%SCRIPT% will be replaced by the actual script an %ARGS% will be replaced by any given arguments.
+[/settings/external scripts/wrappings]
+
+; BATCH FILE WRAPPING - 
+bat = scripts\\%SCRIPT% %ARGS%
+
+; VISUAL BASIC WRAPPING - 
+vbs = cscript.exe //T:30 //NoLogo scripts\\lib\\wrapper.vbs %SCRIPT% %ARGS%
+
+; POWERSHELL WRAPPING - 
+ps1 = cmd /c echo scripts\\%SCRIPT% %ARGS%; exit($lastexitcode) | powershell.exe -command -
+
+
+; A set of filters to use in real-time mode
+[/settings/eventlog/real-time/filters]
+
+
+[/paths]
+
+; Path for shared-path - 
+shared-path = c:\VapourApps\NSClient
+
+; Path for exe-path - 
+exe-path = c:\VapourApps\NSClient
+
+; Path for crash-folder - 
+crash-folder = c:\VapourApps\NSClient
+
+; Path for certificate-path - 
+certificate-path = ${shared-path}/security
+
+; Path for base-path - 
+base-path = c:\VapourApps\NSClient
+
+; Path for module-path - 
+module-path = ${shared-path}/modules
