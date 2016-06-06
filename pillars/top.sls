@@ -9,7 +9,6 @@ base:
     - openvpn
   'role:owncloud':
     - match: grain
-    - owncloud
     - credentials
   'role:lamp':
     - match: grain
