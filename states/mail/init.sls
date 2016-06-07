@@ -145,7 +145,7 @@ iptables:
 dovecot:
   service.running:
     - watch:
-      - file: /etc/dovecot/dovecot.conf
+      - file: /etc/dovecot/*
 
 postfix:
   service.running:
