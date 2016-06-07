@@ -12,6 +12,7 @@ install_packages:
       - alias rm='rm -i'
       - alias cp='cp -i'
       - alias mv='mv -i'
+      - export HISTTIMEFORMAT="%d/%m/%y %T "
 
 {% if salt['grains.get']('role')  == None %}
 {% set role='Application' %}
