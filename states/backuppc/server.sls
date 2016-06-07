@@ -90,7 +90,7 @@ libxml-rss-perl:
     - onlyif:
       - test -e /mnt/va-backup/
       - test ! -e /mnt/va-backup/backuppc
-      - mount | grep -q /mnt/va-email
+      - mount | grep -q /mnt/va-backup
 
 'ln -sfn /mnt/va-backup/backuppc /var/lib/backuppc':
   cmd.run:
