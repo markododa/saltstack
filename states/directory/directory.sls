@@ -99,12 +99,12 @@ changepsswdpolicy:
     - name: samba-tool domain passwordsettings set --max-pwd-age=0
     
 ## exotics    
-/etc/krb5.conf:
-  file.managed:
-    - source: salt://fileshare/files/krb5.conf
-    - user: root
-    - group: root
-    - mode: 644
+#/etc/krb5.conf:
+#  file.managed:
+#    - source: salt://fileshare/files/krb5.conf
+#    - user: root
+#    - group: root
+#    - mode: 644
 
 /etc/nsswitch.conf:
   file.managed:
@@ -113,11 +113,11 @@ changepsswdpolicy:
     - group: root
     - mode: 644
 
-krb5:
-  file.replace:
-    - name: /etc/krb5.conf
-    - pattern: DOMAIN
-    - repl: {{ domain }}
+#krb5:
+#  file.replace:
+#    - name: /etc/krb5.conf
+#    - pattern: DOMAIN
+#    - repl: {{ domain }}
 
 nsswitch:
   file.replace:
