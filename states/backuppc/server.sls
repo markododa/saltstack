@@ -48,6 +48,13 @@ apache2:
       - file: /etc/apache2/conf-available/backuppc.conf
 {% endif %}
 
+
+/etc/backuppc/hosts:
+  file.line:
+    - content: localhost
+    - mode: delete
+
+
 create_key:
   cmd.run:
     - name: su -s /bin/bash -c "ssh-keygen -q -f /var/lib/backuppc/.ssh/id_rsa -N ''" -l backuppc

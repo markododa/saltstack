@@ -28,7 +28,7 @@ dovecot-ldap:
 
 generate_passwords:
   cmd.run:
-    - name: for x in $(seq $(grep random_password /root/iRedMail-0.9.5-1/config |wc -l)); do sed -i "0,/random_password/s//`openssl rand -hex 10`/" /root/iRedMail-0.9.4/config; done
+    - name: for x in $(seq $(grep random_password /root/iRedMail-0.9.5-1/config |wc -l)); do sed -i "0,/random_password/s//`openssl rand -hex 10`/" /root/iRedMail-{{ iredmail_version }}/config; done
     - unless: test -e /var/vmail
 install_iredmail:
   cmd.run:
@@ -133,13 +133,13 @@ iptables:
   cmd.run:
     - onlyif:
         - test -e /mnt/va-email/
-        - test ! -e /mnt/va-email/mail
+        - test ! -e /mnt/va-email/vmail
         - mount | grep -q /mnt/va-email
 
-'ln -sfn /mnt/va-email/mail /var/':
+'ln -sfn /mnt/va-email/vmail /var/':
   cmd.run:
     - onlyif:
-        - test -e /mnt/va-email/mail
+        - test -e /mnt/va-email/vmail
         - mount | grep -q /mnt/va-email
 
 dovecot:
