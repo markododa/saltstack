@@ -2,26 +2,14 @@ install_proxy:
   pkg.installed:
     - pkgs:
       - squid3
-  #    - e2guardian
-
-     # - nfs-kernel-server 
+#    - e2guardian
      
+# squid da ne slusha osven za 127.0.0.1
+# CNAME record na DNS za host: wpad kon web server sto ke gi sodrzi wpad.dat i proxy.pac 
+# http://contentfilter.futuragts.com/wiki/doku.php?id=automatic_proxy_configuration    
+# treba samo da slusha na 8080 i eventualno 80 (squid portata 3128 mora da e nedostapna)
 
-# {% set domain = salt['pillar.get']('domain') %}
-# {% set admin_password = salt['pillar.get']('admin_password') %}
-# {% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
-# {% set shortdomain = salt['pillar.get']('shortdomain') %}
-# {% set myip = salt['grains.get']('ipv4')[0] %}
-
-# # needs to find the interface for reaching domain controller
-
-# {% if myip == '127.0.0.1' %}    
-# {% set myip = salt['grains.get']('ipv4')[1] %}
-# {% endif %}    
-
-# {% if myip == '127.0.0.1' %}    
-# {% set myip = salt['grains.get']('ipv4')[2] %}
-# {% endif %}    
+{% set domain = salt['pillar.get']('domain') %}
 
 /root/e2guardian_3.4.0.3_wheezy-jessie_amd64.deb:
   file.managed:
@@ -36,8 +24,9 @@ install_e2b:
     
 fix_e2b:
   cmd.run:
-    - name: apt-get install -f
-    
+    - name: apt-get install -f -y
+# ima li alternativna komanda za ova gore?  
+  
 /etc/e2guardian/updateBL.sh:
   file.managed:
     - source: salt://proxy/files/updateBL.sh
@@ -107,9 +96,7 @@ fix_e2b:
     - user: root
     - group: root
     - mode: 755
-
-# template za download manager    
-    
+ 
 get_blacklists:
   cmd.run:
     - name: /etc/e2guardian/updateBL.sh
@@ -118,235 +105,33 @@ restart_e2g:
   cmd.run:
     - name: service e2guardian restart
 
-    
-# squid da ne slusha osven za 127.0.0.1
+# AUTO DISCOVERY, TREBA REALNO NA DRUG INTERENT WEB SERVER DA SE, SERVER SO HOSTNAME WPAD,
 
+/var/www/html/wpad.dat:
+  file.managed:
+    - source: salt://proxy/files/wpad
+    - user: root
+    - group: root
+    - mode: 777
 
-    
-    
-#
-    
-#writableresolve:
-#  cmd.run:
-#    - name: chattr -i /etc/resolv.conf
-
-
-# /etc/resolv.conf:
-  # file.managed:
-    # - source: salt://fileshare/files/resolv.conf
-    # - user: root
-    # - group: root
-    # - mode: 777
-
-# resolv:
-  # file.replace:
-    # - name: /etc/resolv.conf
-    # - pattern: DOMAIN
-    # - repl: {{ domain }}
-
-# resolvednsip:
-  # file.replace:
-    # - name: /etc/resolv.conf
-    # - pattern: DCIP
-    # - repl: {{ dcip }}
-    
-# readableresolve:
-  # cmd.run:
-    # - name: chattr +i /etc/resolv.conf 
- 
-   
-# ntpcnf:
-  # file.replace:
-    # - name: /etc/ntp.conf
-    # - pattern: DCIP
-    # - repl: {{ dcip }}
-
-# krb5:
-  # file.replace:
-    # - name: /etc/krb5.conf
-    # - pattern: DOMAIN
-    # - repl: {{ domain }}
-    
-# hosts:
-  # file.replace:
-    # - name: /etc/hosts
-    # - pattern: DOMAIN
-    # - repl: {{ domain }}
-    
-
-# hostsmyip:
-  # file.replace:
-    # - name: /etc/hosts
-    # - pattern: MYIP
-    # - repl: {{ myip }}
+wpad:
+  file.replace:
+    - name: /var/www/html/wpad.dat
+    - pattern: DOMAIN
+    - repl: {{ domain }}
 
     
-# hostsmyhostname:
-  # file.replace:
-    # - name: /etc/hosts
-    # - pattern: HOSSST
-    # - repl: {{ grains['localhost'] }}
+/var/www/html/proxy.pac:
+  file.managed:
+    - source: salt://proxy/files/wpad
+    - user: root
+    - group: root
+    - mode: 777
+       
+proxy:
+  file.replace:
+    - name: /var/www/html/proxy.pac
+    - pattern: DOMAIN
+    - repl: {{ domain }}
 
-
-# nsswitch:
-  # file.replace:
-    # - name: /etc/nsswitch.conf
-    # - pattern: compat
-    # - repl: compat winbind
-
-# nsswitchw2:
-  # file.replace:
-    # - name: /etc/nsswitch.conf
-    # - pattern: winbind winbind
-    # - repl: winbind
-    
-# /vapour/:
-  # file.directory:
-    # - makedirs: True
-
-# /home/{{ domain }}/Public/:
-  # file.directory:
-    # - makedirs: True
-    # - mode: 777
-
-# /home/{{ domain }}/Public/Tools/:
-  # file.directory:
-    # - makedirs: True
-    # - mode: 777
-    
-# /home/{{ domain }}/Share/:
-  # file.directory:
-    # - makedirs: True
-    # - mode: 777
-
-# /home/{{ domain }}/Public/Tools/tools.tar.gz:
-  # file.managed:
-    # - source: salt://fileshare/wintools/tools.tar.gz
-    # - user: root
-    # - group: root
-    # - mode: 644        
-
-# extracttools:
-  # cmd.run:
-    # - name: tar -xf /home/{{ domain }}/Public/Tools/tools.tar.gz -C /home/{{ domain }}/Public/Tools ; chown Administrator:'domain users' -R /home/{{ domain }}/Public/Tools ; chmod 755 -R /home/{{ domain }}/Public/Tools/
   
-# fixbat_server:
-  # file.replace:
-    # - name: /home/{{ domain }}/Public/Tools/server.bat
-    # - pattern: DCIP
-    # - repl: {{ dcip }}     
-
-# fixbat_server2:
-  # file.replace:
-    # - name: /home/{{ domain }}/Public/Tools/server.bat
-    # - pattern: DOMEJN
-    # - repl: {{ shortdomain }}      
-
-# fixbat_mp:
-  # file.replace:
-    # - name: /home/{{ domain }}/Public/Tools/mp.bat
-    # - pattern: DOMEJN
-    # - repl: {{ shortdomain }}   
-    
-# fixbat_mt:
-  # file.replace:
-    # - name: /home/{{ domain }}/Public/Tools/mt.bat
-    # - pattern: DOMEJN
-    # - repl: {{ shortdomain }}
-    
-# /etc/samba/smb.conf:
-  # file.managed:
-    # - source: salt://fileshare/files/smb.conf
-    # - user: root
-    # - group: root
-    # - mode: 644
-    
-# smb:
-  # file.replace:
-    # - name: /etc/samba/smb.conf
-    # - pattern: DOMAIN
-    # - repl: {{ domain }}
-
-# smbnetbios:
-  # file.replace:
-    # - name: /etc/samba/smb.conf
-    # - pattern: HOST
-    # - repl: {{ grains['localhost'] }}
-
-# smbshortdm:
-  # file.replace:
-    # - name: /etc/samba/smb.conf
-    # - pattern: DOMEJN
-    # - repl: {{ shortdomain }}   
-    
-# /etc/pam.d/common-account:
-  # file.managed:
-    # - source: salt://fileshare/files/common-account
-    # - user: root
-    # - group: root
-    # - mode: 644
-    
-# /etc/pam.d/common-auth:
-  # file.managed:
-    # - source: salt://fileshare/files/common-auth
-    # - user: root
-    # - group: root
-    # - mode: 644
-    
-# /etc/pam.d/common-password:
-  # file.managed:
-    # - source: salt://fileshare/files/common-password
-    # - user: root
-    # - group: root
-    # - mode: 644
-    
-# /etc/pam.d/common-session:
-  # file.managed:
-    # - source: salt://fileshare/files/common-session
-    # - user: root
-    # - group: root
-    # - mode: 644
-    
-# /etc/pam.d/common-session-noninteractive:
-  # file.managed:
-    # - source: salt://fileshare/files/common-session-noninteractive
-    # - user: root
-    # - group: root
-    # - mode: 644
-    
-    
-# {% if domain != None %}
-
-# reloadsmbconf:
-  # cmd.run:
-    # - name: smbcontrol all reload-config
-    # - onlyif: test -e /etc/samba/smb.conf
-        
-# join_domain:
-  # cmd.run:
-    # - name: net ads join -U Administrator%{{ admin_password }} && touch /vapour/.fileshare-set && shutdown -r +1 "<< Reboot needed after joining domain >>" &
-    # - onlyif: test ! -e /vapour/.fileshare-set
-
-# {% endif %}
-
-# /dev/vdb:
-  # blockdev.formatted
-
-# /mnt/va-fileshare:
-  # mount.mounted:
-    # - device: /dev/vdb
-    # - fstype: ext4
-    # - mkmnt: True
-
-# 'mv /home /mnt/va-fileshare/':
-  # cmd.run:
-    # - onlyif:
-        # - test -e /mnt/va-fileshare/
-        # - test ! -e /mnt/va-fileshare/home
-        # - mount | grep -q /mnt/va-fileshare
-
-# 'ln -sfn /mnt/va-fileshare/home /home':
-  # cmd.run:
-    # - onlyif:
-        # - test -e /mnt/va-fileshare/home
-        # - mount | grep -q /mnt/va-fileshare
