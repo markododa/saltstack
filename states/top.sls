@@ -26,3 +26,6 @@ base:
   'role:email':
     - match: grain
     - mail
+  'role:proxy':
+    - match: grain
+    - proxy.proxy

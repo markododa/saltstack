@@ -9,4 +9,5 @@ $AUTOCONFIG = array(
   "adminlogin"    => "USER",
   "adminpass"     => "PASS",
   "directory"     => "/var/www/owncloud/data/",
+  "theme"         => "va-theme",
 );

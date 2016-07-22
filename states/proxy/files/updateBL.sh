@@ -71,8 +71,10 @@ set -u
 #	
 # 
 #export BL_URL=${BL_URL:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&file=smalltestlist"}
-export BL_URL_INFO=${BL_URL_INFO:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=information&file=bigblacklist"}
-export BL_URL=${BL_URL:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&file=bigblacklist"}
+#export BL_URL_INFO=${BL_URL_INFO:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=information&file=bigblacklist"}
+export BL_URL_INFO=${BL_URL_INFO:="http://download.va.mk/blacklists.info"}
+#export BL_URL=${BL_URL:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&file=bigblacklist"}
+export BL_URL=${BL_URL:="http://download.va.mk/blacklists.tar.gz"}
 
 # IMPORTANT - The blacklist is COMMERCIAL.  If you download without a subscription you
 #             are stealing.  You may try 1 download of the big list for free to test.
@@ -103,7 +105,7 @@ export BL_MD5SUM_NEW=`echo ${BL_URL_INFO} | tr , \\\n  | tr -d \" | grep -v "${B
 if [ -e ${BL_INFO_FILE} ]
 then
     export BL_DATE=`cat ${BL_INFO_FILE} | grep "DATE:" | sed 's/DATE://'`
-    if [ "${BL_DATE}" != "${BL_DATE_NEW}" ]
+    if [ "${BL_DATE}" = "${BL_DATE_NEW}" ]
     then
 echo "No new update"
 # aborting Blacklist refresh.

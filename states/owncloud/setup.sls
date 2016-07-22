@@ -97,6 +97,8 @@ apache2:
 {% set ipaddrss = salt['network.ip_addrs']()[0] %}
 curl {{ipaddrss}} > /dev/null:
   cmd.run
+
+ # DA SE ISKOPIRA TEMATA VA-THEME
   
 # fixredirect2contactsplus:
   # file.replace:
