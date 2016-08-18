@@ -72,6 +72,10 @@ setpassword:
   cmd.run:
     - name: samba-tool domain passwordsettings set --complexity=off && samba-tool user setpassword Administrator --newpassword={{ admin_password }}
 
+restorecomplexity:
+  cmd.run:
+    - name: samba-tool domain passwordsettings set --complexity=on
+
 /etc/samba/smb.conf:
   file.managed:
     - source: salt://directory/files/smb.conf
@@ -94,9 +98,13 @@ query_user:
     - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry {{salt['pillar.get']('query_user')}} --noexpiry
     - unless: samba-tool user list | grep -q '^{{salt['pillar.get']('query_user')}}'
    
-changepsswdpolicy:
+changepsswdpolicy1:
   cmd.run:
     - name: samba-tool domain passwordsettings set --max-pwd-age=0
+      
+changepsswdpolicy2:
+  cmd.run:
+    - name: samba-tool domain passwordsettings set --account-lockout-threshold=7
     
 ## exotics    
 #/etc/krb5.conf:
@@ -192,6 +200,7 @@ nsswitchw2:
   
 touch /var/log/lastlogin.log:
   cmd.run
+
 
 #### end exotics
     
