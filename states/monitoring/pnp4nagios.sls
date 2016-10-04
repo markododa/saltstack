@@ -32,9 +32,9 @@ pnp4nagios_pass:
     - name: htpasswd -b -c /etc/pnp4nagios/htpasswd.users admin {{ salt['pillar.get']('admin_password') }}
 
 /etc/apache2/conf-available/pnp4nagios.conf:
-  file.replace:
-    - pattern: /etc/icinga/htpasswd.users
-    - repl: /etc/pnp4nagios/htpasswd.users
+  file.comment:
+    - regex: ^.*AuthName "Icinga Access"|^.*AuthType Basic|^.*AuthUserFile /etc/pnp4nagios/htpasswd.users|^.*Require valid-user
+      
 
 icinga_restart:
   pkg.installed:

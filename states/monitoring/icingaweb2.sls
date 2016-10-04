@@ -55,11 +55,15 @@ icinga2web-autoconfigure:
     - makedirs: True
     - dir_mode: 750
 
-enable-module:
+enable-module-monitoring:
   cmd.run:
     - name: ln -s /usr/share/icingaweb2/modules/monitoring /etc/icingaweb2/enabledModules/monitoring
     - onlyif: test ! -e /etc/icingaweb2/enabledModules/monitoring
 
+enable-module-pnp:
+  cmd.run:
+    - name: ln -s /usr/share/icingaweb2/modules/pnp /etc/icingaweb2/enabledModules/pnp
+    - onlyif: test ! -e /etc/icingaweb2/enabledModules/pnp
 
 ido-pass:
   cmd.run:
