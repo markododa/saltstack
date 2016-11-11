@@ -1,0 +1,20 @@
+[
+ {
+   "Name" : "OwnCloud"
+ },
+ {
+   "Description" : "Store your files, calendar events and contacts in a private dropbox. Access them from web, mobile or use a desktop sync software"
+ },
+ {
+   "Version" : "1.1"
+ },
+ {
+   "Icon" : "fa-cloud"
+ },
+ {
+   "Dependency" : "directory,vpn"
+ },
+ {
+   "Path" : "-"
+ }
+]

@@ -1,0 +1,20 @@
+[
+ {
+   "Name" : "Fileshare"
+ },
+ {
+   "Description" : "Fileshare server for storing and sharing data. Manage priviledeges per user and groups."
+ },
+ {
+   "Version" : "1.1"
+ },
+ {
+   "Icon" : "fa-folder-open"
+ },
+ {
+   "Dependency" : "directory"
+ },
+ {
+   "Path" : "-"
+ }
+]

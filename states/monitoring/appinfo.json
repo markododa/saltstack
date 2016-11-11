@@ -1,0 +1,20 @@
+[
+ {
+   "Name" : "Monitoring"
+ },
+ {
+   "Description" : "Monitoring critical parameters for each server (Linux or Windows) and network devices. Support creating custom sensors."
+ },
+ {
+   "Version" : "1.1"
+ },
+ {
+   "Icon" : "fa-heartbeat"
+ },
+ {
+   "Dependency" : "directory,vpn"
+ },
+ {
+   "Path" : "-"
+ }
+]
