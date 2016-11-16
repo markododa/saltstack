@@ -1,8 +1,8 @@
 {
-   "Name" : "LAMP server"
-   "Description" : "Web server."
-   "Version" : "1.1"
-   "Icon" : "fa-globe"
-   "Dependency" : ""
-   "Path" : "-"
+	"Name": "LAMP server",
+	"Description": "Web server.",
+	"Version": "1.1",
+	"Icon": "fa-globe",
+	"Dependency": "",
+	"Path": "-"
 }

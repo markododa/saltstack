@@ -1,8 +1,8 @@
 {
-   "Name" : "Directory"
-   "Description" : "Active Directory server for centralized users and groups management. Use single password for all services."
-   "Version" : "1.1"
-   "Icon" : "fa-group"
-   "Dependency" : "monitoring"
-   "Path" : "-"
+	"Name": "Directory",
+	"Description": "Active Directory server for centralized users and groups management. Use single password for all services.",
+	"Version": "1.1",
+	"Icon": "fa-group",
+	"Dependency": "monitoring",
+	"Path": "-"
 }

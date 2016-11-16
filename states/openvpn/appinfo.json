@@ -1,8 +1,8 @@
 {
-   "Name" : "Virtual Private Network"
-   "Description" : "Create private connection between offices and data centers and access work environment from home."
-   "Version" : "1.1"
-   "Icon" : "fa-heartbeat"
-   "Dependency" : "directory,vpn"
-   "Path" : "-"
+	"Name": "Virtual Private Network",
+	"Description": "Create private connection between offices and data centers and access work environment from home.",
+	"Version": "1.1",
+	"Icon": "fa-heartbeat",
+	"Dependency": "directory,vpn",
+	"Path": "-"
 }

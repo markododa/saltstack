@@ -1,8 +1,8 @@
 {
-   "Name" : "Backup"
-   "Description" : "Create automatic daily and weekly backups of all critical data across the network."
-   "Version" : "1.1"
-   "Icon" : "fa-database"
-   "Dependency" : "monitoring"
-   "Path" : "-"
+	"Name": "Backup",
+	"Description": "Create automatic daily and weekly backups of all critical data across the network.",
+	"Version": "1.1",
+	"Icon": "fa-database",
+	"Dependency": "monitoring",
+	"Path": "-"
 }
