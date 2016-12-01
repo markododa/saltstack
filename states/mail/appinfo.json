@@ -1,8 +1,9 @@
 {
-	"Name": "Email",
-	"Description": "Mail server with web interface and support for all popular mail clients.",
-	"Version": "1.1",
-	"Icon": "fa-envelope",
-	"Dependency": "directory,monitoring",
-	"Path": "-"
+	"name": "email",
+	"description": "Mail server with web interface and support for all popular mail clients.",
+	"version": "1.1",
+	"icon": "fa-envelope",
+	"dependency": "directory,monitoring",
+    "substates" : ["mail"],
+	"path": "-"
 }
