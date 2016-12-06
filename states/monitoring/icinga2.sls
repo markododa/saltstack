@@ -30,7 +30,41 @@ install_icinga2:
       - mysql-server
       - mysql-client
       - icinga2-ido-mysql
+      - libsys-statistics-linux-perl
+	  
+/usr/lib/nagios/plugins/check_linux_stats.pl:
+  file.managed:
+    - source:
+      - salt://base/files/nrpe/check_linux_stats.pl
+    - user: root
+    - group: root
+    - mode: 755
 
+/usr/lib/nagios/plugins/check_mem_local.sh:
+  file.managed:
+    - source:
+      - salt://monitoring/files/check_cmd/check_mem_local.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+/usr/lib/nagios/plugins/check_cpu_local.sh:
+  file.managed:
+    - source:
+      - salt://monitoring/files/check_cmd/check_cpu_local.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+/usr/lib/nagios/plugins/check_disk_local.sh:
+  file.managed:
+    - source:
+      - salt://monitoring/files/check_cmd/check_disk_local.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+	
 icinga2-feature:
   cmd.run:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql
