@@ -40,31 +40,31 @@ install_icinga2:
     - group: root
     - mode: 755
 
-/usr/lib/nagios/plugins/check_mem_local.sh:
+add-checkcommands:
+    file.recurse:
+        - name: /usr/lib/nagios/plugins/
+        - source: salt://monitoring/files/check_cmd/
+        - user: root
+        - group: root
+        - mode: 755
+
+#check permissions - down here - should not overwrite		
+add-wmicpresets:
+    file.recurse:
+        - name: /ets/check_wmi_plus/
+        - source: salt://monitoring/files/check_wmi_plus/
+        - user: root
+        - group: root
+        - mode: 755
+
+/usr/bin/wmic:
   file.managed:
     - source:
-      - salt://monitoring/files/check_cmd/check_mem_local.sh
+      - salt://monitoring/files/wmic
     - user: root
     - group: root
-    - mode: 755
-
-/usr/lib/nagios/plugins/check_cpu_local.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/check_cmd/check_cpu_local.sh
-    - user: root
-    - group: root
-    - mode: 755
-
-/usr/lib/nagios/plugins/check_disk_local.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/check_cmd/check_disk_local.sh
-    - user: root
-    - group: root
-    - mode: 755
-
-	
+    - mode: 644
+  
 icinga2-feature:
   cmd.run:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql
