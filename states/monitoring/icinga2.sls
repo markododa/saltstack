@@ -30,7 +30,41 @@ install_icinga2:
       - mysql-server
       - mysql-client
       - icinga2-ido-mysql
+      - libsys-statistics-linux-perl
+	  
+/usr/lib/nagios/plugins/check_linux_stats.pl:
+  file.managed:
+    - source:
+      - salt://base/files/nrpe/check_linux_stats.pl
+    - user: root
+    - group: root
+    - mode: 755
 
+add-checkcommands:
+    file.recurse:
+        - name: /usr/lib/nagios/plugins/
+        - source: salt://monitoring/files/check_cmd/
+        - user: root
+        - group: root
+        - mode: 755
+
+#check permissions - down here - should not overwrite		
+add-wmicpresets:
+    file.recurse:
+        - name: /ets/check_wmi_plus/
+        - source: salt://monitoring/files/check_wmi_plus/
+        - user: root
+        - group: root
+        - mode: 755
+
+/usr/bin/wmic:
+  file.managed:
+    - source:
+      - salt://monitoring/files/wmic
+    - user: root
+    - group: root
+    - mode: 644
+  
 icinga2-feature:
   cmd.run:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql
