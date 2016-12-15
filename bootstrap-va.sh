@@ -1,7 +1,7 @@
 #!/bin/bash
 #export SALTTREE=salt-tree.tar.gz
-wget -O - https://repo.saltstack.com/apt/debian/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
-echo 'deb http://repo.saltstack.com/apt/debian/latest jessie main' > /etc/apt/sources.list.d/salt.list
+wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | sudo apt-key add -
+echo 'deb http://repo.saltstack.com/apt/debian/8/amd64/latest jessie main' > /etc/apt/sources.list.d/salt.list
 apt-get update -y
 apt-get install --no-install-recommends salt-master -y
 #tar xzfv $SALTTREE -C /srv
@@ -21,4 +21,3 @@ echo "role: monitoring" > /etc/salt/grains
 service salt-minion restart
 sleep 30
 salt-key -y -a `hostname`
-tail -f -q /var/log/salt/minion |GREP_COLOR='1;32' grep -o "Completed state.*$" --color=always & salt-call --local state.highstate --log-file-level all -l quiet > /dev/null && pkill -f "tail -f -q /var/log/salt/minion"

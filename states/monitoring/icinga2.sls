@@ -25,6 +25,7 @@ icinga_repo:
 install_icinga2:
   pkg.installed:
     - pkgs:
+      - nagios-nrpe-plugin
       - icinga2
       - mysql-server
       - mysql-client
@@ -32,6 +33,7 @@ install_icinga2:
       - libnumber-format-perl
       - libconfig-inifiles-perl
       - libdatetime-perl
+
 
 add-checkcommands:
     file.recurse:
