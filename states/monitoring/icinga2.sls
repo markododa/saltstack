@@ -29,6 +29,9 @@ install_icinga2:
       - mysql-server
       - mysql-client
       - icinga2-ido-mysql
+      - libnumber-format-perl
+      - libconfig-inifiles-perl
+      - libdatetime-perl
 
 add-checkcommands:
     file.recurse:
