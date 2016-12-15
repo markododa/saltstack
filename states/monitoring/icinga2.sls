@@ -42,7 +42,7 @@ add-checkcommands:
 #check permissions - down here - should not overwrite		
 add-wmicpresets:
     file.recurse:
-        - name: /ets/check_wmi_plus/
+        - name: /etc/check_wmi_plus/
         - source: salt://monitoring/files/check_wmi_plus/
         - user: root
         - group: root
