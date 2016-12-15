@@ -25,20 +25,10 @@ icinga_repo:
 install_icinga2:
   pkg.installed:
     - pkgs:
-      - nagios-nrpe-plugin
       - icinga2
       - mysql-server
       - mysql-client
       - icinga2-ido-mysql
-      - libsys-statistics-linux-perl
-	  
-/usr/lib/nagios/plugins/check_linux_stats.pl:
-  file.managed:
-    - source:
-      - salt://base/files/nrpe/check_linux_stats.pl
-    - user: root
-    - group: root
-    - mode: 755
 
 add-checkcommands:
     file.recurse:
@@ -46,7 +36,8 @@ add-checkcommands:
         - source: salt://monitoring/files/check_cmd/
         - user: root
         - group: root
-        - mode: 755
+        - file_mode: 755
+        - dir_mode: 755
 
 #check permissions - down here - should not overwrite		
 add-wmicpresets:
@@ -55,7 +46,8 @@ add-wmicpresets:
         - source: salt://monitoring/files/check_wmi_plus/
         - user: root
         - group: root
-        - mode: 755
+        - file_mode: 755
+        - dir_mode: 755
 
 /usr/bin/wmic:
   file.managed:
@@ -63,7 +55,7 @@ add-wmicpresets:
       - salt://monitoring/files/wmic
     - user: root
     - group: root
-    - mode: 644
+    - mode: 755
   
 icinga2-feature:
   cmd.run:
