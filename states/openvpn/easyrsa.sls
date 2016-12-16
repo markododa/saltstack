@@ -3,6 +3,8 @@ install_easyrsa:
     - name: /etc/openvpn/easyrsa
     - source: salt://openvpn/files/easyrsa.tgz
     - archive_format: tar
+    - enforce_toplevel: False
+
 
 setup_rsa:
   cmd.run:

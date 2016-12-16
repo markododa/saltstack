@@ -19,7 +19,7 @@ salt/backup/new:
   event.send:
     - data:
         name: {{ grains['id'] }} 
-        ip: {{ grains['ip4_interfaces']['eth0'][0] }}
+        ip: {{salt['network.ip_addrs']()[-1] }}
         type: {{ grains['role'] }}
         fqdn: {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
         script: {{ script }}

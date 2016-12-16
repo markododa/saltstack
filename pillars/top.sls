@@ -6,7 +6,6 @@ base:
   'role:directory':
     - match: grain
     - credentials
-    - openvpn
   'role:owncloud':
     - match: grain
     - credentials
@@ -22,5 +21,8 @@ base:
   'role:email':
     - match: grain
     - credentials
+  'role:va-master':
+    - match: grain
+    - openvpn
   '*':
     - base
