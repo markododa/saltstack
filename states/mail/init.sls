@@ -1,4 +1,9 @@
+{% if salt['pillar.get']('dcip') == '' %}
 {% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+{% endif %}
+{% if salt['pillar.get']('dcip') != '' %}
+{% set dcip = salt['pillar.get']('dcip') %}
+{% endif %}
 {% set domain = salt['pillar.get']('domain') %}
 {% set query_user = salt['pillar.get']('query_user') %}
 {% set query_password = salt['pillar.get']('query_password')  %}

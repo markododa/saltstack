@@ -1,4 +1,5 @@
-import salt, vpn_parser, va_samba_api
+import salt, vpn_parser
+#import va_samba_api
 
 def add_user(username):
 	result =  __salt__['cmd.retcode']('/etc/openvpn/easyrsa/easyrsa build-client-full '+username+' nopass',cwd='/etc/openvpn/easyrsa')

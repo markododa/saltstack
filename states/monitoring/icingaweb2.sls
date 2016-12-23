@@ -2,9 +2,6 @@ include:
   - monitoring.icinga2
   - monitoring.pnp4nagios
 
-exclude:
-  - base.nrpe
-
 install_icingaweb2:
   pkg.installed:
     - pkgs:
@@ -62,8 +59,8 @@ enable-module-monitoring:
 
 enable-module-pnp:
   cmd.run:
-    - name: ln -s /usr/share/icingaweb2/modules/pnp /etc/icingaweb2/enabledModules/pnp
-    - onlyif: test ! -e /etc/icingaweb2/enabledModules/pnp
+    - name: ln -s /etc/icingaweb2/modules/pnp/ /etc/icingaweb2/enabledModules/pnp
+    - onlyif: test ! -d /etc/icingaweb2/enabledModules/pnp
 
 ido-pass:
   cmd.run:

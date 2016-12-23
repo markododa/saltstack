@@ -25,12 +25,41 @@ icinga_repo:
 install_icinga2:
   pkg.installed:
     - pkgs:
-      - nagios-nrpe-plugin
       - icinga2
       - mysql-server
       - mysql-client
       - icinga2-ido-mysql
+      - libnumber-format-perl
+      - libconfig-inifiles-perl
+      - libdatetime-perl
 
+add-checkcommands:
+    file.recurse:
+        - name: /usr/lib/nagios/plugins/
+        - source: salt://monitoring/files/check_cmd/
+        - user: root
+        - group: root
+        - file_mode: 755
+        - dir_mode: 755
+
+#check permissions - down here - should not overwrite		
+add-wmicpresets:
+    file.recurse:
+        - name: /etc/check_wmi_plus/
+        - source: salt://monitoring/files/check_wmi_plus/
+        - user: root
+        - group: root
+        - file_mode: 755
+        - dir_mode: 755
+
+/usr/bin/wmic:
+  file.managed:
+    - source:
+      - salt://monitoring/files/wmic
+    - user: root
+    - group: root
+    - mode: 755
+  
 icinga2-feature:
   cmd.run:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql
