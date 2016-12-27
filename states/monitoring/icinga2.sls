@@ -32,6 +32,8 @@ install_icinga2:
       - libnumber-format-perl
       - libconfig-inifiles-perl
       - libdatetime-perl
+      - mailutils
+      - ssmtp
 
 add-checkcommands:
     file.recurse:
@@ -60,6 +62,31 @@ add-wmicpresets:
     - group: root
     - mode: 755
   
+/etc/icinga2/scripts/mail-host-notification.sh:
+  file.managed:
+    - source:
+      - salt://monitoring/files/icinga2mail/mail-host-notification.sh
+    - user: root
+    - group: root
+    - mode: 755
+    
+/etc/icinga2/scripts/mail-service-notification.sh:
+  file.managed:
+    - source:
+      - salt://monitoring/files/icinga2mail/mail-service-notification.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+#needs manual editing later, should be auto filled with credentails:	
+/etc/ssmtp/ssmtp.conf:
+  file.managed:
+    - source:
+      - salt://monitoring/files/icinga2mail/ssmtp.conf
+    - user: root
+    - group: root
+    - mode: 644
+   
 icinga2-feature:
   cmd.run:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql
