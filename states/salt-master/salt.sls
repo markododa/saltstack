@@ -43,7 +43,7 @@ configure_salt-cloud:
     - user: root
     - group: root
     - context:
-      saltmaster: {{ salt['network.ip_addrs']('eth0').__getitem__(0) }}
+      saltmaster: {{ salt['network.ipaddrs']().__getitem__(0) }}
       openstackhost: {{ salt['pillar.get']('openstackhost')}}
       openstackuser: {{ salt['pillar.get']('openstackuser')}}
       password: {{ salt['pillar.get']('openstackpass')}}

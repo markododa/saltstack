@@ -31,3 +31,4 @@ base:
     - match: grain
     - va-master
     - openvpn
+    - salt-master.salt
