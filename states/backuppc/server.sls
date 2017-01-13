@@ -105,6 +105,16 @@ libxml-rss-perl:
         - test -e /mnt/va-backup/backuppc
         - mount | grep -q /mnt/va-backup
 
+
+#### functionality script
+/usr/lib/nagios/plugins/check_functionality.sh:
+  file.managed:
+    - source:
+      - salt://backuppc/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+
 backuppc-restart:
   service.running:
     - name: backuppc
