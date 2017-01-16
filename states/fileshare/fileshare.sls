@@ -247,7 +247,15 @@ smbshortdm:
     - group: root
     - mode: 644
     
-    
+#### functionality script
+/usr/lib/nagios/plugins/check_functionality.sh:
+  file.managed:
+    - source:
+      - salt://fileshare/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+	    
 {% if domain != None %}
 
 reloadsmbconf:

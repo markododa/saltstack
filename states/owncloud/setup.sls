@@ -98,6 +98,15 @@ apache2:
 curl {{ipaddrss}} > /dev/null:
   cmd.run
 
+#### functionality script
+/usr/lib/nagios/plugins/check_functionality.sh:
+  file.managed:
+    - source:
+      - salt://owncloud/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+	
  # DA SE ISKOPIRA TEMATA VA-THEME
   
 # fixredirect2contactsplus:
