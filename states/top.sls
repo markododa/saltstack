@@ -6,11 +6,9 @@ base:
   'role:monitoring':
     - match: grain
     - monitoring.icingaweb2
-    - salt-master.salt
   'role:directory':
     - match: grain
     - directory.directory
-    - openvpn
   'role:fileshare':
     - match: grain
     - fileshare.fileshare
@@ -29,3 +27,8 @@ base:
   'role:proxy':
     - match: grain
     - proxy.proxy
+  'role:va-master':
+    - match: grain
+    - va-master
+    - openvpn
+    - salt-master.salt

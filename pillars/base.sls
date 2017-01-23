@@ -1,4 +1,3 @@
-{% import_yaml '/srv/pillar/credentials.sls' as credentials %}
 mine_functions:
   inventory:
     - mine_function: grains.item
@@ -17,5 +16,4 @@ mine_functions:
     - virtual
     - fqdn
   address:
-    mine_function: network.ip_addrs
-    cidr: {{ credentials.subnet }}
+    mine_function: network.default_route

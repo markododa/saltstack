@@ -12,6 +12,14 @@ install_nrpe:
     - group: root
     - mode: 755
 
+/usr/lib/nagios/plugins/check_functionality.sh:
+  file.managed:
+    - source:
+      - salt://base/files/nrpe/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+
 /etc/nagios/nrpe.d/va.cfg:
   file.managed:
     - source:
@@ -34,7 +42,7 @@ salt/nrpe-agent/installed:
   event.send:
     - data:
         name: {{ grains['id'] }} 
-        ip: {{ grains['ip4_interfaces']['eth0'][0] }}
+        ip: {{salt['network.ip_addrs']()[-1] }}
         type: {{ grains['role'] }}
         fqdn: {{ grains['fqdn'] }}
     - order: last

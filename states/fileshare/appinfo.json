@@ -1,8 +1,9 @@
 {
-	"Name": "Fileshare",
-	"Description": "Fileshare server for storing and sharing data. Manage priviledeges per user and groups.",
-	"Version": "1.1",
-	"Icon": "fa-folder-open",
-	"Dependency": "directory",
-	"Path": "-"
+	"name": "fileshare",
+	"description": "Fileshare server for storing and sharing data. Manage priviledeges per user and groups.",
+	"version": "1.1",
+	"icon": "fa-folder-open",
+	"dependency": "directory",
+    "substates": ["fileshare.fileshare"],
+	"path": "-"
 }

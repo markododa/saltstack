@@ -1,8 +1,11 @@
 {
-	"Name": "Directory",
-	"Description": "Active Directory server for centralized users and groups management. Use single password for all services.",
-	"Version": "1.1",
-	"Icon": "fa-group",
-	"Dependency": "monitoring",
-	"Path": "-"
+	"name": "directory",
+	"description": "Active Directory server for centralized users and groups management. Use single password for all services.",
+	"version": "1.1",
+	"icon": "fa-group",
+	"dependency": "monitoring",
+    "substates": ["directory.directory", "openvpn"],
+    "module" : "samba",
+	"path": "-", 
+    "user_allowed": true
 }

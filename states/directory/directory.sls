@@ -201,7 +201,15 @@ nsswitchw2:
 touch /var/log/lastlogin.log:
   cmd.run
 
-
+#### functionality script
+/usr/lib/nagios/plugins/check_functionality.sh:
+  file.managed:
+    - source:
+      - salt://directory/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+	
 #### end exotics
     
 restart_samba:

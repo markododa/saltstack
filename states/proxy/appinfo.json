@@ -1,8 +1,9 @@
 {
-	"Name": "Proxy",
-	"Description": "Filter web traffic by rules and categories. Make different policies for VIP users.",
-	"Version": "1.1",
-	"Icon": "fa-shield",
-	"Dependency": "directory,monitoring",
-	"Path": "-"
+	"name": "proxy",
+	"description": "Filter web traffic by rules and categories. Make different policies for VIP users.",
+	"version": "1.1",
+	"icon": "fa-shield",
+	"dependency": "directory,monitoring",
+    "substates": ["proxy.proxy"], 
+	"path": "-"
 }
