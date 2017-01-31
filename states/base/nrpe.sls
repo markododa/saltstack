@@ -28,15 +28,19 @@ install_nrpe:
     - group: root
     - mode: 644
 
+{% if "va-monitoring" in salt['mine.get'](tgt='role:va-master',fun='address',expr_form='grain') %}
+
 /etc/nagios/nrpe.cfg:
   file.replace:
     - pattern: 'allowed_hosts=127.0.0.1'
-    - repl: 'allowed_hosts={{salt['mine.get'](tgt='role:monitoring',fun='inventory',expr_form='grain')['va-monitoring']['ip4_interfaces']['eth0'][0]}}'
+    - repl: 'allowed_hosts={{salt['mine.get'](tgt='role:va-master',fun='address',expr_form='grain')['va-monitoring'][0]}}'
 
 nagios-nrpe-server:
   service.running:
   - watch:
     - file: /etc/nagios/nrpe.cfg
+
+{% endif %}
 
 salt/nrpe-agent/installed:
   event.send:

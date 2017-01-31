@@ -18,6 +18,7 @@ install_pkgs:
       - python-setuptools
       - salt-master
       - salt-cloud
+      - git
 
 easy_install pip:
   cmd.run

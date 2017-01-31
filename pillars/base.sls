@@ -16,4 +16,4 @@ mine_functions:
     - virtual
     - fqdn
   address:
-    mine_function: network.default_route
+    mine_function: network.ipaddrs
