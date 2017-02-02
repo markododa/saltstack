@@ -16,6 +16,8 @@ install_samba:
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
 {% set dcip = '127.0.0.1' %}
+{% set host_name = grains['id'] %}
+#{% set host_name = grains['host'] %}
   
 /vapour/data/:
   file.directory:

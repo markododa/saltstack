@@ -96,6 +96,16 @@ else
    exitstate=2
 fi
 
+DNS1=`nslookup $(hostname) | grep 'Address: ' | md5sum | awk -F " " '{print $1}'`
+DNS2=`nslookup $(samba-tool domain info 127.0.0.1 | grep 'DC name          :'| sed -e "s/DC name          : //") | grep 'Address: '| md5sum | awk -F " " '{print $1}'`
+
+if [[ $DNS1 == $DNS2 ]]; then
+    text=$text #', '"Samba status OK"
+else
+    text=$text', '"Wrong DNS record for this DC!"
+   exitstate=2
+fi
+
 echo $text
 
 exit $exitstate
