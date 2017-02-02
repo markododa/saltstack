@@ -147,6 +147,15 @@ iptables:
         - test -e /mnt/va-email/vmail
         - mount | grep -q /mnt/va-email
 
+#### functionality script
+/usr/lib/nagios/plugins/check_functionality.sh:
+  file.managed:
+    - source:
+      - salt://mail/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+
 dovecot:
   service.running:
     - watch:
