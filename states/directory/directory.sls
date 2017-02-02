@@ -202,14 +202,13 @@ touch /var/log/lastlogin.log:
   cmd.run
 
 #### functionality script
-/usr/lib/nagios/plugins/check_functionality.sh:
+check_functionality_directory:
   file.managed:
-    - source:
-      - salt://directory/files/check_functionality.sh
+    - name: /usr/lib/nagios/plugins/check_functionality.sh
+    - source: salt://directory/files/check_functionality.sh
     - user: root
     - group: root
     - mode: 755
-	
 #### end exotics
     
 restart_samba:

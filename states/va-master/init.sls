@@ -18,6 +18,7 @@ install_pkgs:
       - python-setuptools
       - salt-master
       - salt-cloud
+      - git
 
 easy_install pip:
   cmd.run
@@ -38,3 +39,13 @@ wget -q https://releases.hashicorp.com/consul/0.7.0/consul_0.7.0_linux_amd64.zip
 consul:
   service.running:
     - enable: True 
+
+va_master:
+  git.latest:
+    - name: https://github.com/VapourApps/va_master.git
+    - target: /opt/va_master
+
+npm-build:
+  cmd.run:
+    - name: npm install --no-bin-links && node build.js
+    - cwd: /opt/va_master/va_dashboard
