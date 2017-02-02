@@ -85,6 +85,7 @@ restorecomplexity:
     - context:
       domain: {{ domain }}
       shortdomain: {{ shortdomain }} 
+      host_name: {{ host_name }} 
 
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run
