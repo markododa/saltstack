@@ -7,5 +7,5 @@
     "substates": ["directory.directory", "openvpn"],
     "module" : "samba",
 	"path": "-", 
-    "user_allowed": true
+    "panels": {"admin": [{"key": "directory.users", "name": "Users"}, {"key": "directory.groups", "name": "Groups"}], "user": []}
 }
