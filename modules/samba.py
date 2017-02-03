@@ -19,11 +19,11 @@ def get_panel(panel_name):
             "expires": x['password_expiry'], 
             "last_login": x['last_logon'], 
             "comp": x['computer'], 
-            "ip": x['ip'], 
+            "ip": x['ip_address'], 
             "status": "OK" 
-        } for x in list_users() 
-    ] 
-    users_panel['content'][1]['source']
+        } for x in list_users()['users']
+    ]
+    users_panel['content'][1]['source'] = users
     panel = {
         'directory.users' : users_panel
     }[panel_name]

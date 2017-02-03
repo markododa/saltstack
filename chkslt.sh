@@ -1,2 +1,2 @@
-for x in `find /root/saltstack/states/ -type f`; do diff -q $x `echo $x|sed s"#root/saltstack/states#srv/salt#"`; done
-for x in `find /root/saltstack/modules/ -type f`; do diff -q $x `echo $x|sed s"#root/saltstack/modules#srv/salt/_modules#"`; done
+for x in `find states/ -type f`; do diff -q $x `echo $x|sed s"#states#/srv/salt#"`; done
+for x in `find modules/ -type f`; do diff -q $x `echo $x|sed s"#modules#/srv/salt/_modules#"`; done
