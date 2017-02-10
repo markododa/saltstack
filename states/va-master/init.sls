@@ -49,3 +49,8 @@ npm-build:
   cmd.run:
     - name: npm install --no-bin-links && node build.js
     - cwd: /opt/va_master/va_dashboard
+
+pip_install:
+  cmd.run:
+    - name: pip install .
+    - cwd: /opt/va_master
