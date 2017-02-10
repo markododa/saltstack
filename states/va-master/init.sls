@@ -23,13 +23,13 @@ install_pkgs:
 easy_install pip:
   cmd.run
 
-wget -q https://releases.hashicorp.com/consul/0.7.0/consul_0.7.0_linux_amd64.zip:
+wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip:
   cmd.run:
-    - creates: /root/consul_0.7.0_linux_amd64.zip
+    - creates: /root/consul_0.7.4_linux_amd64.zip
 
 /usr/bin:
   archive.extracted:
-    - source: /root/consul_0.7.0_linux_amd64.zip
+    - source: /root/consul_0.7.4_linux_amd64.zip
     - enforce_toplevel: False
 
 /etc/systemd/system/consul.service:
