@@ -21,6 +21,10 @@ install_samba:
   
 /vapour/data/:
   file.directory:
+    - makedirs: True  
+	
+/home/_profiles_/:
+  file.directory:
     - makedirs: True
 
 install_pip:
@@ -117,6 +121,13 @@ changepsswdpolicy2:
 #    - group: root
 #    - mode: 644
 
+/etc/sudoers.d/sambatool:
+  file.managed:
+    - source: salt://directory/files/sambatool
+    - user: root
+    - group: root
+    - mode: 600
+
 /etc/nsswitch.conf:
   file.managed:
     - source: salt://fileshare/files/nsswitch.conf
@@ -205,6 +216,11 @@ touch /var/log/lastlogin.log:
   cmd.run
 
 #### functionality script
+/usr/lib/nagios/plugins/:
+  file.directory:
+    - makedirs: True
+	
+	
 check_functionality_directory:
   file.managed:
     - name: /usr/lib/nagios/plugins/check_functionality.sh
