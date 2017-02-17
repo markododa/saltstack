@@ -8,7 +8,7 @@
 {% set query_user = salt['pillar.get']('query_user') %}
 {% set query_password = salt['pillar.get']('query_password')  %}
 {% set search_base = domain|replace(".", ",dc=") %}
-{% set iredmail_version = '0.9.5-1' %}
+{% set iredmail_version = '0.9.6' %}
 
 postfix-ldap:
   pkg.installed: []
@@ -19,11 +19,11 @@ dovecot-ldap:
 
 /root/:
   archive.extracted:
-    - source: salt://mail/iRedMail-0.9.5-1.tar.bz2
+    - source: salt://mail/iRedMail-0.9.6.tar.bz2
     - archive_format: tar
-    - if_missing: /root/iRedMail-0.9.5-1/
+    - if_missing: /root/iRedMail-0.9.6/
 
-/root/iRedMail-0.9.5-1/config:
+/root/iRedMail-0.9.6/config:
   file.managed:
     - source: salt://mail/config
     - template: jinja
@@ -33,13 +33,13 @@ dovecot-ldap:
 
 generate_passwords:
   cmd.run:
-    - name: for x in $(seq $(grep random_password /root/iRedMail-0.9.5-1/config |wc -l)); do sed -i "0,/random_password/s//`openssl rand -hex 10`/" /root/iRedMail-{{ iredmail_version }}/config; done
+    - name: for x in $(seq $(grep random_password /root/iRedMail-0.9.6/config |wc -l)); do sed -i "0,/random_password/s//`openssl rand -hex 10`/" /root/iRedMail-{{ iredmail_version }}/config; done
     - unless: test -e /var/vmail
 install_iredmail:
   cmd.run:
     - name: bash iRedMail.sh
     - shell: /bin/bash
-    - cwd: /root/iRedMail-0.9.5-1/
+    - cwd: /root/iRedMail-0.9.6/
     - env:
       - AUTO_USE_EXISTING_CONFIG_FILE: 'y'
       - AUTO_INSTALL_WITHOUT_CONFIRM: 'y'

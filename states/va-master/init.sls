@@ -54,3 +54,19 @@ pip_install:
   cmd.run:
     - name: pip install .
     - cwd: /opt/va_master
+
+/etc/rsyslog.d/70-va-master.conf:
+  file.managed:
+    - source: salt://va-master/files/rsyslog-va-master.conf
+
+rsyslog:
+  service.running:
+    - reload: True
+    - watch:
+      - file: /etc/rsyslog.d/70-va-master.conf
+
+/var/log/vapourapps/va-master.log:
+  file.managed:
+    - user: syslog
+    - group: adm
+    - makedirs: True 

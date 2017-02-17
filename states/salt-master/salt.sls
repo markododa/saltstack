@@ -22,10 +22,17 @@ restart_api:
     - watch:
       - service: salt-master
 
+/etc/salt/master:
+  file.managed:
+    - source: salt://salt-master/files/master-reactors
+
+
+{% if salt['pillar.get']('openstack-old') != '' %}
 cloud-profiles:
     file.recurse:
         - name: /etc/salt/cloud.profiles.d/
         - source: salt://salt-master/files/cloud.profiles.d/
+
 
 /etc/salt/master:
   file.managed:
@@ -66,3 +73,5 @@ keystone-token-auth:
   file.append:
     - text:
       - {{ salt['pillar.get']('openstackhost')}} {{ salt['pillar.get']('endpointurl')}}
+
+{% endif %}
