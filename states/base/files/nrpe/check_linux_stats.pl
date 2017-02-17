@@ -120,13 +120,13 @@ sub check_cpu {
 		}
 		
 		my $perfdata .= "|"
-		."idle=$cpu->{idle}%;$o_warning;$o_critical "
+		."used=$cpu_used%;$o_warning;$o_critical "
 		."user=$cpu->{user}% "
 		."system=$cpu->{system}% "
 		."iowait=$cpu->{iowait}%";
 		$perfdata .= " steal=$cpu->{steal}%" if(defined($cpu->{steal}));
 
-		print "CPU $status : idle $cpu->{idle}% $perfdata";
+		print "CPU $status : Utilisation $cpu_used% $perfdata";
 	}
 	else {
                 print "No data";
@@ -696,5 +696,4 @@ sub bytes_to_gigabytes {
 
         return sprintf("%.2f", $bignum/1073741824);
 }
-
 
