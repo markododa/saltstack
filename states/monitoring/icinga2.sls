@@ -119,3 +119,8 @@ cp /var/lib/icinga2/ca/ca.crt /etc/icinga2/pki/ && chown nagios:nagios /etc/icin
 
 icinga2:
   service.running: []
+
+/opt/va/icinga2/va-host.tmpl:
+  file.managed:
+    - source: salt://monitoring/files/va_host.conf
+    - makedirs: True

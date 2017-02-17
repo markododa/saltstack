@@ -5,7 +5,7 @@ add_host:
     - tgt: 'role:monitoring'
     - expr_form: grain
     - arg:
-      - /srv/salt/monitoring/files/va_host.conf
+      - /opt/va/icinga2/va-host.tmpl
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
 
 instance_name:
