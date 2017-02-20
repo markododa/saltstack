@@ -21,6 +21,6 @@ salt/backup/new:
         name: {{ grains['id'] }} 
         ip: {{salt['network.ip_addrs']()[-1] }}
         type: {{ grains['role'] }}
-        fqdn: {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
+        fqdn: {{ grains['fqdn'] }}
         script: {{ script }}
     - order: last
