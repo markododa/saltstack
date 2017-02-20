@@ -1,8 +1,8 @@
 base:
   '*':
-    - base.nrpe
     - base.default
     - base.backup
+    - base.nrpe
   'role:monitoring':
     - match: grain
     - monitoring.icingaweb2
@@ -32,3 +32,6 @@ base:
     - va-master
     - openvpn
     - salt-master.salt
+  'role:libvirt':
+    - match: grain
+    - libvirt
