@@ -22,7 +22,7 @@ install_samba:
 /vapour/data/:
   file.directory:
     - makedirs: True  
-	
+
 /home/_profiles_/:
   file.directory:
     - makedirs: True
@@ -219,8 +219,8 @@ touch /var/log/lastlogin.log:
 /usr/lib/nagios/plugins/:
   file.directory:
     - makedirs: True
-	
-	
+
+
 check_functionality_directory:
   file.managed:
     - name: /usr/lib/nagios/plugins/check_functionality.sh
