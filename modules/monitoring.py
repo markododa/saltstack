@@ -2,10 +2,10 @@ import subprocess, json
 import salt, sys
 
 
-panel = {"status":{"title":"","tbl_source":{},"content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Heading","dc":"monitoring :num: services"},{"type":"Table","reducers":["table","panel","alert"],"columns":[{"key":"name","label":"Name"},{"key":"state","label":"State"},{"key":"action","label":"Actions"}],"panels":{"view_graph":"monitoring.graph"},"actions":[{"name":"View graphs","action":"view_graph"}],"id":"name"}]}]}}
+panel = {"monitoring.status":{"title":"","tbl_source":{},"content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Heading","dc":"monitoring :num: services"},{"type":"Table","reducers":["table","panel","alert"],"columns":[{"key":"name","label":"Name"},{"key":"state","label":"State"},{"key":"action","label":"Actions"}],"panels":{"view_graph":"monitoring.graph"},"actions":[{"name":"View graphs","action":"view_graph"}],"id":"name"}]}]}}
 
 def get_panel(panel_name): 
-    data = icinga2().local
+    data = icinga2()
     users_panel = panel[panel_name]
     data = { x['host_name']: x['services'] for x in data}
     users_panel['tbl_source'] = data

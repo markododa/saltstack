@@ -5,6 +5,7 @@
 	"icon": "fa-heartbeat",
 	"dependency": "directory,vpn",
     "substates": ["monitoring.icingaweb2", "salt-master.salt"], 
+	"module" : "monitoring",
 	"path": "-",
         "panels": {"admin": [{"key": "monitoring.status", "name": "Status"}], "user": []}
 }
