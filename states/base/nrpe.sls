@@ -12,14 +12,6 @@ install_nrpe:
     - group: root
     - mode: 755
 
-/usr/lib/nagios/plugins/check_functionality.sh:
-  file.managed:
-    - source:
-      - salt://base/files/nrpe/check_functionality.sh
-    - user: root
-    - group: root
-    - mode: 755
-
 /etc/nagios/nrpe.d/va.cfg:
   file.managed:
     - source:
@@ -50,3 +42,13 @@ salt/nrpe-agent/installed:
         type: {{ grains['role'] }}
         fqdn: {{ grains['fqdn'] }}
     - order: last
+
+dummy_check_functionality:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/check_functionality.sh
+    - source:
+      - salt://base/files/nrpe/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+    - replace: False
