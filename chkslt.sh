@@ -1,3 +1,8 @@
-for x in `find states/ -type f`; do diff -q $x `echo $x|sed s"#states#/srv/salt#"`; done
-for x in `find modules/ -type f`; do diff -q $x `echo $x|sed s"#modules#/srv/salt/_modules#"`; done
-for x in `find reactor/ -type f`; do diff -q $x `echo $x|sed s"#reactor#/srv/reactor#"`; done
+#!/bin/bash
+
+declare -a git_folders=(states modules reactor)
+declare -a folders=(/srv/salt /srv/salt/_modules /srv/reactor)
+
+for i in $(seq 0 2)
+	do diff --brief -r ${git_folders[i]} ${folders[i]} -x _modules
+done
