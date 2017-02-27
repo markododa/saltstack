@@ -255,7 +255,7 @@ smbshortdm:
     - user: root
     - group: root
     - mode: 755
-	    
+    
 {% if domain != None %}
 
 reloadsmbconf:
