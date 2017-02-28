@@ -135,7 +135,7 @@ changepsswdpolicy2:
 
 /etc/sudoers.d/pdbedit:
   file.managed:
-    - source: salt://evo-directory/files/pdbedit
+    - source: salt://directory/files/pdbedit
     - user: root
     - group: root
     - mode: 440
