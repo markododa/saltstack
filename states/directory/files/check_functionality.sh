@@ -6,7 +6,7 @@ exitstate=0
 text=""
 
 
-OUT=`pdbedit -L | grep locked | wc -l`
+OUT=`sudo pdbedit -L | grep 'administratively locked out' | wc -l`
 if [ $OUT -eq 0 ];then
    text=$text"No locked users"
 else
@@ -48,7 +48,7 @@ else
 fi
 
 
-samba-tool dbcheck -d 0  > /dev/null
+sudo samba-tool dbcheck -d 0  > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
     text=$text #', '"Data Base OK"
@@ -58,7 +58,7 @@ else
 fi
 
 
-samba-tool drs kcc -d 0 > /dev/null
+sudo samba-tool drs kcc -d 0 > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
     text=$text #', '"Consistency OK"
@@ -67,7 +67,7 @@ else
    exitstate=2
 fi
 
-samba-tool drs showrepl -d 0 > /dev/null
+sudo samba-tool drs showrepl -d 0 > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
     text=$text #', '"Replication OK"
@@ -109,3 +109,4 @@ fi
 echo $text
 
 exit $exitstate
+
