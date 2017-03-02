@@ -74,7 +74,7 @@ install_samba-api:
 
 create_domain:
   cmd.run:
-    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ shortdomain }} DC -U Administrator%{{ admin_password }} --realm {{ domain }} && touch /vapour/.domain-set
+    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ domain }} DC -U Administrator%{{ admin_password }} --realm {{ domain }} --ipaddress {{ dcip }} && touch /vapour/.domain-set
     - onlyif: test ! -e /vapour/.domain-set
 
 # setpassword:
