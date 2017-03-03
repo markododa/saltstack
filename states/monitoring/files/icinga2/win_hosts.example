@@ -1,0 +1,56 @@
+#Object host name must be Windows Host name and va-monitoring should have AD DNS as nameserver. OR
+#Use IP addess as Host name and display nema for human readable description
+
+
+object Host "10.0.0.2" {
+ import "generic-host"
+ address = "10.0.0.2"
+ display_name = "Domain Server 2"
+ vars.notification["mail"] = { groups = [ "icingaadmins" ] }
+ vars.os="Windows"
+ vars.windesktop="False"
+
+#Additional checks
+
+# vars.host.vars.printserver="True"
+# vars.host.vars.mssql_server="True"
+# vars.host.vars.iis_server="True"
+# vars.host.vars.domain_controller="True"
+
+}
+
+
+object Host "10.0.0.3" {
+ import "desktop-host"
+ address = "10.0.0.3"
+ display_name = "Domain PC 3"
+ vars.notification["mail"] = { groups = [ "icingaadminsdesktops" ] }
+ vars.os="Windows"
+ vars.windesktop="True"
+}
+
+object Host "10.0.0.4" {
+ import "generic-host"
+ address = "10.0.0.4"
+ display_name = "Standalone Server 4"
+ vars.notification["mail"] = { groups = [ "icingaadmins" ] }
+ vars.os="Windows"
+ vars.windesktop="False"
+
+#Additional checks
+
+# vars.host.vars.printserver_standalone="True"
+# vars.host.vars.mssql_server_standalone="True"
+# vars.host.vars.iis_server_standalone="True"
+
+}
+
+
+object Host "10.0.0.5" {
+ import "desktop-host"
+ address = "10.0.0.5"
+ display_name = "Standalone PC 5"
+ vars.notification["mail"] = { groups = [ "icingaadminsdesktops" ] }
+ vars.os="Windows"
+ vars.windesktop="True"
+}

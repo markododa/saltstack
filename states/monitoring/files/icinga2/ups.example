@@ -1,0 +1,30 @@
+object Host "UPS" {
+
+  max_check_attempts = 1
+  check_interval = 1m
+  retry_interval = 30s
+  max_check_attempts = 1
+  display_name = "UPS"
+  check_command = "ups"
+
+  IP address of NUT server  
+  vars.ups_address = "127.0.0.1"
+
+  UPS name in NUT server list
+  vars.ups_name = "ups850"
+  vars.notification["mail"] = { groups = [ "icingaadmins" ] }
+  vars.os="Other"
+}
+
+apply Service "UPS" {
+  import "generic-service"
+  
+  check_command = "ups"
+  vars.ups_variable = "BATTPCT"
+  vars.ups_warning = "80"
+  vars.ups_critical = "30"
+  vars.ups_celsius = true
+  vars.ups_port = "3493"
+
+  assign where host.name == "UPS"
+}
