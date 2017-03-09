@@ -5,9 +5,17 @@ add-backports:
     - file: /etc/apt/sources.list.d/backports-cyconet.list
     - key_url: http://ftp.cyconet.org/debian/repo.key
 
+add_restricted:
+  pkgrepo.managed:
+    - humanname: cyconet restricted
+    - name: deb     http://ftp.cyconet.org/debian restricted main non-free contrib
+    - file: /etc/apt/sources.list.d/restricted-cyconet.list
+    - key_url: http://ftp.cyconet.org/debian/repo.key
+
 install_pnp4nagios:
   pkg.installed:
     - pkgs:
+      - debian-cyconet-archive-keyring
       - pnp4nagios
       - rrdcached
       - python-rrdtool
