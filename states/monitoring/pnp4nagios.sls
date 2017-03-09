@@ -12,10 +12,13 @@ add_restricted:
     - file: /etc/apt/sources.list.d/restricted-cyconet.list
     - key_url: http://ftp.cyconet.org/debian/repo.key
 
+debian-cyconet-archive-keyring:
+  pkg.installed:
+    - skip_verify: True
+
 install_pnp4nagios:
   pkg.installed:
     - pkgs:
-      - debian-cyconet-archive-keyring
       - pnp4nagios
       - rrdcached
       - python-rrdtool
