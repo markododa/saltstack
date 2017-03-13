@@ -12,13 +12,15 @@ install_nrpe:
     - group: root
     - mode: 755
 
-/etc/nagios/nrpe.d/va.cfg:
+default_va_cfg:
   file.managed:
     - source:
+    - name: /etc/nagios/nrpe.d/va.cfg:
       - salt://base/files/nrpe/va.cfg
     - user: root
     - group: root
     - mode: 644
+    - replace: False 
 
 {% if "va-monitoring" in salt['mine.get'](tgt='role:va-master',fun='address',expr_form='grain') %}
 
