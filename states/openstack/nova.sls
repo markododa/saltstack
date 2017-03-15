@@ -99,5 +99,6 @@ nova-manage db sync:
 {% for service in ['nova-api', 'nova-consoleauth', 'nova-scheduler', 'nova-conductor', 'nova-novncproxy'] %}
 {{service}}:
   service.running:
-    - restart: True
+    - watch:
+      - file: /etc/nova/nova.conf
 {% endfor %}

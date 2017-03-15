@@ -57,5 +57,5 @@ default_role:
 restart_apache2:
   service.running:
     - name: apache2
-    - restart: True
- 
+    - watch:
+      - file: /etc/openstack-dashboard/local_settings.py 

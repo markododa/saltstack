@@ -58,9 +58,10 @@ glance-manage db_sync:
 
 glance-registry:
   service.running:
-    - restart: True
+    - watch:
+      - file: /etc/glance/glance-registry.conf
 
 glance-api:
   service.running:
-    - restart: True
-
+    - watch:
+      - file: /etc/glance/glance-api.conf
