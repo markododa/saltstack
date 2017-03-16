@@ -47,3 +47,9 @@ source /root/keystonerc_admin && openstack project create --domain default --des
   cmd.run:
     - unless: source keystonerc_admin && openstack project list |grep -q service
 
+source /root/keystonerc_admin && openstack role create user:
+  cmd.run:
+    - unless: source keystonerc_admin && openstack role list| grep -q user
+
+openstack role add --project admin --user admin user:
+  cmd.run
