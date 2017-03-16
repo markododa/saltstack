@@ -14,3 +14,5 @@ compute-restart:
   service.running:
     - restart: True
     - name: nova-compute
+    - watch:
+      - file: add_compute_configs

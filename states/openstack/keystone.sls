@@ -36,10 +36,14 @@ keystone-manage bootstrap --bootstrap-password {{grains['admin_pass']}} --bootst
       admin_pass: {{grains['admin_pass']}}
       admin_user: admin
       tenant: admin
-      controller: os-manual
+      controller: {{fqdn}}
+
+apache2:
+  service.running:
+    - watch:
+      - file: /root/keystonerc_admin
 
 source /root/keystonerc_admin && openstack project create --domain default --description "Service Project" service:
   cmd.run:
     - unless: source keystonerc_admin && openstack project list |grep -q service
-
 

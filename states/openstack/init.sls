@@ -10,10 +10,16 @@
     - m_name: {{password}}
 {% endfor %}
 
-add-apt-repository cloud-archive:newton:
-  cmd.run
 
-apt update && apt -y dist-upgrade:
+software-properties-common:
+  pkg.installed
+
+add-apt-repository cloud-archive:newton:
+  cmd.run:
+    - require:
+      - pkg: software-properties-common
+
+apt-get update -y && apt-get upgrade -y:
   cmd.run
 
 install_pkgs:
@@ -26,6 +32,9 @@ install_pkgs:
       - memcached
       - python-memcache
 
+rm /etc/mysql/mariadb.conf.d/50-server.cnf:
+  cmd.run
+
 /etc/mysql/mariadb.conf.d/99-openstack.cnf:
   file.managed:
     - source: salt://openstack/files/99-openstack.cnf
@@ -36,7 +45,7 @@ mysql:
     - watch:
       - file: /etc/mysql/mariadb.conf.d/99-openstack.cnf
 
-rabbitmqctl add_user openstack {{grains['rabbit_pass']}}:
+rabbitmqctl add_user openstack {{salt['grains.get']('rabbit_pass')}}:
   cmd.run:
     - unless: rabbitmqctl  list_users| grep -q openstack
 

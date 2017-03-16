@@ -214,6 +214,7 @@ neutron-db-manage --config-file /etc/neutron/neutron.conf --config-file /etc/neu
 {% for service in ['nova-api', 'neutron-server', 'neutron-linuxbridge-agent', 'neutron-dhcp-agent', 'neutron-metadata-agent', 'neutron-l3-agent'] %}
 {{service}}:
   service.running:
-    - restart: True
+    - watch:
+      - file: /etc/neutron/neutron.conf
 {% endfor %}
 
