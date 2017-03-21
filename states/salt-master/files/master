@@ -1,0 +1,25 @@
+rest_cherrypy:
+  port: 8000
+  disable_ssl: True
+  debug: True
+  host: 0.0.0.0
+keystone.auth_url: http://{{openstackhost}}:35357/v2.0
+external_auth:
+  keystone-token:
+    admin:
+      - .*
+reactor:
+  - 'salt/cloud/*/created':
+    - /srv/reactor/startup-state.sls
+  - 'salt/nrpe-agent/installed':
+    - /srv/reactor/add-host.sls
+  - 'salt/backup/new':
+    - /srv/reactor/add-backup.sls
+  - 'salt/cloud/*/destroyed':
+    - /srv/reactor/rm-host.sls
+  - 'backuppc/pubkey':
+    - /srv/reactor/pubkey.sls
+  - 'backuppc/copykey':
+    - /srv/reactor/copykey.sls
+  - 'salt/backup/installed':
+    - /srv/reactor/old-host.sls

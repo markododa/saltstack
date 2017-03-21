@@ -34,8 +34,9 @@ cloud-profiles:
         - source: salt://salt-master/files/cloud.profiles.d/
 
 
-/etc/salt/master:
+old-master-conf:
   file.managed:
+    - name: /etc/salt/master
     - source: salt://salt-master/files/master
     - template: jinja
     - context:
