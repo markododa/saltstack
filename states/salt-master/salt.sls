@@ -27,7 +27,7 @@ restart_api:
     - source: salt://salt-master/files/master-reactors
 
 
-{% if salt['pillar.get']('openstack-old') != '' %}
+{% if salt['pillar.get']('openstack-old') != 'True' %}
 cloud-profiles:
     file.recurse:
         - name: /etc/salt/cloud.profiles.d/
@@ -56,7 +56,7 @@ configure_salt-cloud:
       openstackuser: {{ salt['pillar.get']('openstackuser')}}
       password: {{ salt['pillar.get']('openstackpass')}}
       tenant: {{ salt['pillar.get']('openstacktenant')}}
-      ssh_key: {{ salt['pillar.get']('ssh_key')}}
+      ssh_key: {{ salt['pillar.get']('ssh-key')}}
       net_id: {{ salt['pillar.get']('net-id')}}
 
 salt-cloud -u:
