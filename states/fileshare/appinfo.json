@@ -5,5 +5,7 @@
 	"icon": "fa-folder-open",
 	"dependency": "directory",
     "substates": ["fileshare.fileshare"],
-	"path": "-"
+        "module" : "fileshare",
+	"path": "-",
+        "panels": {"admin": [{"key": "fileshare.fileshare", "name": "Fileshare"}], "user": []}
 }
