@@ -12,6 +12,15 @@ default_paths = {
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
 }
 
+panel = {"title":"All backups","content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Form","name":"form","class":"pull-right margina","args":{"hostname":""},"elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True},]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","reducers":["table","panel","alert"],"columns":[{"key":"","label":""},{"key":"action","label":"Actions"}],"actions":[{"name":"Remove backup","action":"rm_folder"}],"id":""}]}]}
+
+def get_panel(panel_name):
+    hostnames = ['va-monitoring', 'va-directory', 'va-backup', 'va-fileshare']
+    data  = list_folders(hostnames)
+    data = { key: val for key,val in data.items()}
+    panel['tbl_source'] = data
+    return panel
+
 def add_default_paths(hosts = []):
     for host in hosts: 
         paths = [default_paths[x] for x in default_paths if __salt__['mine.get'](x, 'inventory')[x]['fqdn'] == host][0]
