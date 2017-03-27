@@ -42,7 +42,7 @@ pnp4nagios_pass:
   cmd.run:
     - name: htpasswd -b -c /etc/pnp4nagios/htpasswd.users admin {{ salt['pillar.get']('admin_password') }}
 
-{% for line in ['^.*AuthName "Icinga Access"','^.*AuthType Basic','^.*AuthUserFile .*','Require valid-user'] %}
+{% for line in ['^.*AuthName "Icinga Access"','^.*AuthType Basic','^.*AuthUserFile .*','^.*Require valid-user'] %}
 {{ line }}:
   file.comment:
     - name: /etc/apache2/conf-available/pnp4nagios.conf
