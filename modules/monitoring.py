@@ -25,11 +25,11 @@ def icinga2():
     # The data that we receive is flat, we want to group services by host.
     # hosts will be a dict that looks like: {'host1': [{'name': 'service1', 'state': 1}, ...], ...}
     hosts = {}
-    service_state = ["OK", "Warning", "Critical"]
+    service_state_names = {"0": "OK", "1": "Warning", "2": "Critical", "3": "Down"}
     for service_obj in json_out:
       host = service_obj['host_name']
       service = {'name': service_obj['service_description'],
-                 'state': service_state[int(service_obj['service_state'])],
+                 'state': service_state_names[service_obj['service_state']],
                  'output': service_obj['service_output']}
       if host in hosts:
          hosts[host].append(service)
