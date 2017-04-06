@@ -11,11 +11,11 @@ def grep_nat(port):
 def insert_nat(destination, port):
     destination=str(destination)
     port=str(port)
-    rule='-i eth0 -p tcp -d 10.107.150.20 --dport '+port+' -j DNAT --to-destination '+destination+':3389'
+    rule='-i eth0 -p tcp -d 10.107.150.20 --dport '+port+' -j DNAT --to-destination '+destination+':'+port
     return __salt__['iptables.insert']('nat', 'PREROUTING', position=1, rule=rule)
 
 def delete_nat(destination, port):
     destination=str(destination)
     port=str(port)
-    rule='-i eth0 -p tcp -d 10.107.150.20 --dport '+port+' -j DNAT --to-destination '+destination+':3389'
+    rule='-i eth0 -p tcp -d 10.107.150.20 --dport '+port+' -j DNAT --to-destination '+destination+':'+port
     return __salt__['iptables.delete']('nat', 'PREROUTING', rule=rule)
