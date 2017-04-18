@@ -51,5 +51,5 @@ source /root/keystonerc_admin && openstack role create user:
   cmd.run:
     - unless: source keystonerc_admin && openstack role list| grep -q user
 
-source /root/keystonerc_admin && nopenstack role add --project admin --user admin user:
+source /root/keystonerc_admin && openstack role add --project admin --user admin user:
   cmd.run
