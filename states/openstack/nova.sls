@@ -51,7 +51,7 @@ nova_rabbitmq_connection:
         my_ip = 127.0.0.1
         use_neutron = True
         firewall_driver = nova.virt.firewall.NoopFirewallDriver
-	resume_guests_state_on_host_boot=True
+        resume_guests_state_on_host_boot=True
         reclaim_instance_interval = 600
 
 
