@@ -14,4 +14,4 @@ Comment: [$NOTIFICATIONAUTHORNAME] $NOTIFICATIONCOMMENT
 TEMPLATE
 `
 
-/usr/bin/printf "%b" "$template" | mail -a "From: va-monitoring@domain.4com" -s "$NOTIFICATIONTYPE - $HOSTDISPLAYNAME is $HOSTSTATE" $USEREMAIL
+/usr/bin/printf "%b" "$template" | mail -a "From: va-monitoring@mydomain.com" -s "$NOTIFICATIONTYPE - $HOSTDISPLAYNAME is $HOSTSTATE" $USEREMAIL

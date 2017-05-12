@@ -12,13 +12,13 @@
 
 
 # your user name, if you have a ':' in it, change your login or find an other script as it will not work with this script
-user='vlatko.boskoski'
+user='....'
 # your password, theoretically any character are allowed, even ':' or '@'
-pass='.8Devet-'
+pass='...'
 # name of the collection
 cardsCollection='vcf'
 # url of your server, for example with davical
-serverURL='http://owncloud.va.mk/remote.php'
+serverURL='http://owncloud.domain.com/remote.php'
 # sometimes you may have to edit the following part
 serverFullURL=${serverURL}/contactsplus/addressbooks/${user}/${cardsCollection}/
 
