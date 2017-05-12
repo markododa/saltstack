@@ -1,5 +1,13 @@
 import subprocess, re
 
+panel = {"title":"Fileshare","content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Heading"},{"type":"Table","reducers":["table","alert"],"columns":[{"key":"folder","label":"Folder"},{"key":"bytes","label":"Used space"}]}]}]}
+
+def get_panel(panel_name):
+    data  = get_all_fileshares()
+    data = { key.title() + " folder": val for key,val in data.items()}
+    panel['tbl_source'] = data
+    return panel
+
 def get_fileshares(path, extra_commands = []):
     command = ['du', path, '-d1', '-b', '-m'] + extra_commands
     result = subprocess.check_output(command).split('\n')

@@ -5,3 +5,4 @@ openstacktenant: admin
 ssh-key: key
 net-id: random-uuid
 endpointurl: hostname
+openstack-old: 

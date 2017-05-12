@@ -12,20 +12,21 @@ install_nrpe:
     - group: root
     - mode: 755
 
-/etc/nagios/nrpe.d/va.cfg:
+default_va_cfg:
   file.managed:
-    - source:
-      - salt://base/files/nrpe/va.cfg
+    - source: salt://base/files/nrpe/va.cfg
+    - name: /etc/nagios/nrpe.d/va.cfg
     - user: root
     - group: root
     - mode: 644
+    - replace: False 
 
-{% if "va-monitoring" in salt['mine.get'](tgt='role:va-master',fun='address',expr_form='grain') %}
+{% if "va-monitoring" in salt['mine.get'](tgt='*',fun='address') %}
 
 /etc/nagios/nrpe.cfg:
   file.replace:
     - pattern: 'allowed_hosts=127.0.0.1'
-    - repl: 'allowed_hosts={{salt['mine.get'](tgt='role:va-master',fun='address',expr_form='grain')['va-monitoring'][0]}}'
+    - repl: 'allowed_hosts={{salt['mine.get'](tgt='*',fun='address')['va-monitoring'][0]}}'
 
 nagios-nrpe-server:
   service.running:

@@ -5,6 +5,17 @@ add-backports:
     - file: /etc/apt/sources.list.d/backports-cyconet.list
     - key_url: http://ftp.cyconet.org/debian/repo.key
 
+add_restricted:
+  pkgrepo.managed:
+    - humanname: cyconet restricted
+    - name: deb     http://ftp.cyconet.org/debian restricted main non-free contrib
+    - file: /etc/apt/sources.list.d/restricted-cyconet.list
+    - key_url: http://ftp.cyconet.org/debian/repo.key
+
+debian-cyconet-archive-keyring:
+  pkg.installed:
+    - skip_verify: True
+
 install_pnp4nagios:
   pkg.installed:
     - pkgs:
@@ -31,7 +42,7 @@ pnp4nagios_pass:
   cmd.run:
     - name: htpasswd -b -c /etc/pnp4nagios/htpasswd.users admin {{ salt['pillar.get']('admin_password') }}
 
-{% for line in ['^.*AuthName "Icinga Access"','^.*AuthType Basic','^.*AuthUserFile .*','Require valid-user'] %}
+{% for line in ['^.*AuthName "Icinga Access"','^.*AuthType Basic','^.*AuthUserFile .*','^.*Require valid-user'] %}
 {{ line }}:
   file.comment:
     - name: /etc/apache2/conf-available/pnp4nagios.conf

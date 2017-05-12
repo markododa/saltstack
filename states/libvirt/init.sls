@@ -1,3 +1,6 @@
+include:
+  - libvirt.lvm
+
 gnutls-bin:
   pkg.installed: []
 

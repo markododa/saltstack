@@ -1,0 +1,8 @@
+
+[vnc]
+vncserver_listen = {{my_ip}}
+vncserver_proxyclient_address = {{my_ip}}
+
+[glance]
+api_servers = http://{{fqdn}}:9292
+
