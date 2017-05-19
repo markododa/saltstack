@@ -96,6 +96,10 @@ def rm_folder(hostname, folder):
 
 def list_folders(hostnames):
 	folders_list = dict()
+	if type(hostnames) == str:
+		hostname = hostnames
+		hostnames = []
+		hostnames.append(hostname)
 	for hostname in hostnames:
 		folders = []
 		if os.path.exists('/etc/backuppc/'+hostname+'.pl'):
