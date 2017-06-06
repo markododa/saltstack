@@ -1,5 +1,5 @@
 #Object host name must be Windows Host name and va-monitoring should have AD DNS as nameserver. OR
-#Use IP addess as Host name and display nema for human readable description
+#Use IP addess as Host name and display name for human readable description
 
 
 object Host "10.0.0.2" {
