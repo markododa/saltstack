@@ -67,9 +67,9 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder,script="None"):
+def add_folder(hostname, folder,script="None",address=False):
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		add_host(hostname,script)
+		add_host(hostname,script,address)
 	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
 		return False
 	elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
