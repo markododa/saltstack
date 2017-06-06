@@ -17,6 +17,26 @@ def get_panel(panel_name, host='', service=''):
         users_panel['tbl_source'] = data
     return users_panel
 
+icinga_conf_template = 'object Host %s { \n\
+  import "generic-host" \n\
+  address = "%s" \n\
+  display_name = "%s" \n\
+  vars.notification["mail"] = { groups = [ "icingaadmins" ] } \n\
+  vars.os="Windows" \n\
+  vars.windesktop="False"'
+
+def add_host_to_icinga(host_name, ip_address, value_pairs = {}):
+    conf_dir = '/etc/icinga2/conf.d/%s.conf' % host_name
+    host_conf = icinga_conf_template % (host_name, ip_address, host_name)
+    if value_pairs: 
+        for pair in value_pairs: 
+            host_conf += '\n  ' + pair + '="' + value_pairs[pair] + '"'
+    host_conf += '\n}'
+
+    with open(conf_dir, 'w') as f: 
+        f.write(host_conf)
+    return True
+
 
 def icinga2():
     out = subprocess.check_output(['icingacli', 'monitoring', 'list', '--format', 'json'])

@@ -21,6 +21,12 @@ def get_panel(panel_name):
     panel['tbl_source'] = data
     return panel
 
+def get_backup_pubkey():
+    file_contents = ''
+    with open('/srv/salt/backuppc/files/pubkey') as f: 
+        file_contents = f.read()
+    return file_contents
+
 def add_default_paths(hosts = []):
     for host in hosts: 
         paths = [default_paths[x] for x in default_paths if __salt__['mine.get'](x, 'inventory')[x]['fqdn'] == host][0]
