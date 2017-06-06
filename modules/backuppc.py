@@ -1,4 +1,4 @@
-import salt, os.path
+import salt, os.path, os
 
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
@@ -109,3 +109,33 @@ def list_folders(hostnames):
 				folders.append(folder.split('\'')[1])
 		folders_list[hostname] = folders
 	return folders_list
+
+def listHosts():
+    host_list = []
+    with open("/etc/backuppc/hosts", "r") as h:
+        for line in h:
+            if '#' not in line and line != '\n':
+                word = line.split()
+                host_list.append(word[0])
+    return host_list
+
+def show_backups(hostname):
+    dirs = [d for d in os.listdir('/var/lib/backuppc/pc/'+hostname+'/') if os.path.isdir(os.path.join('/var/lib/backuppc/pc/'+hostname+'/', d))]
+    return dirs
+
+def backupFiles(hostname):
+    path = '/var/lib/backuppc/pc/'+hostname+'/'
+    path = os.path.normpath(path)
+    subfolders = []
+    for root,dirs,files in os.walk(path, topdown=True):
+        depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
+        if depth == 2:
+            # We're currently two directories in, so all subdirs have depth 3
+            subfolders += [os.path.join(root, d) for d in dirs]
+            dirs[:] = [] # Don't recurse any deeper or comment this line for deeper
+            # depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
+            # if depth == 3:
+            #   subfolders += [os.path.join(root, d) for d in dirs]
+            #   dirs[:] = []
+    return subfolders
+
