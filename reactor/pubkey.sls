@@ -2,7 +2,7 @@
 
 copypubkey:
   local.file.write:
-    - tgt: 'role:monitoring'
+    - tgt: 'role:va-master'
     - expr_form: grain
     - arg:
       - /srv/salt/backuppc/files/pubkey
