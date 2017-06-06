@@ -28,15 +28,16 @@ def add_default_paths(hosts = []):
             result = add_folder(host, path)
     return True
 
-def hosts_file_add(hostname):
-    address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
-    address = address[address.keys()[0]][0]
+def hosts_file_add(hostname, address=False):
+    if not address:
+        address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
+        address = address[address.keys()[0]][0]
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
-def add_host(hostname,script="None"):
+def add_host(hostname,script="None",address=False):
 	
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		hosts_file_add(hostname)
+		hosts_file_add(hostname,address)
     		__salt__['file.touch']('/etc/backuppc/pc/'+hostname+'.pl')
     		__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl', '$Conf{XferMethod} = \'rsync\';\n$Conf{RsyncShareName} = [\n];')
     		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
