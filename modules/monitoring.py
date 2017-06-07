@@ -17,7 +17,7 @@ def get_panel(panel_name, host='', service=''):
         users_panel['tbl_source'] = data
     return users_panel
 
-icinga_conf_template = 'object Host %s { \n\
+icinga_conf_template = 'object Host "%s" { \n\
   import "generic-host" \n\
   address = "%s" \n\
   display_name = "%s" \n\
@@ -27,7 +27,7 @@ icinga_conf_template = 'object Host %s { \n\
 
 def add_host_to_icinga(host_name, ip_address, value_pairs = {}):
     conf_dir = '/etc/icinga2/conf.d/%s.conf' % host_name
-    host_conf = icinga_conf_template % (host_name, ip_address, host_name)
+    host_conf = icinga_conf_template % (ip_address, ip_address, host_name)
     if value_pairs: 
         for pair in value_pairs: 
             host_conf += '\n  ' + pair + '="' + value_pairs[pair] + '"'
@@ -35,6 +35,8 @@ def add_host_to_icinga(host_name, ip_address, value_pairs = {}):
 
     with open(conf_dir, 'w') as f: 
         f.write(host_conf)
+
+    subprocess.check_output(['service', 'icinga2', 'reload'])
     return True
 
 
@@ -45,7 +47,7 @@ def icinga2():
     # The data that we receive is flat, we want to group services by host.
     # hosts will be a dict that looks like: {'host1': [{'name': 'service1', 'state': 1}, ...], ...}
     hosts = {}
-    service_state_names = {"0": "OK", "1": "Warning", "2": "Critical", "3": "Down"}
+    service_state_names = {"0": "OK", "1": "Warning", "2": "Critical", "3": "Down", '99' : 'UNKNOWN', '5': 'PENDING'}
     for service_obj in json_out:
       host = service_obj['host_name']
       service = {'name': service_obj['service_description'],
