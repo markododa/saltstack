@@ -115,5 +115,10 @@ openvpn_config_{{ type }}_{{ name }}_{{ client }}_client_config:
 {% endif %}
 {% endfor %}
 
+/etc/openvpn/ccd/:
+  file.directory:
+    - makedirs: True
 
-
+'echo 4 > /etc/openvpn/nextip':
+  cmd.run:
+    - unless: test -e /etc/openvpn/nextip

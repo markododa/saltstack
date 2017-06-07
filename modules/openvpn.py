@@ -1,4 +1,4 @@
-import salt, vpn_parser
+import salt, vpn_parser, re
 
 def add_user(username):
     result =  __salt__['cmd.retcode']('/etc/openvpn/easyrsa/easyrsa build-client-full '+username+' nopass',cwd='/etc/openvpn/easyrsa')
@@ -38,4 +38,16 @@ def get_status():
     return vpn_parser.open_and_parse_log('/run/openvpn/openvpn-status.log')
 
 def list_user_logins(user):
-        return vpn_parser.get_logins_for_user(user) 
+        return vpn_parser.get_logins_for_user(user)
+
+def create_ccd(user):
+    broj = int(open('/etc/openvpn/nextip','r').read())
+    open('/etc/openvpn/nextip', 'w').write(str(broj+2))
+    subnet = str(re.split("[.]0 ", str(__salt__['pillar.get']('openvpn:server:srvr:server')))[0])+'.'
+    open('/etc/openvpn/ccd/'+user, 'w+').write(str('ifconfig-push ' + subnet+str(broj) + ' '  + subnet+str(broj-1)+'\n'))
+    return True
+
+def create_vpn(user):
+    create_ccd(user)
+    add_user(user)
+    return get_config(user)
