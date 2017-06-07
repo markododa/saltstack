@@ -1,4 +1,4 @@
-import salt, os.path, os
+import salt, os.path, os, json
 
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
@@ -162,3 +162,15 @@ def putkey_windows(hostname, password, username='root', port=22):
     #sshpass -p A8EcFNb7DwvA ssh-copy-id -oStrictHostKeyChecking=no backuppc@192.168.80.60 -p 22
     return __salt__['cmd.run'](cmd, runas='backuppc')
 
+def dir_structure(rootdir = '/var/lib/apparmor'):
+    dir = {}
+    rootdir = rootdir.rstrip(os.sep)
+    start = rootdir.rfind(os.sep) + 1
+    for path, dirs, files in os.walk(rootdir):
+        folders = path[start:].split(os.sep)
+        subdir = dict.fromkeys(files)
+        parent = reduce(dict.get, folders[:-1], dir)
+        parent[folders[-1]] = subdir
+    #direktorium = json.dumps(dir)
+    #final = json.loads(direktorium)
+    return dir
