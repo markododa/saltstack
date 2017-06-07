@@ -43,7 +43,7 @@ def list_user_logins(user):
 def create_ccd(user):
     if not os.path.isfile('/etc/openvpn/ccd/'+user):
     	broj = int(open('/etc/openvpn/nextip','r').read())
-    	open('/etc/openvpn/nextip', 'w').write(str(broj+2))
+    	open('/etc/openvpn/nextip', 'w').write(str(broj+4))
     	subnet = str(re.split("[.]0 ", str(__salt__['pillar.get']('openvpn:server:srvr:server')))[0])+'.'
     	open('/etc/openvpn/ccd/'+user, 'w+').write(str('ifconfig-push ' + subnet+str(broj) + ' '  + subnet+str(broj-1)+'\n'))
 	return True
