@@ -23,7 +23,7 @@ def get_panel(panel_name):
 
 def get_backup_pubkey():
     file_contents = ''
-    with open('/srv/salt/backuppc/files/pubkey') as f: 
+    with open('/var/lib/backuppc/.ssh/id_rsa.pub') as f: 
         file_contents = f.read()
     return file_contents
 
@@ -125,12 +125,16 @@ def listHosts():
                 host_list.append(word[0])
     return host_list
 
-def show_backups(hostname):
+def backupNumbers(hostname):
     dirs = [d for d in os.listdir('/var/lib/backuppc/pc/'+hostname+'/') if os.path.isdir(os.path.join('/var/lib/backuppc/pc/'+hostname+'/', d))]
     return dirs
 
-def backupFiles(hostname):
-    path = '/var/lib/backuppc/pc/'+hostname+'/'
+def backupFiles(hostname, number = -1):
+    if number == -1:
+        number = len(backupNumbers(hostname))
+        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number - 1) +'/'
+    else :
+        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) + '/'
     path = os.path.normpath(path)
     subfolders = []
     for root,dirs,files in os.walk(path, topdown=True):
@@ -145,3 +149,10 @@ def backupFiles(hostname):
             #   dirs[:] = []
     return subfolders
 
+def start_backup(hostname, tip='Inc'):
+    if tip == 'Inc':
+        tip = '0'
+    elif tip == 'Full':
+        tip = '1'
+    cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
+    return __salt__['cmd.run'](cmd, runas='backuppc')
