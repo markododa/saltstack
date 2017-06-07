@@ -156,3 +156,9 @@ def start_backup(hostname, tip='Inc'):
         tip = '1'
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
     return __salt__['cmd.run'](cmd, runas='backuppc')
+
+def putkey_windows(hostname, password, username='root', port=22):
+    cmd = 'sshpass -p '+password+' ssh-copy-id -oStrictHostKeyChecking=no '+username+'@'+hostname+ ' -p '+str(port)
+    #sshpass -p A8EcFNb7DwvA ssh-copy-id -oStrictHostKeyChecking=no backuppc@192.168.80.60 -p 22
+    return __salt__['cmd.run'](cmd, runas='backuppc')
+
