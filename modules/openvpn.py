@@ -51,3 +51,6 @@ def create_vpn(user):
     create_ccd(user)
     add_user(user)
     return get_config(user)
+
+def get_vpn_ip(user):
+	return open('/etc/openvpn/ccd/'+user,'r').read().split()[1]
