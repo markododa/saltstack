@@ -215,3 +215,7 @@ tun-mtu {{ config.tun_mtu }}
 {%- if config.crl is defined %}
 crl-verify {{ config.crl }}
 {%- endif %}
+
+{%- if config.ccd_dir is defined %}
+client-config-dir {{ config.ccd_dir }}
+{%- endif %}

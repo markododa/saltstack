@@ -6,7 +6,6 @@
         'dh_files': ['2048'],
         'user': 'nobody',
         'group': 'nogroup',
-        'client-config-dir': 'ccd',
     },
     'Ubuntu': {
         'pkgs': ['openvpn'],
@@ -15,7 +14,6 @@
         'dh_files': ['2048'],
         'user': 'nobody',
         'group': 'nogroup',
-        'client-config-dir': 'ccd'
     },
     'Amazon': {
         'pkgs': ['openvpn'],
@@ -24,7 +22,6 @@
         'dh_files': ['2048'],
         'user': 'nobody',
         'group': 'nobody',
-        'client-config-dir': 'ccd'
     },
 
 }, grain='os', merge=salt['pillar.get']('openvpn:lookup')) %}
