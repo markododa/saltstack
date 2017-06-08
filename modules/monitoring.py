@@ -3,7 +3,7 @@ import salt, sys
 from monitoring_stats import parse
 
 
-panel = {"monitoring.icinga":{"title":"Icinga proxy","content":[{"type":"Frame","name":"frame","src":"/proxy/"}]},"monitoring.chart":{"title":"","content":[{"type":"Chart","name":"chart","reducers": ["panel"]}]},"monitoring.status":{"title":"Status","tbl_source":{},"content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Heading","dc":"monitoring :num: services"},{"type":"Table","reducers":["table","panel","alert"],"columns":[{"key":"name","label":"Name"},{"key":"output","label":"Output"},{"key":"state","label":"State"},{"key":"action","label":"Actions"}],"panels":{"view_graph":"monitoring.graph"},"rowStyleCol":"state","actions":[{"name":"View graphs","action":"chart"}],"id":"name"}]}]}}
+panel = {"monitoring.icinga":{"title":"Icinga proxy","content":[{"type":"Frame","name":"frame","src":"/proxy/"}]},"monitoring.chart":{"title":"","content":[{"type":"Chart","name":"chart","reducers": ["panel"]}]},"monitoring.status":{"title":"Status","tbl_source":{},"content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Heading","dc":"monitoring :num: services"},{"type":"Table", "pagination": False, "reducers":["table","panel","alert"],"columns":[{"key":"name","label":"Name"},{"key":"output","label":"Output"},{"key":"state","label":"State"},{"key":"action","label":"Actions"}],"panels":{"view_graph":"monitoring.graph"},"rowStyleCol":"state","actions":[{"name":"View graphs","action":"chart"}],"id":"name"}]}]}}
 
 def get_panel(panel_name, host='', service=''):
     users_panel = panel[panel_name]
