@@ -132,11 +132,13 @@ def backupNumbers(hostname):
 
 def backupFiles(hostname, number = -1):
     if number == -1:
-        number = len(backupNumbers(hostname))
-        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number - 1) +'/'
+        result = map(int, backupNumbers(hostname))
+        number = max(result)
+        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) +'/'
     else :
         path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) + '/'
     path = os.path.normpath(path)
+    ffolders = []
     subfolders = []
     for root,dirs,files in os.walk(path, topdown=True):
         depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
@@ -148,7 +150,9 @@ def backupFiles(hostname, number = -1):
             # if depth == 3:
             #   subfolders += [os.path.join(root, d) for d in dirs]
             #   dirs[:] = []
-    return subfolders
+    for value in subfolders:
+        ffolders.append(value.replace('f%2f','/'))
+    return ffolders
 
 def start_backup(hostname, tip='Inc'):
     if tip == 'Inc':
@@ -164,15 +168,25 @@ def putkey_windows(hostname, password, username='root', port=22):
     __salt__['cmd.run'](cmd, runas='backuppc')
     return __salt__['cmd.run'](cmd1, runas='backuppc')
 
-def dir_structure(rootdir = '/var/lib/apparmor'):
-    dir = {}
+def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
+    if number == -1:
+        result = map(int, backupNumbers(hostname))
+        number = max(backupNumbers(hostname))
+        rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
+    else :
+        rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
+    dr = {}
+    fdir = {}
     rootdir = rootdir.rstrip(os.sep)
     start = rootdir.rfind(os.sep) + 1
     for path, dirs, files in os.walk(rootdir):
         folders = path[start:].split(os.sep)
         subdir = dict.fromkeys(files)
-        parent = reduce(dict.get, folders[:-1], dir)
+        parent = reduce(dict.get, folders[:-1], dr)
         parent[folders[-1]] = subdir
-    #direktorium = json.dumps(dir)
-    #final = json.loads(direktorium)
-    return dir
+    for key in dr: 
+        fdir[key] = {}
+        for kkey in dr[key]: 
+            fkey = kkey.replace('f%2f', '/')
+            fdir[key][fkey] = dr[key][kkey]
+    return fdir
