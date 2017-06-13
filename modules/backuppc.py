@@ -1,4 +1,4 @@
-import salt, os.path
+import salt, os.path, os, json
 
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
@@ -12,14 +12,20 @@ default_paths = {
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
 }
 
-panel = {"title":"All backups","content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Form","name":"form","class":"pull-right margina","args":{"hostname":""},"elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True},]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","reducers":["table","panel","alert"],"columns":[{"key":"","label":""},{"key":"action","label":"Actions"}],"actions":[{"name":"Remove backup","action":"rm_folder"}],"id":""}]}]}
+panel = {"title":"All backups","content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Form","name":"form","class":"pull-right margina","args":{"hostname":""},"elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True},]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table", "class": "backup-tbl", "reducers":["table","panel","alert"],"columns":[{"key":"","label":""},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":""}]}]}
 
 def get_panel(panel_name):
-    hostnames = ['va-monitoring', 'va-directory', 'va-backup', 'va-fileshare']
+    hostnames = __salt__['backuppc.listHosts']()
     data  = list_folders(hostnames)
     data = { key: val for key,val in data.items()}
     panel['tbl_source'] = data
     return panel
+
+def get_backup_pubkey():
+    file_contents = ''
+    with open('/var/lib/backuppc/.ssh/id_rsa.pub') as f: 
+        file_contents = f.read()
+    return file_contents
 
 def add_default_paths(hosts = []):
     for host in hosts: 
@@ -34,7 +40,7 @@ def hosts_file_add(hostname, address=False):
         address = address[address.keys()[0]][0]
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
-def add_host(hostname,script="None",address=False):
+def add_host(hostname,address=False,script="None"):
 	
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		hosts_file_add(hostname,address)
@@ -47,6 +53,7 @@ def add_host(hostname,script="None",address=False):
                 __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
 		if script != "None":
 			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+script+'\';')
+	add_folder(hostname, folder='/cygdrive/c/vapps/cygwin/backuppc')
 	return True
 
 # $Conf{ClientCharset} = 'cp1252';
@@ -67,9 +74,9 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder,script="None"):
+def add_folder(hostname, folder,address=False,script="None"):
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		add_host(hostname,script)
+		add_host(hostname,script,address)
 	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
 		return False
 	elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
@@ -109,3 +116,77 @@ def list_folders(hostnames):
 				folders.append(folder.split('\'')[1])
 		folders_list[hostname] = folders
 	return folders_list
+
+def listHosts():
+    host_list = []
+    with open("/etc/backuppc/hosts", "r") as h:
+        for line in h:
+            if '#' not in line and line != '\n':
+                word = line.split()
+                host_list.append(word[0])
+    return host_list
+
+def backupNumbers(hostname):
+    dirs = [d for d in os.listdir('/var/lib/backuppc/pc/'+hostname+'/') if os.path.isdir(os.path.join('/var/lib/backuppc/pc/'+hostname+'/', d))]
+    return dirs
+
+def backupFiles(hostname, number = -1):
+    if number == -1:
+        result = map(int, backupNumbers(hostname))
+        number = max(result)
+        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) +'/'
+    else :
+        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) + '/'
+    path = os.path.normpath(path)
+    ffolders = []
+    subfolders = []
+    for root,dirs,files in os.walk(path, topdown=True):
+        depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
+        if depth == 2:
+            # We're currently two directories in, so all subdirs have depth 3
+            subfolders += [os.path.join(root, d) for d in dirs]
+            dirs[:] = [] # Don't recurse any deeper or comment this line for deeper
+            # depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
+            # if depth == 3:
+            #   subfolders += [os.path.join(root, d) for d in dirs]
+            #   dirs[:] = []
+    for value in subfolders:
+        ffolders.append(value.replace('f%2f','/'))
+    return ffolders
+
+def start_backup(hostname, tip='Inc'):
+    if tip == 'Inc':
+        tip = '0'
+    elif tip == 'Full':
+        tip = '1'
+    cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
+    return __salt__['cmd.run'](cmd, runas='backuppc')
+
+def putkey_windows(hostname, password, username='root', port=22):
+    cmd1 = 'sshpass -p '+password+' ssh-copy-id -oStrictHostKeyChecking=no '+username+'@'+hostname+ ' -p '+str(port)
+    cmd = 'sshpass -p '+password+' ssh -oStrictHostKeyChecking=no '+username+'@'+hostname+ ' -p '+str(port)+' bash -l &'
+    __salt__['cmd.run'](cmd, runas='backuppc')
+    return __salt__['cmd.run'](cmd1, runas='backuppc')
+
+def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
+    if number == -1:
+        result = map(int, backupNumbers(hostname))
+        number = max(backupNumbers(hostname))
+        rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
+    else :
+        rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
+    dr = {}
+    fdir = {}
+    rootdir = rootdir.rstrip(os.sep)
+    start = rootdir.rfind(os.sep) + 1
+    for path, dirs, files in os.walk(rootdir):
+        folders = path[start:].split(os.sep)
+        subdir = dict.fromkeys(files)
+        parent = reduce(dict.get, folders[:-1], dr)
+        parent[folders[-1]] = subdir
+    for key in dr: 
+        fdir[key] = {}
+        for kkey in dr[key]: 
+            fkey = kkey.replace('f%2f', '/')
+            fdir[key][fkey] = dr[key][kkey]
+    return fdir

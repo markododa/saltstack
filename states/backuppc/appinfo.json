@@ -5,7 +5,7 @@
 	"icon": "fa-database",
 	"dependency": "monitoring",
     "substates" : ["backuppc"],
-        "module" : "backup", 
+    "module" : "backuppc", 
 	"path": "-",
         "panels": {"admin": [{"key": "backup.manage", "name": "Manage backups"}], "user": []}
 }
