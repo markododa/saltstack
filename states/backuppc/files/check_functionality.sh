@@ -5,7 +5,9 @@
 exitstate=0
 text="OK: "
 
-OLDEST=`cat /var/lib/backuppc/log/status.pl | grep "lastGoodBackupTime" | sed 's/    "lastGoodBackupTime" => //' | sed 's/,//'| sort | head -n 1 | awk '{print int($1)}'`
+OLDEST=`cat /var/lib/backuppc/log/status.pl | grep "lastGoodBackupTime" | sed 's/    "lastGoodBackupTime" => //' | sed 's/,//'| sort -nr | head -n 1 | awk '{print int($1)}'`
+SPACE=`cat /var/lib/backuppc/log/status.pl | grep '"DUlastValue" =>' | sed 's/  "DUlastValue" => //'  | sed 's/,//'`
+TOTALERRORS=`cat /var/lib/backuppc/log/status.pl | grep '"error" => "' | wc -l`
 NOW=`echo $(date +"%s")`
 #echo $OLDEST
 #echo $NOW
@@ -25,9 +27,17 @@ else
 	fi
 fi
 
-text=$text' Oldest good backup is '$D' days, '$H' hours, '$M' minutes old'
+if [ "$TOTALERRORS" -gt "2" ]; then
+    text='CRITICAL: ' 
+        exitstate=2
+else
+        if [ "$TOTALERRORS" -gt "1" ]; then
+                text='WARNING: ' 
+                exitstate=1
+        fi
+fi
+
+text=$text' Last good backup is '$D' days, '$H' hours, '$M' minutes old. Total errors:'$TOTALERRORS'. Used pool space: '$SPACE'%'
 echo $text
 exit $exitstate
 #604800 is one week in ms
-  
-
