@@ -14,6 +14,7 @@ object Host "10.0.0.2" {
 
 # vars.printserver="True"
 # vars.mssql_server="True"
+# vars.mssql_edition == "Express"
 # vars.iis_server="True"
 # vars.domain_controller="True"
 
@@ -43,6 +44,7 @@ object Host "10.0.0.4" {
 
 # vars.printserver_standalone="True"
 # vars.mssql_server_standalone="True"
+# vars.mssql_edition == "Express"
 # vars.iis_server_standalone="True"
 
 }
