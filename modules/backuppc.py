@@ -1,4 +1,4 @@
-import salt, os.path, os, json
+import salt, os.path, os, json, datetime, time
 
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
@@ -40,7 +40,7 @@ def hosts_file_add(hostname, address=False):
         address = address[address.keys()[0]][0]
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
-def add_host(hostname,address=False,script="None"):
+def add_host(hostname,address=False,scriptpre="None",scriptpost="None"):
 	
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		hosts_file_add(hostname,address)
@@ -51,8 +51,11 @@ def add_host(hostname,address=False,script="None"):
         	__salt__['event.send']('backuppc/copykey', fqdn=hostname)
                 __salt__['cmd.retcode'](cmd=rm_key+hostname, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
                 __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-		if script != "None":
-			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+script+'\';')
+		if scriptpre != "None":
+			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+scriptpre+'\';')
+		if scriptpost != "None":
+			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPostUserCmd} = \'$sshPath -q -x -l root $host '+scriptpost+'\';')
+
 	add_folder(hostname, folder='/cygdrive/c/vapps/cygwin/backuppc')
 	return True
 
@@ -74,9 +77,9 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder,address=False,script="None"):
+def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"):
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		add_host(hostname,script,address)
+		add_host(hostname,address,scriptpre,scriptpost)
 	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
 		return False
 	elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
@@ -190,3 +193,40 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
             fkey = kkey.replace('f%2f', '/')
             fdir[key][fkey] = dr[key][kkey]
     return fdir
+
+def hashtodict(hostname, backup):
+    contents = ''
+    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo','r+') as f:
+        contents = f.read()
+        contents = contents.replace('=>', ':')
+        contents = contents.replace('%','')
+        contents = contents.replace('\'','\"')
+        contents = contents.replace('(','{')
+        contents = contents.replace(')','}')
+        contents = contents.replace(';','')
+        contents = contents.replace('backupInfo = ','')
+        contents = contents.replace('\"fillFromNum\" : undef,','')
+    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json', 'w') as f: 
+        json.dumps(f.write(contents))
+    f.close()
+
+def backup_info(hostname, backup):
+    hashtodict(hostname, str(backup))
+    info = {}
+    f = json.loads(open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json').read())
+    for key in f:
+        if key == "startTime":
+            info["startTime"] = str(datetime.datetime.fromtimestamp(int(f["startTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+        elif key == "endTime":
+            info["endTime"] = str(datetime.datetime.fromtimestamp(int(f["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+        elif key == "type":
+            info["type"] = f["type"]
+        info["duration"] = str(datetime.timedelta(seconds = (int(f["endTime"]) - int(f["startTime"]))))
+        a = int(time.time()) - int(f["endTime"])
+        m, s = divmod(a, 60)
+        h, m = divmod(m, 60)
+        info["age"] = str("%d:%02d:%02d") % (h, m, s)
+        info["backup"] = str(backup)
+        #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
+        
+    return info
