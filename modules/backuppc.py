@@ -77,7 +77,7 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"):
+def add_folder(hostname, folder,address='',scriptpre="None",scriptpost="None"):
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		add_host(hostname,address,scriptpre,scriptpost)
 	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
