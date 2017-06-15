@@ -12,15 +12,22 @@ default_paths = {
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
 }
 
-panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"pull-right margina","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"app","label":"App"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":["app","path"]}]} }
+panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"pull-right margina","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"app","label":"App"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":["app","path"]}]}, "backup.browse": {"title":"Browse backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","target":"table","reducers":["panel","alert"],"class":"pull-right margina","elements":[{"type":"dropdown","name":"Select host","action":"dir_structure","value":[]}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"dir","label":"Files"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":["dir"]}]} }
 
-def get_panel(panel_name):
+def get_panel(panel_name, host = ''):
     ppanel = panel[panel_name]
+    hostnames = __salt__['backuppc.listHosts']()
     if panel_name == "backup.manage":
-        hostnames = __salt__['backuppc.listHosts']()
         data  = list_folders(hostnames)
         data = [ {'app': key, 'path': v} for key,val in data.items() for v in val ]
         ppanel['tbl_source']['table'] = data
+    if panel_name == "backup.browse":
+        data = dir_structure(host if host != '' else hostnames[0])
+        ppanel["content"][0]["elements"][0]["value"] = hostnames
+        data = [ {'dir': key} for key,val in data.items() ]
+        ppanel['tbl_source']['table'] = data
+
+        
     return ppanel
 
 def get_backup_pubkey():
