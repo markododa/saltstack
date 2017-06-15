@@ -12,10 +12,11 @@ object Host "10.0.0.2" {
 
 #Additional checks
 
-# vars.host.vars.printserver="True"
-# vars.host.vars.mssql_server="True"
-# vars.host.vars.iis_server="True"
-# vars.host.vars.domain_controller="True"
+# vars.printserver="True"
+# vars.mssql_server="True"
+# vars.mssql_edition == "Express"
+# vars.iis_server="True"
+# vars.domain_controller="True"
 
 }
 
@@ -29,6 +30,7 @@ object Host "10.0.0.3" {
  vars.windesktop="True"
 }
 
+
 object Host "10.0.0.4" {
  import "generic-host"
  address = "10.0.0.4"
@@ -36,12 +38,14 @@ object Host "10.0.0.4" {
  vars.notification["mail"] = { groups = [ "icingaadmins" ] }
  vars.os="Windows"
  vars.windesktop="False"
+ vars.standalone="True"
 
 #Additional checks
 
-# vars.host.vars.printserver_standalone="True"
-# vars.host.vars.mssql_server_standalone="True"
-# vars.host.vars.iis_server_standalone="True"
+# vars.printserver_standalone="True"
+# vars.mssql_server_standalone="True"
+# vars.mssql_edition == "Express"
+# vars.iis_server_standalone="True"
 
 }
 
@@ -53,4 +57,6 @@ object Host "10.0.0.5" {
  vars.notification["mail"] = { groups = [ "icingaadminsdesktops" ] }
  vars.os="Windows"
  vars.windesktop="True"
+ vars.standalone="True"
 }
+
