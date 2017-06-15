@@ -4,33 +4,35 @@ sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
 default_paths = {
-    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'], 
-    'va-directory' : ['/root/.va/backup', '/etc/openvpn'], 
-    'va-backup' : ['/etc/backuppc'], 
-    'va-fileshare' : ['/home', '/etc/samba'], 
+    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'],
+    'va-directory' : ['/root/.va/backup', '/etc/openvpn'],
+    'va-backup' : ['/etc/backuppc'],
+    'va-fileshare' : ['/home', '/etc/samba'],
     'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/'],
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
 }
 
-panel = {"title":"All backups","content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Form","name":"form","class":"pull-right margina","args":{"hostname":""},"elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True},]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table", "class": "backup-tbl", "reducers":["table","panel","alert"],"columns":[{"key":"","label":""},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":""}]}]}
+panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"pull-right margina","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"app","label":"App"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":["app","path"]}]} }
 
 def get_panel(panel_name):
-    hostnames = __salt__['backuppc.listHosts']()
-    data  = list_folders(hostnames)
-    data = { key: val for key,val in data.items()}
-    panel['tbl_source'] = data
-    return panel
+    ppanel = panel[panel_name]
+    if panel_name == "backup.manage":
+        hostnames = __salt__['backuppc.listHosts']()
+        data  = list_folders(hostnames)
+        data = [ {'app': key, 'path': v} for key,val in data.items() for v in val ]
+        ppanel['tbl_source']['table'] = data
+    return ppanel
 
 def get_backup_pubkey():
     file_contents = ''
-    with open('/var/lib/backuppc/.ssh/id_rsa.pub') as f: 
+    with open('/var/lib/backuppc/.ssh/id_rsa.pub') as f:
         file_contents = f.read()
     return file_contents
 
 def add_default_paths(hosts = []):
-    for host in hosts: 
+    for host in hosts:
         paths = [default_paths[x] for x in default_paths if __salt__['mine.get'](x, 'inventory')[x]['fqdn'] == host][0]
-        for path in paths: 
+        for path in paths:
             result = add_folder(host, path)
     return True
 
@@ -92,7 +94,7 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
 def add_folder_list(hostname, folder_list,script="None"):
 	for folder in folder_list:
 		add_folder(hostname, folder,script)
- 
+
 def rm_folder(hostname, folder):
 	if os.path.exists('/etc/backuppc/'+hostname+'.pl') and __salt__['file.line'](path='/etc/backuppc/pc/'+hostname+'.pl',content='\''+folder,mode='delete'):
 		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
@@ -103,7 +105,7 @@ def rm_folder(hostname, folder):
 		return 'Folder not in backup list'
 
 #def backup_count():
-	
+
 
 def list_folders(hostnames):
 	folders_list = dict()
@@ -172,7 +174,9 @@ def putkey_windows(hostname, password, username='root', port=22):
     return __salt__['cmd.run'](cmd1, runas='backuppc')
 
 def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
-    if number == -1:
+    if len(backupNumbers(hostname)) == 0:
+        rootdir = '/var/lib/backuppc/pc/'+hostname+'/'
+    elif number == -1:
         result = map(int, backupNumbers(hostname))
         number = max(backupNumbers(hostname))
         rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
