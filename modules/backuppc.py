@@ -22,9 +22,7 @@ def get_panel(panel_name, host = ''):
         data = [ {'app': key, 'path': v} for key,val in data.items() for v in val ]
         ppanel['tbl_source']['table'] = data
     if panel_name == "backup.browse":
-        if host == '':
-            host = hostnames[0]
-        data = dir_structure(host)[host]
+        data = dir_structure(host if host != '' else hostnames[0])
         ppanel["content"][0]["elements"][0]["value"] = hostnames
         data = [ {'dir': key} for key,val in data.items()]
         ppanel['tbl_source']['table'] = data
@@ -204,7 +202,6 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
         for kkey in dr[key]: 
             fkey = kkey.replace('f%2f', '/')
             fdir[key][fkey] = dr[key][kkey]
-#    return fdir.keys()
     fdir = fdir[fdir.keys()[0]]
     return fdir
 
