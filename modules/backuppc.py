@@ -181,6 +181,7 @@ def putkey_windows(hostname, password, username='root', port=22):
     return __salt__['cmd.run'](cmd1, runas='backuppc')
 
 def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
+    hostname = hostname.lower()
     if len(backupNumbers(hostname)) == 0:
         rootdir = '/var/lib/backuppc/pc/'+hostname+'/'
     elif number == -1:
