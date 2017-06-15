@@ -1,43 +1,36 @@
-import salt, os.path, os, json
+import salt, os.path, os, json, datetime, time
 
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
 default_paths = {
-    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'],
-    'va-directory' : ['/root/.va/backup', '/etc/openvpn'],
-    'va-backup' : ['/etc/backuppc'],
-    'va-fileshare' : ['/home', '/etc/samba'],
+    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'], 
+    'va-directory' : ['/root/.va/backup', '/etc/openvpn'], 
+    'va-backup' : ['/etc/backuppc'], 
+    'va-fileshare' : ['/home', '/etc/samba'], 
     'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/'],
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
 }
 
-panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"pull-right margina","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"app","label":"App"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":["app","path"]}]}, "backup.browse": {"title":"Browse backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","target":"table","reducers":["panel","alert"],"class":"pull-right margina","elements":[{"type":"dropdown","name":"Select host","action":"dir_structure","value":[]}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"dir","label":"Files"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":["dir"]}]} }
+panel = {"title":"All backups","content":[{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Form","name":"form","class":"pull-right margina","args":{"hostname":""},"elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True},]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table", "class": "backup-tbl", "reducers":["table","panel","alert"],"columns":[{"key":"","label":""},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":""}]}]}
 
-def get_panel(panel_name, host = ''):
-    ppanel = panel[panel_name]
+def get_panel(panel_name):
     hostnames = __salt__['backuppc.listHosts']()
-    if panel_name == "backup.manage":
-        data  = list_folders(hostnames)
-        data = [ {'app': key, 'path': v} for key,val in data.items() for v in val ]
-        ppanel['tbl_source']['table'] = data
-    if panel_name == "backup.browse":
-        data = dir_structure(host if host != '' else hostnames[0])
-        ppanel["content"][0]["elements"][0]["value"] = hostnames
-        data = [ {'dir': key} for key,val in data.items() ]
-        ppanel['tbl_source']['table'] = data
-    return ppanel
+    data  = list_folders(hostnames)
+    data = { key: val for key,val in data.items()}
+    panel['tbl_source'] = data
+    return panel
 
 def get_backup_pubkey():
     file_contents = ''
-    with open('/var/lib/backuppc/.ssh/id_rsa.pub') as f:
+    with open('/var/lib/backuppc/.ssh/id_rsa.pub') as f: 
         file_contents = f.read()
     return file_contents
 
 def add_default_paths(hosts = []):
-    for host in hosts:
+    for host in hosts: 
         paths = [default_paths[x] for x in default_paths if __salt__['mine.get'](x, 'inventory')[x]['fqdn'] == host][0]
-        for path in paths:
+        for path in paths: 
             result = add_folder(host, path)
     return True
 
@@ -47,8 +40,8 @@ def hosts_file_add(hostname, address=False):
         address = address[address.keys()[0]][0]
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
-def add_host(hostname,address=False,script="None"):
-
+def add_host(hostname,address=False,scriptpre="None",scriptpost="None"):
+	
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		hosts_file_add(hostname,address)
     		__salt__['file.touch']('/etc/backuppc/pc/'+hostname+'.pl')
@@ -58,8 +51,11 @@ def add_host(hostname,address=False,script="None"):
         	__salt__['event.send']('backuppc/copykey', fqdn=hostname)
                 __salt__['cmd.retcode'](cmd=rm_key+hostname, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
                 __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-		if script != "None":
-			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+script+'\';')
+		if scriptpre != "None":
+			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+scriptpre+'\';')
+		if scriptpost != "None":
+			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPostUserCmd} = \'$sshPath -q -x -l root $host '+scriptpost+'\';')
+
 	add_folder(hostname, folder='/cygdrive/c/vapps/cygwin/backuppc')
 	return True
 
@@ -81,9 +77,9 @@ def rm_host(hostname):
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder,address=False,script="None"):
+def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"):
         if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		add_host(hostname,script,address)
+		add_host(hostname,address,scriptpre,scriptpost)
 	if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
 		return False
 	elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
@@ -96,7 +92,7 @@ def add_folder(hostname, folder,address=False,script="None"):
 def add_folder_list(hostname, folder_list,script="None"):
 	for folder in folder_list:
 		add_folder(hostname, folder,script)
-
+ 
 def rm_folder(hostname, folder):
 	if os.path.exists('/etc/backuppc/'+hostname+'.pl') and __salt__['file.line'](path='/etc/backuppc/pc/'+hostname+'.pl',content='\''+folder,mode='delete'):
 		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
@@ -107,7 +103,7 @@ def rm_folder(hostname, folder):
 		return 'Folder not in backup list'
 
 #def backup_count():
-
+	
 
 def list_folders(hostnames):
 	folders_list = dict()
@@ -139,11 +135,13 @@ def backupNumbers(hostname):
 
 def backupFiles(hostname, number = -1):
     if number == -1:
-        number = len(backupNumbers(hostname))
-        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number - 1) +'/'
+        result = map(int, backupNumbers(hostname))
+        number = max(result)
+        path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) +'/'
     else :
         path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) + '/'
     path = os.path.normpath(path)
+    ffolders = []
     subfolders = []
     for root,dirs,files in os.walk(path, topdown=True):
         depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
@@ -155,7 +153,9 @@ def backupFiles(hostname, number = -1):
             # if depth == 3:
             #   subfolders += [os.path.join(root, d) for d in dirs]
             #   dirs[:] = []
-    return subfolders
+    for value in subfolders:
+        ffolders.append(value.replace('f%2f','/'))
+    return ffolders
 
 def start_backup(hostname, tip='Inc'):
     if tip == 'Inc':
@@ -171,15 +171,62 @@ def putkey_windows(hostname, password, username='root', port=22):
     __salt__['cmd.run'](cmd, runas='backuppc')
     return __salt__['cmd.run'](cmd1, runas='backuppc')
 
-def dir_structure(rootdir = '/var/lib/apparmor'):
-    dir = {}
+def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
+    if number == -1:
+        result = map(int, backupNumbers(hostname))
+        number = max(backupNumbers(hostname))
+        rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
+    else :
+        rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
+    dr = {}
+    fdir = {}
     rootdir = rootdir.rstrip(os.sep)
     start = rootdir.rfind(os.sep) + 1
     for path, dirs, files in os.walk(rootdir):
         folders = path[start:].split(os.sep)
         subdir = dict.fromkeys(files)
-        parent = reduce(dict.get, folders[:-1], dir)
+        parent = reduce(dict.get, folders[:-1], dr)
         parent[folders[-1]] = subdir
-    #direktorium = json.dumps(dir)
-    #final = json.loads(direktorium)
-    return dir
+    for key in dr: 
+        fdir[key] = {}
+        for kkey in dr[key]: 
+            fkey = kkey.replace('f%2f', '/')
+            fdir[key][fkey] = dr[key][kkey]
+    return fdir
+
+def hashtodict(hostname, backup):
+    contents = ''
+    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo','r+') as f:
+        contents = f.read()
+        contents = contents.replace('=>', ':')
+        contents = contents.replace('%','')
+        contents = contents.replace('\'','\"')
+        contents = contents.replace('(','{')
+        contents = contents.replace(')','}')
+        contents = contents.replace(';','')
+        contents = contents.replace('backupInfo = ','')
+        contents = contents.replace('\"fillFromNum\" : undef,','')
+    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json', 'w') as f: 
+        json.dumps(f.write(contents))
+    f.close()
+
+def backup_info(hostname, backup):
+    hashtodict(hostname, str(backup))
+    info = {}
+    f = json.loads(open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json').read())
+    for key in f:
+        if key == "startTime":
+            info["startTime"] = str(datetime.datetime.fromtimestamp(int(f["startTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+        elif key == "endTime":
+            info["endTime"] = str(datetime.datetime.fromtimestamp(int(f["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+        elif key == "type":
+            info["type"] = f["type"]
+        info["duration"] = str(datetime.timedelta(seconds = (int(f["endTime"]) - int(f["startTime"]))))
+        a = int(time.time()) - int(f["endTime"])
+        m, s = divmod(a, 60)
+        h, m = divmod(m, 60)
+        info["age"] = str("%d:%02d:%02d") % (h, m, s)
+        info["backup"] = str(backup)
+        #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
+        
+    return info
