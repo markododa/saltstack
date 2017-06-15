@@ -204,6 +204,8 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
         for kkey in dr[key]: 
             fkey = kkey.replace('f%2f', '/')
             fdir[key][fkey] = dr[key][kkey]
+#    return fdir.keys()
+    fdir = fdir[fdir.keys()[0]]
     return fdir
 
 def hashtodict(hostname, backup):
