@@ -275,4 +275,4 @@ def restore(arguments, restore_host='', backupnumber=-1):
     hostname = arguments[0]
     share = arguments[1]
     path = arguments[2]
-    return restore_backup(hostname, share, path, restore_host='',backupnumber=-1)
+    return restore_backup(hostname, share, path, restore_host, backupnumber)
