@@ -1,10 +1,12 @@
-#Object host name must be Windows Host name and va-monitoring should have AD DNS as nameserver. OR
-#Use IP addess as Host name and display name for human readable description
+############## DOMAIN MACHINES
+	
+### SERVER JOINED IN DOMAIN:
 
-
-object Host "10.0.0.2" {
+object Host "Server 2" {
  import "generic-host"
- address = "10.0.0.2"
+ address = "WIN-SRV-2"
+#OR
+ #address = "10.10.10.1" 
  display_name = "Domain Server 2"
  vars.notification["mail"] = { groups = [ "icingaadmins" ] }
  vars.os="Windows"
@@ -12,25 +14,36 @@ object Host "10.0.0.2" {
 
 #Additional checks
 
-# vars.printserver="True"
-# vars.mssql_server="True"
-# vars.mssql_edition == "Express"
-# vars.iis_server="True"
-# vars.domain_controller="True"
+# vars.host.vars.printserver="True"
+# vars.host.vars.mssql_server="True"
+# vars.host.vars.iis_server="True"
+# vars.host.vars.domain_controller="True"
 
 }
 
 
-object Host "10.0.0.3" {
+### DESKTOP PC JOINED IN DOMAIN:
+
+object Host "PC John" {
  import "desktop-host"
- address = "10.0.0.3"
- display_name = "Domain PC 3"
+ address = "PC-John"
+#OR
+ #address = "10.10.10.1"
+ display_name = "Domain PC - John"
  vars.notification["mail"] = { groups = [ "icingaadminsdesktops" ] }
  vars.os="Windows"
  vars.windesktop="True"
 }
 
 
+
+
+
+############## STANDALONE MACHINES
+
+
+### SERVER NOT JOINED IN DOMAIN OR USING LOCAL ACCOUNT FOR ACCESS
+ 
 object Host "10.0.0.4" {
  import "generic-host"
  address = "10.0.0.4"
@@ -40,17 +53,24 @@ object Host "10.0.0.4" {
  vars.windesktop="False"
  vars.standalone="True"
 
-#Additional checks
+#  vars.iis_server_standalone="False"
+#  vars.mssql_server_standalone="False"
+#  vars.printserver_standalone="False"
+#  vars.mysql_server_standalone="False"
 
-# vars.printserver_standalone="True"
-# vars.mssql_server_standalone="True"
-# vars.mssql_edition == "Express"
-# vars.iis_server_standalone="True"
+
+  vars.wmi_user="root"
+  vars.wmi_pass="my_pass"
+#OR
+  #vars.wmi_authfile_path = "/etc/icinga2/conf.d/cred_win_standalone.txt"
 
 }
 
 
-object Host "10.0.0.5" {
+
+### DEKSTOP PC NOT JOINED IN DOMAIN OR USING LOCAL ACCOUNT FOR ACCESS
+
+object Host "Desktop PC 1" {
  import "desktop-host"
  address = "10.0.0.5"
  display_name = "Standalone PC 5"
@@ -58,5 +78,15 @@ object Host "10.0.0.5" {
  vars.os="Windows"
  vars.windesktop="True"
  vars.standalone="True"
-}
 
+#  vars.iis_server_standalone="False"
+#  vars.mssql_server_standalone="False"
+#  vars.printserver_standalone="False"
+#  vars.mysql_server_standalone="False"
+
+  vars.wmi_user="root"
+  vars.wmi_pass="my_pass"
+#OR
+  #vars.wmi_authfile_path = "/etc/icinga2/conf.d/cred_win_standalone.txt"
+
+}
