@@ -253,6 +253,6 @@ def backup_info(hostname, backup):
         #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))        
     return info
 
-def tar_create(hostname, path, location, backupname, backupnumber=-1):
-    tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+hostname+' -s '+path+' -n '+str(backupnumber)+' . > '+location+'/'+backupname+'.tar'
+def tar_create(hostname, share, path, location, backupname, backupnumber=-1):
+    tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+hostname+' -s '+share+' -n '+str(backupnumber)+' /'+path+' > '+location+'/'+backupname+'.tar'
     return __salt__['cmd.run'](tar_create_cmd ,runas='backuppc', cwd='/var/lib/backuppc',python_shell=True)
