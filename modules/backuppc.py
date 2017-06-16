@@ -12,7 +12,7 @@ default_paths = {
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
 }
 
-panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"pull-right margina","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"app","label":"App"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"}],"id":["app","path"]}]}, "backup.browse": {"title":"Browse backups","tbl_source":{"table":{}},"content":[{"type":"Path","name":"path","action":"dir_structure1","target":"table","reducers":["table","panel"]},{"type":"Form","name":"form","target":"table","reducers":["panel","alert","table"],"class":"pull-right margina","elements":[{"type":"dropdown","name":"Select host","action":"dir_structure1","value":[]}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"dir","label":"Files", "action": "folder:dir_structure1", "colClass": "type"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"download_folder","name":"Download"}],"id":["dir"]}]} }
+panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"pull-right margina","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"app","label":"App"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"}],"id":["app","path"]}]}, "backup.browse": {"title":"Browse backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","target":"table","reducers":["panel","alert","table"],"class":"pull-right margina","elements":[{"type":"dropdown","name":"Select host","action":"dir_structure1","value":[]}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"dir","label":"Files", "action: "dir_structure1", "colClass": "dir"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore_folder","name":"Restore"},{"action":"h_restore_folder","name":"Restore to Host"},{"action":"tar_create","name":"Download"}],"id":["dir","PATH"]}]} }
 
 def get_panel(panel_name, host = ''):
     ppanel = panel[panel_name]
@@ -22,18 +22,14 @@ def get_panel(panel_name, host = ''):
         data = [ {'app': key, 'path': v} for key,val in data.items() for v in val ]
         ppanel['tbl_source']['table'] = data
     if panel_name == "backup.browse":
-        host = hostnames[0] if host == '' else host
-        data = dir_structure1(host)
-        ppanel["content"][1]["elements"][0]["value"] = hostnames
+        data = dir_structure1(host if host != '' else hostnames[0])
+        ppanel["content"][0]["elements"][0]["value"] = hostnames
         ppanel['tbl_source']['table'] = data
-        ppanel['tbl_source']['path'] = [host]
     return ppanel
 
-def dir_structure1(host, *args):
+def dir_structure1(host):
     data = dir_structure(host)
-    for x in args:
-        data = data[x]
-    data = [ {'dir': key, 'type': 'folder' if val else 'file'} for key,val in data.items()]
+    data = [ {'dir': key} for key,val in data.items()]
     return data
 
 def get_backup_pubkey():
@@ -56,7 +52,7 @@ def hosts_file_add(hostname, address=False):
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
 
 def add_host(hostname,address=False,scriptpre="None",scriptpost="None"):
-	
+
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 		hosts_file_add(hostname,address)
     		__salt__['file.touch']('/etc/backuppc/pc/'+hostname+'.pl')
@@ -210,11 +206,10 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
         subdir = dict.fromkeys(files)
         parent = reduce(dict.get, folders[:-1], dr)
         parent[folders[-1]] = subdir
-    for key in dr: 
+    for key in dr:
         fdir[key] = {}
-        for kkey in dr[key]: 
+        for kkey in dr[key]:
             fkey = kkey.replace('f%2f', '/')
-            fkey = fkey.replace('%2f', '/')
             fdir[key][fkey] = dr[key][kkey]
     fdir = fdir[fdir.keys()[0]]
     return fdir
@@ -231,7 +226,7 @@ def hashtodict(hostname, backup):
         contents = contents.replace(';','')
         contents = contents.replace('backupInfo = ','')
         contents = contents.replace('\"fillFromNum\" : undef,','')
-    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json', 'w') as f: 
+    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json', 'w') as f:
         json.dumps(f.write(contents))
     f.close()
 
@@ -252,9 +247,5 @@ def backup_info(hostname, backup):
         h, m = divmod(m, 60)
         info["age"] = str("%d:%02d:%02d") % (h, m, s)
         info["backup"] = str(backup)
-        #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))        
+        #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
     return info
-
-def tar_create(arguments, location, backupname, backupnumber=-1):
-    tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' /'+arguments[2]+' > '+location+'/'+backupname+'.tar'
-    return __salt__['cmd.run'](tar_create_cmd ,runas='backuppc', cwd='/var/lib/backuppc',python_shell=True)
