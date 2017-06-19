@@ -203,6 +203,7 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     else :
         rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
     dr = {}
+    fdir = {}
     rootdir = rootdir.rstrip(os.sep)
     start = rootdir.rfind(os.sep) + 1
     struktura = os.walk(rootdir)
@@ -224,7 +225,15 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
         subdir = {filter_f(a):None for a in files}
         parent = reduce(dict.get, folders[:-1], dr) # dr.get(folders[0]).get(folders[1]) ... roditelot
         parent[folders[-1]] = subdir # roditel[sin] = subdir
-    return dr
+    for key in dr: 
+        fdir[key] = {}
+        for kkey in dr[key]: 
+            fkey = kkey.replace('%2f', '/')
+            fdir[key][fkey] = dr[key][kkey]
+    fdir = fdir[fdir.keys()[0]]
+    return fdir
+#    return dr
+
 
 def hashtodict(hostname, backup):
     contents = ''
