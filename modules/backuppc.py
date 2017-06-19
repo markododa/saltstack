@@ -174,6 +174,7 @@ def backupFiles(hostname, number = -1):
     return ffolders
 
 def start_backup(hostname, tip='Inc'):
+    hostname = hostname.lower()
     if tip == 'Inc':
         tip = '0'
     elif tip == 'Full':
@@ -202,22 +203,28 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     else :
         rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
     dr = {}
-    fdir = {}
     rootdir = rootdir.rstrip(os.sep)
     start = rootdir.rfind(os.sep) + 1
-    for path, dirs, files in os.walk(rootdir):
-        folders = path[start:].split(os.sep)
-        subdir = dict.fromkeys(files)
-        parent = reduce(dict.get, folders[:-1], dr)
-        parent[folders[-1]] = subdir
-    for key in dr: 
-        fdir[key] = {}
-        for kkey in dr[key]: 
-            fkey = kkey.replace('f%2f', '/')
-            fkey = fkey.replace('%2f', '/')
-            fdir[key][fkey] = dr[key][kkey]
-    fdir = fdir[fdir.keys()[0]]
-    return fdir
+    struktura = os.walk(rootdir)
+
+    def filter_f(name):
+       if len(name) > 0 and name not in ('attrib', 'backupInfo', 'backupInfo.json'):
+           return name[1:]
+       else:
+           return name
+    def filter_dir(dir):
+       if dir.startswith(r'f%2f'): return dir[4:]
+       elif dir.startswith(r'f'): return dir[1:]
+       else: return dir
+
+    for path, dirs, files in struktura:
+        new_path = [filter_dir(part) for part in path.split(os.sep)]
+        path = os.sep.join(new_path)
+        folders = path[start:].split(os.sep) # /pateka/vo/momentov
+        subdir = {filter_f(a):None for a in files}
+        parent = reduce(dict.get, folders[:-1], dr) # dr.get(folders[0]).get(folders[1]) ... roditelot
+        parent[folders[-1]] = subdir # roditel[sin] = subdir
+    return dr
 
 def hashtodict(hostname, backup):
     contents = ''
@@ -256,7 +263,7 @@ def backup_info(hostname, backup):
     return info
 
 def tar_create(arguments, location, backupname, backupnumber=-1):
-    tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' /f'+arguments[2]+' > '+location+'/'+backupname+'.tar'
+    tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' '+arguments[2]+' > '+location+'/'+backupname+'.tar'
     return __salt__['cmd.run'](tar_create_cmd ,runas='backuppc', cwd='/var/lib/backuppc',python_shell=True)
 
 def download_zip(hostname, share, path, backupnumber=-1):
