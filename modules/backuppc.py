@@ -256,7 +256,7 @@ def backup_info(hostname, backup):
     return info
 
 def tar_create(arguments, location, backupname, backupnumber=-1):
-    tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' /'+arguments[2]+' > '+location+'/'+backupname+'.tar'
+    tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' /f'+arguments[2]+' > '+location+'/'+backupname+'.tar'
     return __salt__['cmd.run'](tar_create_cmd ,runas='backuppc', cwd='/var/lib/backuppc',python_shell=True)
 
 def download_zip(hostname, share, path, backupnumber=-1):
