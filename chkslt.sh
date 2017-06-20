@@ -1,5 +1,5 @@
 #!/bin/bash
-
+git pull
 declare -a git_folders=(states modules reactor)
 declare -a folders=(/srv/salt /srv/salt/_modules /srv/reactor)
 

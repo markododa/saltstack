@@ -5,7 +5,7 @@ from os import path
 
 PERF_PATH = '/var/lib/pnp4nagios/perfdata'
 
-def parse(host, service, start = '-1h', interval = '300'):
+def parse(host, service, start = '-1h', interval = '60'):
    datapath = path.join(PERF_PATH, host)
    xml_path = path.join(datapath, '%s.xml' % service)
    rrd_path = path.join(datapath, '%s.rrd' % service)
