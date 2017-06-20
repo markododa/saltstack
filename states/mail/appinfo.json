@@ -5,5 +5,6 @@
 	"icon": "fa-envelope",
 	"dependency": "directory,monitoring",
     "substates" : ["mail"],
-	"path": "-"
+	"path": "-",
+        "panels": {"admin": [{"key": "email.user", "name": "List users"}], "user": []}
 }

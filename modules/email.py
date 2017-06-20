@@ -1,5 +1,11 @@
 import subprocess, re
 
+panel = {"email.user":{"title":"List users","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"user","label":"User"},{"key":"action","label":"Actions"}],"source":"list_users","panels":{"list_rules":"email.rules"},"actions":[{"action":"list_rules","name":"List rules"}],"id":["user"]}]},"email.rules":{"title":"List rules for user ","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert","modal"],"columns":[{"key":"rule","label":"Rule"},{"key":"action","label":"Actions"}],"source":"list_rules","modals":{"add_rule":{"title":"Add rule","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":"add_rule"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"Rule","value":"","label":"Rule","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]}},"actions":[{"action":"rm_rule","name":"Remove"},{"action":"add_rule","name":"Add rule"}],"id":["rule"]}]}}
+
+def get_panel(panel_name):
+    ppanel = panel[panel_name]
+    return ppanel
+
 def postmap_user(user):
     postmap_cmd = ['postmap', '%s.kam.com.mk' % user]
     subprocess.check_output(postmap_cmd)
@@ -37,3 +43,8 @@ def add_email_user_allowed_recipient(user, recipient):
     add_recipient_line(user, recipient)
     postmap_user(user)
     reload_postfix()
+
+
+def list_users():
+    users = ['test1', 'test3', 'test4', 'test5']
+    return users
