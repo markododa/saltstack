@@ -170,7 +170,7 @@ def backupFiles(hostname, number = -1):
             #   subfolders += [os.path.join(root, d) for d in dirs]
             #   dirs[:] = []
     for value in subfolders:
-        ffolders.append(value.replace('f%2f','/'))
+        ffolders.append(value.replace('%2f','/'))
     return ffolders
 
 def start_backup(hostname, tip='Inc'):
@@ -203,37 +203,30 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     else :
         rootdir = '/var/lib/backuppc/pc/'+hostname+'/'+str(number)+'/'
     dr = {}
-    fdir = {}
     rootdir = rootdir.rstrip(os.sep)
     start = rootdir.rfind(os.sep) + 1
     struktura = os.walk(rootdir)
 
     def filter_f(name):
-       if len(name) > 0 and name not in ('attrib', 'backupInfo', 'backupInfo.json'):
+       BLACKLIST = ('attrib', 'backupInfo', 'backupInfo.json')
+       if len(name) > 0 and name[0] == 'f' and name not in BLACKLIST: 
            return name[1:]
        else:
            return name
-    def filter_dir(dir):
-       if dir.startswith(r'f%2f'): return dir[4:]
-       elif dir.startswith(r'f'): return dir[1:]
-       else: return dir
 
     for path, dirs, files in struktura:
-        new_path = [filter_dir(part) for part in path.split(os.sep)]
+        new_path = [filter_f(part) for part in path.split(os.sep)]
         path = os.sep.join(new_path)
         folders = path[start:].split(os.sep) # /pateka/vo/momentov
         subdir = {filter_f(a):None for a in files}
         parent = reduce(dict.get, folders[:-1], dr) # dr.get(folders[0]).get(folders[1]) ... roditelot
         parent[folders[-1]] = subdir # roditel[sin] = subdir
-    for key in dr: 
-        fdir[key] = {}
-        for kkey in dr[key]: 
-            fkey = kkey.replace('%2f', '/')
-            fdir[key][fkey] = dr[key][kkey]
-    fdir = fdir[fdir.keys()[0]]
-    return fdir
-#    return dr
 
+    for key, val in dr.items():
+        for key2, val2 in val.items(): 
+            del val[key2]
+            val[key2.replace('%2f', '/')] = val2
+    return dr
 
 def hashtodict(hostname, backup):
     contents = ''
