@@ -88,8 +88,9 @@ def add_host(hostname,address=False,scriptpre="None",scriptpost="None"):
 
 def rm_host(hostname):
     __salt__['file.remove']('/etc/backuppc/pc/'+hostname+'.pl')
-    __salt__['file.line'](path='/etc/backuppc/hosts',content=hostname+'       0       backuppc', mode='delete')
+    __salt__['file.line'](path='/etc/backuppc/hosts',content=hostname+'.*backuppc', mode='delete')
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
+    __salt__['file.line'](path='/etc/hosts',content='.*'+hostname+'.*', mode='delete')
     return __salt__['service.reload']('backuppc')
 
 def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"):
