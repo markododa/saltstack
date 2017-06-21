@@ -268,10 +268,7 @@ def tar_create(arguments, location='/usr/share', backupname='test_backup', backu
     tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' '+arguments[2]+' > '+location+'/'+backupname+'.tar'
     return __salt__['cmd.run'](tar_create_cmd ,runas='backuppc', cwd='/var/lib/backuppc',python_shell=True)
 
-def download_zip(arguments, backupnumber=-1):
-    hostname = arguments[0]
-    share = arguments[1]
-    path = arguments[2]
+def download_zip(hostname, share, path='', backupnumber=-1):
     zip_create_cmd = '/usr/share/backuppc/bin/BackupPC_zipCreate'
     args = ' -h '+hostname+' -n '+str(backupnumber)+' -s '+share+' '+path
     return __salt__['cmd.run'](zip_create_cmd+args,runas='backuppc', cwd = '/usr/lib/backuppc/')
@@ -283,8 +280,5 @@ def restore_backup (hostname, share, path, restore_host='',backupnumber=-1):
     args = ' -h '+hostname+' -n '+str(backupnumber)+' -s '+share+' '+path+' | ssh root@'+restore_host+' tar xf - -C '+share
     return __salt__['cmd.run'](tar_create_cmd+args,runas='backuppc', cwd = '/usr/lib/backuppc/',python_shell=True)
 
-def restore(arguments, restore_host='', backupnumber=-1):
-    hostname = arguments[0]
-    share = arguments[1]
-    path = arguments[2]
+def restore(hostname, share, path='', restore_host='', backupnumber=-1):
     return restore_backup(hostname, share, path, restore_host, backupnumber)
