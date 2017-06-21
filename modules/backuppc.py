@@ -222,6 +222,11 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
         parent = reduce(dict.get, folders[:-1], dr) # dr.get(folders[0]).get(folders[1]) ... roditelot
         parent[folders[-1]] = subdir # roditel[sin] = subdir
 
+    if len(dr.keys()):
+        first_key = dr.keys()[0]
+        first_val = dr[first_key]
+        if isinstance(first_val, dict):
+            dr = first_val
 
     for key, val in dr.items():
         del dr[key]
