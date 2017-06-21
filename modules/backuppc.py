@@ -250,7 +250,10 @@ def hashtodict(hostname, backup):
         json.dumps(f.write(contents))
     f.close()
 
-def backup_info(hostname, backup):
+def backup_info(hostname, backup=-1):
+    if backup == -1:
+        result = map(int, backupNumbers(hostname))
+        backup = max(result)
     hashtodict(hostname, str(backup))
     info = {}
     f = json.loads(open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json').read())
