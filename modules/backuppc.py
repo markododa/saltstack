@@ -31,6 +31,8 @@ def get_panel(panel_name, host = ''):
 
 def dir_structure1(host, *args):
     data = dir_structure(host)
+    if data == "No files available.":
+        return []
     for x in args:
         data = data[x]
     data = [ {'dir': key, 'type': 'folder' if val else 'file'} for key,val in data.items()]
