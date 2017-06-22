@@ -8,8 +8,8 @@ def get_panel(panel_name, user = ''):
         data = [ {'user': x} for x in list_users() ]
         ppanel['tbl_source']['table'] = data
     if panel_name == "email.rules":
-        data  = list_rules(user)
-        data = [ {'rule': val} for key,val in data.items() ]
+        data = get_user_rules(user)
+        data = [ {'rule': x} for x in data]
         ppanel['tbl_source']['table'] = data
     return ppanel
 
@@ -47,6 +47,18 @@ def add_recipient_line(user, recipient):
     with open('/etc/postfix/%s' % user, 'a') as f:
         f.write('\n%s OK' % recipient)
 
+
+def rm_recipient_line(user, recipient):
+    rules = ''
+    with open('/etc/postfix/' + user, 'r') as f: 
+        rules = f.read()
+        
+
+    rules = re.sub(recipient + '.*', '', rules)
+
+    with open('/etc/postfix/' + user, 'w') as f: 
+        f.write(rules)
+
 #Above functions are mostly for helping with the actual functions. Those are the ones below.
 
 def add_email_user_restriction(user):
@@ -63,14 +75,24 @@ def rm_email_user_restriction(user):
     change_postfix_restriction(user, action = 'rm')
 #    reload_postfix()
 
-def add_email_user_allowed_recipient(user, recipient):
+def add_user_recipient(user, recipient):
     add_recipient_line(user, recipient)
 
-    postmap_user(user)
+#    postmap_user(user)
     reload_postfix()
 
+def rm_user_recipient(user, recipient):
+    rm_recipient_line(user, recipient)
+
+#    postmap_user(user)
+    reload_postfix()
+
+def list_users():
+    users = ['test1', 'test3', 'test4', 'test5']
+    return users
 
 def get_user_rules(user):
+    user = user.replace('@', '.')
     rules = ''
     with open('/etc/postfix/' + user) as f:
         rules = f.read()
@@ -78,3 +100,6 @@ def get_user_rules(user):
     rules = [x.split(' ')[0].split('\t')[0] for x in rules if x]
     return rules
 
+def list_users():
+    users = ['test1@kam.com.mk', 'test2@kam.com.mk']
+    return users
