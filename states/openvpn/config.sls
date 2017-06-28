@@ -1,7 +1,13 @@
 {% from "openvpn/map.jinja" import map with context %}
 
+
 include:
     - openvpn
+    - openvpn.easyrsa
+
+/etc/systemd/system/openvpn@.service:
+  file.managed:
+    - source: salt://openvpn/files/openvpn@.service
 
 {% for type, names in salt['pillar.get']('openvpn', {}).iteritems() %}
 {% if type == 'server' or type == 'client' %}
@@ -19,6 +25,20 @@ openvpn_config_{{ type }}_{{ name }}:
         group: {{ map.group }}
     - watch_in:
       - service: openvpn_service
+
+# Ensure openvpn service is running and autostart is enabled
+{% if type == 'server' %}
+openvpn_service:
+  service.running:
+    - name: {{ map.service }}@{{name}}
+    - enable: True
+    - require:
+      - pkg: openvpn_pkgs
+
+systemctl start {{ map.service }}@{{name}}:
+  cmd.run
+
+{% endif %}
 
 {% if config.ca is defined and config.ca_content is defined %}
 # Deploy {{ type }} {{ name }} CA file
