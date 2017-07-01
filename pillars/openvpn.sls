@@ -15,7 +15,8 @@ openvpn:
       status: /run/openvpn/openvpn-status.log
       crl: /etc/openvpn/crl.pem
       log: /var/log/openvpn.log
+      ccd: /etc/openvpn/ccd
   client:
     client:
       remote:
-        - vpn.{{ credentials.domain }} 8443
+        - {{ credentials.domain }} 8443
