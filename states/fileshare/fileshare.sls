@@ -10,7 +10,8 @@ install_samba:
       - acl
       - libpam-winbind
       - libnss-winbind
-
+      - ldap-utils
+      - ldb-tools     
      # - nfs-kernel-server 
      
 # https://www.stefanwienert.de/blog/2014/07/02/samba-4-active-directory-controller-with-windows-7-roaming-profiles-plus-linux-login-the-definitive-guide/

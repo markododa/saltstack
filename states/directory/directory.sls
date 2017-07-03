@@ -7,10 +7,12 @@ install_samba:
       - dnsutils
       - winbind
       - smbclient
-      - swatch
-      - libnss-winbind
+      - acl
       - libpam-winbind
+      - libnss-winbind
+      - ldap-utils
       - ldb-tools
+      - swatch
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
@@ -46,14 +48,22 @@ install_peewee:
   file.managed:
     - source: salt://directory/files/vapourapps-samba-api.tar.gz
 
+{% if domain != None %}
+
 /etc/ntp.conf:
   file.append:
     - text:
       - ntpsigndsocket /var/lib/samba/ntp_signd
       - restrict default mssntp
 
-{% if domain != None %}
+fixownership:
+  cmd.run:
+    - name: chmod 750 /var/lib/samba/ntp_signd
 
+fixpermissions:
+  cmd.run:
+    - name: chown root:ntp /var/lib/samba/ntp_signd
+    
 editresolv:
   cmd.run:
     - name: chattr -i /etc/resolv.conf
@@ -102,7 +112,6 @@ restorecomplexity:
 dnsquery_user:
   cmd.run:
     - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry 
-    #--days=0
     - unless: test -e /vapour/dnsquery
 
 query_user:

@@ -7,10 +7,12 @@ install_samba:
       - dnsutils
       - winbind
       - smbclient
-      - swatch
-      - libnss-winbind
+      - acl
       - libpam-winbind
+      - libnss-winbind
+      - ldap-utils
       - ldb-tools
+      - swatch
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
@@ -44,14 +46,22 @@ install_peewee:
   file.managed:
     - source: salt://directory/files/vapourapps-samba-api.tar.gz
 
+{% if domain != None %}
+
 /etc/ntp.conf:
   file.append:
     - text:
-      - ntpsigndsocket /usr/local/samba/var/lib/ntp_signd/
+      - ntpsigndsocket /var/lib/samba/ntp_signd
       - restrict default mssntp
 
-{% if domain != None %}
+fixownership:
+  cmd.run:
+    - name: chmod 750 /var/lib/samba/ntp_signd
 
+fixpermissions:
+  cmd.run:
+    - name: chown root:ntp /var/lib/samba/ntp_signd
+    
 editresolv:
   cmd.run:
     - name: chattr -i /etc/resolv.conf
@@ -64,7 +74,7 @@ editresolv:
       domain: {{ domain }}
       dcip: {{ dcip }} 
 
-chattr:
+resolv-ro:
   cmd.run:
     - name: chattr +i /etc/resolv.conf
 
@@ -76,10 +86,6 @@ create_domain:
   cmd.run:
     - name: rm /etc/samba/smb.conf && samba-tool domain join {{ domain }} DC -U Administrator%{{ admin_password }} --realm {{ domain }} --ipaddress {{ dcip }} && touch /vapour/.domain-set
     - onlyif: test ! -e /vapour/.domain-set
-
-# setpassword:
-  # cmd.run:
-    # - name: samba-tool domain passwordsettings set --complexity=off && samba-tool user setpassword Administrator --newpassword={{ admin_password }}
 
 /etc/samba/smb.conf:
   file.managed:
@@ -96,7 +102,7 @@ create_domain:
  #check if this user alrady exist?
 dnsquery_user:
   cmd.run:
-    - name: echo "dnsquery:"$(< /dev/urandom tr -dc '@#$.' | head -c4)$(< /dev/urandom tr -dc _1-9-A-Z | head -c10)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
+    - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
     - unless: test -e /vapour/dnsquery
 
 query_user:
@@ -239,6 +245,7 @@ check_functionality_directory:
     - user: root
     - group: root
     - mode: 755
+    
 #### end exotics
 
 restart_samba:
@@ -260,4 +267,3 @@ dpkg --install /vapour/winexe_1.00.1-1_amd64.deb:
 shutdown -r +1:
   cmd.run:
     - order: last
-
