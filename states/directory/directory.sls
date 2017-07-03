@@ -49,7 +49,7 @@ install_peewee:
 /etc/ntp.conf:
   file.append:
     - text:
-      - ntpsigndsocket /usr/local/samba/var/lib/ntp_signd/
+      - ntpsigndsocket /var/lib/samba/ntp_signd
       - restrict default mssntp
 
 {% if domain != None %}
