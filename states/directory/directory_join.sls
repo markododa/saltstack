@@ -18,6 +18,7 @@ install_samba:
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
 {% set dcip = salt['pillar.get']('dcip') %}
+{% set samba_admin = salt['pillar.get']('samba_admin', 'Administrator') %}
   
 /vapour/data/:
   file.directory:
@@ -84,7 +85,7 @@ install_samba-api:
 
 create_domain:
   cmd.run:
-    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ domain }} DC -U Administrator%{{ admin_password }} --realm {{ domain }} --ipaddress {{ dcip }} && touch /vapour/.domain-set
+    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ domain }} DC -U {{samba_admin}}%{{ admin_password }} --realm {{ shortdomain }} --ipaddress {{ dcip }} && touch /vapour/.domain-set
     - onlyif: test ! -e /vapour/.domain-set
 
 /etc/samba/smb.conf:
@@ -94,7 +95,7 @@ create_domain:
     - context:
       domain: {{ domain }}
       shortdomain: {{ shortdomain }} 
-      host_name: {{ host_name }} 
+      host_name: {{ grains['host'] }} 
 
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run
@@ -250,7 +251,7 @@ check_functionality_directory:
 
 restart_samba:
   cmd.run:
-    - name: /etc/init.d/samba restart
+    - name: systemctl unmask samba-ad-dc && systemctl enable samba-ad-dc
     - watch:
       - file: /etc/samba/smb.conf
         
