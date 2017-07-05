@@ -55,14 +55,6 @@ install_peewee:
       - ntpsigndsocket /var/lib/samba/ntp_signd
       - restrict default mssntp
 
-fixownership:
-  cmd.run:
-    - name: chmod 750 /var/lib/samba/ntp_signd
-
-fixpermissions:
-  cmd.run:
-    - name: chown root:ntp /var/lib/samba/ntp_signd
-    
 editresolv:
   cmd.run:
     - name: chattr -i /etc/resolv.conf
@@ -100,25 +92,13 @@ create_domain:
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run
 
- #check if this user alrady exist?
-dnsquery_user:
+fixownership:
   cmd.run:
-    - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
-    - unless: test -e /vapour/dnsquery
+    - name: chmod 750 /var/lib/samba/ntp_signd
 
-query_user:
+fixpermissions:
   cmd.run:
-    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry {{salt['pillar.get']('query_user')}} --noexpiry
-    - unless: samba-tool user list | grep -q {{salt['pillar.get']('query_user')}} 
-
-changepsswdpolicy1:
-  cmd.run:
-    - name: samba-tool domain passwordsettings set --max-pwd-age=0
-
-changepsswdpolicy2:
-  cmd.run:
-    - name: samba-tool domain passwordsettings set --account-lockout-threshold=7
-
+    - name: chown root:ntp /var/lib/samba/ntp_signd
     
 ## exotics    
 #/etc/krb5.conf:
@@ -254,7 +234,25 @@ restart_samba:
     - name: systemctl unmask samba-ad-dc && systemctl enable samba-ad-dc
     - watch:
       - file: /etc/samba/smb.conf
-        
+
+dnsquery_user:
+  cmd.run:
+    - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
+    - unless: test -e /vapour/dnsquery
+
+query_user:
+  cmd.run:
+    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry {{salt['pillar.get']('query_user')}} --noexpiry
+    - unless: samba-tool user list | grep -q {{salt['pillar.get']('query_user')}} 
+
+changepsswdpolicy1:
+  cmd.run:
+    - name: samba-tool domain passwordsettings set --max-pwd-age=0
+
+changepsswdpolicy2:
+  cmd.run:
+    - name: samba-tool domain passwordsettings set --account-lockout-threshold=7
+
 {% endif %}
 
 /vapour/winexe_1.00.1-1_amd64.deb:
