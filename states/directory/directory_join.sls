@@ -91,14 +91,6 @@ create_domain:
 
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run
-
-fixownership:
-  cmd.run:
-    - name: chmod 750 /var/lib/samba/ntp_signd
-
-fixpermissions:
-  cmd.run:
-    - name: chown root:ntp /var/lib/samba/ntp_signd
     
 ## exotics    
 #/etc/krb5.conf:
@@ -231,19 +223,32 @@ check_functionality_directory:
 
 restart_samba:
   cmd.run:
-    - name: systemctl unmask samba-ad-dc && systemctl enable samba-ad-dc
+    - name: systemctl unmask samba-ad-dc && systemctl start samba-ad-dc && systemctl enable samba-ad-dc
     - watch:
       - file: /etc/samba/smb.conf
+
+
+fixownership:
+  cmd.run:
+    - name: chmod 750 /var/lib/samba/ntp_signd
+
+fixpermissions:
+  cmd.run:
+    - name: chown root:ntp /var/lib/samba/ntp_signd
 
 dnsquery_user:
   cmd.run:
     - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
     - unless: test -e /vapour/dnsquery
 
+
+{% if pillar['query_user'] is defined %}
 query_user:
   cmd.run:
     - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry {{salt['pillar.get']('query_user')}} --noexpiry
-    - unless: samba-tool user list | grep -q {{salt['pillar.get']('query_user')}} 
+    - unless: samba-tool user list | grep -q {{salt['pillar.get']('query_user')}}
+
+{% endif %}
 
 changepsswdpolicy1:
   cmd.run:
