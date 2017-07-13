@@ -1,6 +1,7 @@
 {% if pillar['dcip'] is defined %}
-echo ok:
-  - cmd.run
-{% elif pillar['dcip'] is not defined % }
-echo not:
-  - cmd.run
+include:
+  - directory.directory_join
+{% elif pillar['dcip'] is not defined %}
+include:
+  - directory.directory
+{% endif %}
