@@ -29,7 +29,7 @@ def get_panel(panel_name, host = ''):
         ppanel['tbl_source']['path'] = [host]
     if panel_name == "backup.info":
         data = backup_info(host)
-        ppanel['tbl_source']['table'] = data
+        ppanel['tbl_source']['table'] = [data]
     return ppanel
 
 def dir_structure1(host, *args):
