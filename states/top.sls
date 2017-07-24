@@ -8,7 +8,7 @@ base:
     - monitoring.icingaweb2
   'role:directory':
     - match: grain
-    - directory.directory
+    - directory
   'role:fileshare':
     - match: grain
     - fileshare.fileshare

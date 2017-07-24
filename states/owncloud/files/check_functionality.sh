@@ -15,11 +15,11 @@ if [ $OUT -eq 0 ];then
     text=$text
 else
 	if [ $OUT -gt 3 ];then
-		text=$text', '"Ghost profiles: "$OUT
-		   exitstate=2
-	else
-		text=$text', '"Ghost profiles: "$OUT
+		text=$text"Ghost profiles: "$OUT
 		   exitstate=1
+	else
+		text=$text"Ghost profiles: "$OUT
+		   exitstate=0
 	fi
 fi
 
@@ -41,9 +41,13 @@ else
 	#', '"Groups: $OUT"
 fi
 
+DIS=`sudo -u www-data /mnt/va-owncloud/owncloud/occ app:list | grep '^Disabled:$' -A 1000 | wc -l`
+DIS=$(($DIS-1))
+
 OUT=`sudo -u www-data /mnt/va-owncloud/owncloud/occ app:list | wc -l`
 OUT=$(($OUT-2))
-text=$text', '"Installed apps: "$OUT
+ENA=$(($OUT-$DIS))
+text=$text', '"Active apps: "$ENA'/'$OUT
 
 
 #OUT=`netstat -ntap |grep '1024' | wc -l`

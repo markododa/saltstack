@@ -7,15 +7,18 @@ install_samba:
       - dnsutils
       - winbind
       - smbclient
-      - swatch
-      - libnss-winbind
+      - acl
       - libpam-winbind
+      - libnss-winbind
+      - ldap-utils
       - ldb-tools
+      - swatch
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
 {% set dcip = salt['pillar.get']('dcip') %}
+{% set samba_admin = salt['pillar.get']('samba_admin', 'Administrator') %}
   
 /vapour/data/:
   file.directory:
@@ -44,13 +47,13 @@ install_peewee:
   file.managed:
     - source: salt://directory/files/vapourapps-samba-api.tar.gz
 
+{% if domain != None %}
+
 /etc/ntp.conf:
   file.append:
     - text:
-      - ntpsigndsocket /usr/local/samba/var/lib/ntp_signd/
+      - ntpsigndsocket /var/lib/samba/ntp_signd
       - restrict default mssntp
-
-{% if domain != None %}
 
 editresolv:
   cmd.run:
@@ -64,7 +67,7 @@ editresolv:
       domain: {{ domain }}
       dcip: {{ dcip }} 
 
-chattr:
+resolv-ro:
   cmd.run:
     - name: chattr +i /etc/resolv.conf
 
@@ -74,12 +77,8 @@ install_samba-api:
 
 create_domain:
   cmd.run:
-    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ domain }} DC -U Administrator%{{ admin_password }} --realm {{ domain }} --ipaddress {{ dcip }} && touch /vapour/.domain-set
+    - name: rm /etc/samba/smb.conf && samba-tool domain join {{ domain }} DC -U {{samba_admin}}%{{ admin_password }} --realm {{ shortdomain }} --ipaddress {{ dcip }} && touch /vapour/.domain-set
     - onlyif: test ! -e /vapour/.domain-set
-
-# setpassword:
-  # cmd.run:
-    # - name: samba-tool domain passwordsettings set --complexity=off && samba-tool user setpassword Administrator --newpassword={{ admin_password }}
 
 /etc/samba/smb.conf:
   file.managed:
@@ -88,30 +87,10 @@ create_domain:
     - context:
       domain: {{ domain }}
       shortdomain: {{ shortdomain }} 
-      host_name: {{ host_name }} 
+      host_name: {{ grains['host'] }} 
 
 'cp /var/lib/samba/private/krb5.conf /etc/krb5.conf':
   cmd.run
-
- #check if this user alrady exist?
-dnsquery_user:
-  cmd.run:
-    - name: echo "dnsquery:"$(< /dev/urandom tr -dc '@#$.' | head -c4)$(< /dev/urandom tr -dc _1-9-A-Z | head -c10)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
-    - unless: test -e /vapour/dnsquery
-
-query_user:
-  cmd.run:
-    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} && samba-tool user setexpiry {{salt['pillar.get']('query_user')}} --noexpiry
-    - unless: samba-tool user list | grep -q {{salt['pillar.get']('query_user')}} 
-
-changepsswdpolicy1:
-  cmd.run:
-    - name: samba-tool domain passwordsettings set --max-pwd-age=0
-
-changepsswdpolicy2:
-  cmd.run:
-    - name: samba-tool domain passwordsettings set --account-lockout-threshold=7
-
     
 ## exotics    
 #/etc/krb5.conf:
@@ -239,14 +218,46 @@ check_functionality_directory:
     - user: root
     - group: root
     - mode: 755
+    
 #### end exotics
 
 restart_samba:
   cmd.run:
-    - name: /etc/init.d/samba restart
+    - name: systemctl unmask samba-ad-dc && systemctl start samba-ad-dc && systemctl enable samba-ad-dc
     - watch:
       - file: /etc/samba/smb.conf
-        
+
+
+fixownership:
+  cmd.run:
+    - name: chmod 750 /var/lib/samba/ntp_signd
+
+fixpermissions:
+  cmd.run:
+    - name: chown root:ntp /var/lib/samba/ntp_signd
+
+dnsquery_user:
+  cmd.run:
+    - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` --description='VA Bot for DNS Query' --surname='DNS Query' --given-name='VA Bot' && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
+    - unless: test -e /vapour/dnsquery
+
+
+{% if pillar['query_user'] is defined %}
+query_user:
+  cmd.run:
+    - name: samba-tool user add {{salt['pillar.get']('query_user')}} {{salt['pillar.get']('query_password')}} --description='VA Bot for LDAP Query' --surname='LDAP Query' --given-name='VA Bot' && samba-tool user setexpiry {{salt['pillar.get']('query_user')}} --noexpiry
+    - unless: samba-tool user list | grep -q {{salt['pillar.get']('query_user')}}
+
+{% endif %}
+
+changepsswdpolicy1:
+  cmd.run:
+    - name: samba-tool domain passwordsettings set --max-pwd-age=0
+
+changepsswdpolicy2:
+  cmd.run:
+    - name: samba-tool domain passwordsettings set --account-lockout-threshold=7
+
 {% endif %}
 
 /vapour/winexe_1.00.1-1_amd64.deb:
@@ -260,4 +271,3 @@ dpkg --install /vapour/winexe_1.00.1-1_amd64.deb:
 shutdown -r +1:
   cmd.run:
     - order: last
-
