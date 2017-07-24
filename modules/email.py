@@ -75,7 +75,7 @@ def rm_email_user_restriction(user):
     reload_postfix()
 
 def add_multiple_user_recipients(user, recipient_list):
-    for r in restriction_list:
+    for r in recipient_list:
         add_user_recipient(user, r)
 
 def add_user_recipient(user, recipient):
