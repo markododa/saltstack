@@ -1,0 +1,25 @@
+[Unit]
+Description=OpenVPN connection to %i
+PartOf=openvpn.service
+ReloadPropagatedFrom=openvpn.service
+Before=systemd-user-sessions.service
+Documentation=man:openvpn(8)
+Documentation=https://community.openvpn.net/openvpn/wiki/Openvpn23ManPage
+Documentation=https://community.openvpn.net/openvpn/wiki/HOWTO
+
+[Service]
+PrivateTmp=true
+KillMode=mixed
+Type=forking
+ExecStart=/usr/sbin/openvpn --daemon ovpn-%i --status /run/openvpn/%i.status 10 --cd /etc/openvpn --script-security 2 --config /etc/openvpn/%i.conf --writepid /run/openvpn/%i.pid
+PIDFile=/run/openvpn/%i.pid
+ExecReload=/bin/kill -HUP $MAINPID
+WorkingDirectory=/etc/openvpn
+ProtectSystem=yes
+DeviceAllow=/dev/null rw
+DeviceAllow=/dev/net/tun rw
+
+[Install]
+WantedBy=multi-user.target
+
+

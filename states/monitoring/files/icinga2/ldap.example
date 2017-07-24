@@ -1,0 +1,18 @@
+apply Service "LDAP Authentication" {
+          import "generic-service"
+          check_command = "ldap"
+          vars.ldap_base = "dc=domain,dc=com"
+          vars.ldap_bind = "CN=va-monitoring,CN=Users,DC=domain,DC=com"
+          vars.ldap_pass = "PASSWORD"
+          assign where host.name == "va-directory-1.domain.com" || host.name == "va-directory-2.domain.com"
+}
+
+apply Service "LDAPs Authentication" {
+          import "generic-service"
+          check_command = "ldap"
+          vars.ldap_base = "dc=domain,dc=com"
+          vars.ldap_bind = "CN=va-monitring,CN=Users,DC=domain,DC=com"
+          vars.ldap_pass = "PASSWORD"
+          vars.ldap_ssl = true
+          assign where host.name == "XXXva-directory-1.domain.com" || host.name == "XXXva-directory-2.domain.com"
+}

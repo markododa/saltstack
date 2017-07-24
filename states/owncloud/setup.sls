@@ -97,7 +97,14 @@ apache2:
 {% set ipaddrss = salt['network.ip_addrs']()[0] %}
 curl {{ipaddrss}} > /dev/null:
   cmd.run
-
+  
+/etc/sudoers.d/occ:
+  file.managed:
+    - source: salt://directory/files/occ
+    - user: root
+    - group: root
+    - mode: 440
+    
 #### functionality script
 /usr/lib/nagios/plugins/check_functionality.sh:
   file.managed:
