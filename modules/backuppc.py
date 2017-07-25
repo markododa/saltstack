@@ -1,4 +1,4 @@
-import salt, os.path, os, json, datetime, time, re
+import salt, os.path, os, json, datetime, time, re, subprocess
 
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
@@ -297,3 +297,35 @@ def restore(arguments, restore_host='', backupnumber=-1):
     share = arguments[1]
     path = arguments[2]
     return restore_backup(hostname, share, path, restore_host, backupnumber)
+
+def infodict(path):
+    contents = ''
+    cmd = 'sudo -u backuppc /usr/share/backuppc/bin/BackupPC_attribPrint '+path+'/attrib > '+path+'/attrib0'
+    subprocess.call(cmd, shell = True)
+    with open(path +'/attrib0','r+') as f:
+        contents = f.read()
+        contents = contents.replace('$VAR1 = {\n' , '{')
+        contents = contents.replace('}\n}', '}}')
+        contents = contents.replace('=>', ':')
+        contents = contents.replace('%','')
+        contents = contents.replace('\'','\"')
+        contents = contents.replace('(','{')
+        contents = contents.replace(')','}')
+        contents = contents.replace(';','')
+    with open(path+'/attrib.json', 'w') as f:
+        json.dumps(f.write(contents))
+
+def backup_attrib(path):
+    infodict(path)
+    info = {}
+    i = 0
+    f = json.loads(open(path+'/attrib.json').read())
+    for key in f:
+        info.update({ 'name'+str(i) : key })
+        for keykey in f[key]:
+            if keykey == 'mtime':
+                info.update({ 'time'+str(i) : datetime.datetime.fromtimestamp(int(f[key][keykey])).strftime('%Y-%m-%d %H:%M:%S')})
+            elif keykey == 'size':
+                info.update({ 'size'+str(i) : f[key][keykey]})
+        i += 1
+    return info
