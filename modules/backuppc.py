@@ -253,28 +253,29 @@ def hashtodict(hostname, backup):
         json.dumps(f.write(contents))
     f.close()
 
-def backup_info(hostname, backup=-1):
-    if backup == -1:
-        result = map(int, backupNumbers(hostname))
-        backup = max(result)
-    hashtodict(hostname, str(backup))
-    info = {}
-    f = json.loads(open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json').read())
-    for key in f:
-        if key == "startTime":
-            info["startTime"] = str(datetime.datetime.fromtimestamp(int(f["startTime"])).strftime('%Y-%m-%d %H:%M:%S'))
-        elif key == "endTime":
-            info["endTime"] = str(datetime.datetime.fromtimestamp(int(f["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))
-        elif key == "type":
-            info["type"] = f["type"]
-        info["duration"] = str(datetime.timedelta(seconds = (int(f["endTime"]) - int(f["startTime"]))))
-        a = int(time.time()) - int(f["endTime"])
-        m, s = divmod(a, 60)
-        h, m = divmod(m, 60)
-        info["age"] = str("%d:%02d:%02d") % (h, m, s)
-        info["backup"] = str(backup)
-        #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))        
-    return info
+def backup_info(hostname):
+    backup_list = backupNumbers(hostname)
+    content = [{}]
+    for backup in backup_list:
+        info = {}
+        hashtodict(hostname, str(backup))
+        f = json.loads(open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json').read())
+        for key in f:
+            if key == "startTime":
+                info.update({"startTime" : str(datetime.datetime.fromtimestamp(int(f["startTime"])).strftime('%Y-%m-%d %H:%M:%S')) })
+            elif key == "endTime":
+                info.update({"endTime" : str(datetime.datetime.fromtimestamp(int(f["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))})
+            elif key == "type":
+                info.update({"type" : f["type"]})
+            info.update({"duration" : str(datetime.timedelta(seconds = (int(f["endTime"]) - int(f["startTime"]))))})
+            a = int(time.time()) - int(f["endTime"])
+            m, s = divmod(a, 60)
+            h, m = divmod(m, 60)
+            info.update({"age" : str("%d:%02d:%02d") % (h, m, s)})
+            info.update({"backup" : str(backup)})
+        #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
+        content.append(info)
+    return content
 
 def tar_create(arguments, location='/usr/share', backupname='test_backup', backupnumber=-1):
     tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' '+arguments[2]+' > '+location+'/'+backupname+'.tar'
