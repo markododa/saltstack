@@ -255,7 +255,7 @@ def hashtodict(hostname, backup):
 
 def backup_info(hostname):
     backup_list = backupNumbers(hostname)
-    content = [{}]
+    content = []
     for backup in backup_list:
         info = {}
         hashtodict(hostname, str(backup))
