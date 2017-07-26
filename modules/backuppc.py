@@ -39,7 +39,7 @@ def dir_structure1(host, *args):
     for x in args:
         data = data[x]
     attrib = backup_attrib(host, ''.join(args))
-    data = [ {'dir': key, 'type': 'folder', 'size': attrib[key]['size'], 'time': attrib[key]['time'] if val is not None else 'file'} for key,val in data.items()]
+    data = [ {'dir': key, 'type': 'folder' if val is not None else 'file'} for key,val in data.items()]
     return data
 
 def get_backup_pubkey():
