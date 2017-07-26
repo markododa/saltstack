@@ -27,7 +27,7 @@ icinga_conf_template = 'object Host "%s" { \n\
 
 def add_host_to_icinga(host_name, ip_address, value_pairs = {}):
     conf_dir = '/etc/icinga2/conf.d/%s.conf' % host_name
-    host_conf = icinga_conf_template % (ip_address, ip_address, host_name)
+    host_conf = icinga_conf_template % (host_name, ip_address, host_name)
     if value_pairs: 
         for pair in value_pairs: 
             host_conf += '\n  ' + pair + '="' + value_pairs[pair] + '"'

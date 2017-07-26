@@ -29,7 +29,7 @@ def get_panel(panel_name, host = ''):
         ppanel['tbl_source']['path'] = [host]
     if panel_name == "backup.info":
         data = backup_info(host)
-        ppanel['tbl_source']['table'] = [data]
+        ppanel['tbl_source']['table'] = data
     return ppanel
 
 def dir_structure1(host, *args):
@@ -38,7 +38,8 @@ def dir_structure1(host, *args):
         return []
     for x in args:
         data = data[x]
-    data = [ {'dir': key, 'type': 'folder' if val is not None else 'file'} for key,val in data.items()]
+    attrib = backup_attrib(host, ''.join(args))
+    data = [ {'dir': key, 'type': 'folder', 'size': attrib[key]['size'], 'time': attrib[key]['time'] if val is not None else 'file'} for key,val in data.items()]
     return data
 
 def get_backup_pubkey():
@@ -316,17 +317,27 @@ def infodict(path):
     with open(path+'/attrib.json', 'w') as f:
         json.dumps(f.write(contents))
 
-def backup_attrib(path):
-    infodict(path)
-    info = {}
-    i = 0
-    f = json.loads(open(path+'/attrib.json').read())
+def backup_attrib(hostname, path = '', number = -1):
+    start = '/var/lib/backuppc/pc/'
+    try:
+        len(backupNumbers(hostname)) > 0
+    except:
+        return "No files available."
+    if number == -1:
+        result = map(int, backupNumbers(hostname))
+        number = max(backupNumbers(hostname))
+    if path != '':
+        path = 'f'+path.replace('/','%2f')
+    infodict(start+hostname+'/'+str(number)+'/'+path)
+    content = {}
+    f = json.loads(open(start+hostname+'/'+str(number)+'/'+path+'/attrib.json').read())
     for key in f:
-        info.update({ 'name'+str(i) : key })
+        name = key
         for keykey in f[key]:
             if keykey == 'mtime':
-                info.update({ 'time'+str(i) : datetime.datetime.fromtimestamp(int(f[key][keykey])).strftime('%Y-%m-%d %H:%M:%S')})
+                time = datetime.datetime.fromtimestamp(int(f[key][keykey])).strftime('%Y-%m-%d %H:%M:%S')
             elif keykey == 'size':
-                info.update({ 'size'+str(i) : f[key][keykey]})
-        i += 1
-    return info
+                size = f[key][keykey]
+        #info = { 'name' : name, 'time' : time, 'size' : size}
+        content[name] = {'time' : time, 'size' : size}
+    return content
