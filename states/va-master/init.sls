@@ -70,3 +70,16 @@ rsyslog:
     - user: syslog
     - group: adm
     - makedirs: True 
+
+#### functionality script
+/usr/lib/nagios/plugins/:
+  file.directory:
+    - makedirs: True
+
+check_functionality_directory:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/check_functionality.sh
+    - source: salt://va-master/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755

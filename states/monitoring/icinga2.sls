@@ -120,6 +120,19 @@ cp /var/lib/icinga2/ca/ca.crt /etc/icinga2/pki/ && chown nagios:nagios /etc/icin
 icinga2:
   service.running: []
 
+#### functionality script
+/usr/lib/nagios/plugins/:
+  file.directory:
+    - makedirs: True
+
+check_functionality_directory:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/check_functionality.sh
+    - source: salt://monitoring/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+
 /opt/va/icinga2/va-host.tmpl:
   file.managed:
     - source: salt://monitoring/files/va_host.conf
