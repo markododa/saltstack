@@ -91,6 +91,7 @@ libxml-rss-perl:
     - device: /dev/vdb
     - fstype: ext4
     - mkmnt: True
+    - opts: defaults,noatime
 
 'mv /var/lib/backuppc /mnt/va-backup/':
   cmd.run:
