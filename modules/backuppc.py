@@ -127,6 +127,8 @@ def rm_host(hostname):
 
 def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"):
     hostname = hostname.lower()
+    if folder[-1] == '/':
+        folder = folder[0:-1]
     if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
 	    add_host(hostname,address,scriptpre,scriptpost)
     if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
