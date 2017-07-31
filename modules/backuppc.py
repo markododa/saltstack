@@ -314,6 +314,7 @@ def backup_info(hostname):
             info.update({"backup" : str(backup)})
         #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
         content.append(info)
+        os.remove('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json')
     return content
 
 def tar_create(arguments, location='/usr/share', backupname='test_backup', backupnumber=-1):
@@ -386,5 +387,7 @@ def backup_attrib(hostname, number, *args):
             elif keykey == 'size':
                 size = f[key][keykey]
         #info = { 'name' : name, 'time' : time, 'size' : size}
-        content[name] = {'time' : time, 'size' : size} 
+        content[name] = {'time' : time, 'size' : size}
+    os.remove(start+hostname+'/'+str(number)+'/'+share+path+'/attrib.json')
+    os.remove(start+hostname+'/'+str(number)+'/'+share+path+'/attrib0') 
     return content
