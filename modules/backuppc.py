@@ -338,7 +338,8 @@ def restore(arguments, restore_host='', backupnumber=-1):
 
 def infodict(path):
     contents = ''
-    cmd = 'sudo -u backuppc /usr/share/backuppc/bin/BackupPC_attribPrint '+path+'/attrib > '+path+'/attrib0'
+    cmd = 'sudo -u backuppc /usr/share/backuppc/bin/BackupPC_attribPrint \'%s/attrib\' > \'%s/attrib0\'' % (path, path)
+   # cmd = ['sudo -u ', 'backuppc', '/usr/share/backuppc/bin/BackupPC_attribPrint '+path+'/attrib', '>', path+'/attrib0'
     subprocess.call(cmd, shell = True)
     with open(path +'/attrib0','r+') as f:
         contents = f.read()
@@ -353,75 +354,9 @@ def infodict(path):
     with open(path+'/attrib.json', 'w') as f:
         json.dumps(f.write(contents))
 
-
-#def backup_attrib(hostname, *args):
-#    start = '/var/lib/backuppc/pc/'
-#    try:
-#        len(backupNumbers(hostname)) > 0
-#    except:
-#        return "No files available."
-#    if len(args) == 0:
-#        number = -1
-#        path = ''
-#        share = ''
-#    else:
-##        number = args.pop()
-##        if args: 
-##            share, args = args[0], args[1:]
-##        else: 
-##            share = ''
-##        if args: 
-##            path = args.pop()
-##        else: 
-##            path = ''
-##        share = 'f'+share.replace('/','%2f')
-#
-#        if len(args) == 1 and isinstance(args[0], int):
-#            number = args[0]
-#            share = ''
-#            path = ''
-#        elif len(args) == 2 and isinstance(args[1], int):
-#            share = args[0]
-#            share = 'f'+share.replace('/','%2f')
-#            number = args[1]
-#            path = ''
-#        elif len(args) == 3 and isinstance(args[2], int):
-#            share = args[0]
-#            share = 'f'+share.replace('/','%2f')
-#            path = 'f' + args[1]
-#            path = path.replace('/', '/f')
-#            number = args[2]
-#        else:
-#            share = args[0]
-#            share = 'f'+share.replace('/','%2f')
-#            if len(args) > 1:
-#                path = 'f' + args[1]
-#                path = path.replace('/', '/f')
-#            else:
-#                path = ''
-#            number = -1
-#    if number == -1:
-#        result = map(int, backupNumbers(hostname))
-#        try:
-#            number = max(backupNumbers(hostname))
-#        except:
-#            return "No files available."
-#    infodict(start+hostname+'/'+str(number)+'/'+share+'/'+path)
-#    content = {}
-#    f = json.loads(open(start+hostname+'/'+str(number)+'/'+share+'/'+path+'/attrib.json').read())
-#    for key in f:
-#        name = key
-#        for keykey in f[key]:
-#            if keykey == 'mtime':
-#                time = datetime.datetime.fromtimestamp(int(f[key][keykey])).strftime('%Y-%m-%d %H:%M:%S')
-#            elif keykey == 'size':
-#                size = f[key][keykey]
-#        #info = { 'name' : name, 'time' : time, 'size' : size}
-#        content[name] = {'time' : time, 'size' : size}
-#    return content
-
 def backup_attrib(hostname, number, *args):
     start = '/var/lib/backuppc/pc/'
+    newshare ='empty'
     try:
         len(backupNumbers(hostname)) > 0
     except:
@@ -436,11 +371,11 @@ def backup_attrib(hostname, number, *args):
     elif len(args) == 2:
         share = args[0]
         share = 'f' + share.replace('/','%2f')
-        path = 'f' + args[1]
+        path = '/' + args[1]
         path = path.replace('/', '/f')
-    infodict(start+hostname+'/'+str(number)+'/'+share+'/'+path)
+    infodict(start+hostname+'/'+str(number)+'/'+share+path)
     content = {}
-    f = json.loads(open(start+hostname+'/'+str(number)+'/'+share+'/'+path+'/attrib.json').read())
+    f = json.loads(open(start+hostname+'/'+str(number)+'/'+share+path+'/attrib.json').read())
     for key in f:
         name = key
         for keykey in f[key]:
@@ -449,5 +384,5 @@ def backup_attrib(hostname, number, *args):
             elif keykey == 'size':
                 size = f[key][keykey]
         #info = { 'name' : name, 'time' : time, 'size' : size}
-        content[name] = {'time' : time, 'size' : size}
+        content[name] = {'time' : time, 'size' : size} 
     return content
