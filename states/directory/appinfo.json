@@ -4,8 +4,14 @@
 	"version": "1.1",
 	"icon": "fa-group",
 	"dependency": "monitoring",
-    "substates": ["directory.directory", "openvpn"],
-    "module" : "samba",
+        "substates": ["directory.directory", "openvpn"],
+        "module" : "samba",
+        "fields": [
+            {"type": "text", "name": "domain", "label": "Domain-name"},
+            {"type": "text", "name": "ip", "label": "IP address of DC"},
+            {"type": "text", "name": "username", "label": "Username"},
+            {"type": "password", "name": "password", "label": "Password"}
+        ],
 	"path": "-", 
-    "panels": {"admin": [{"key": "directory.users", "name": "Users"}, {"key": "directory.groups", "name": "Groups"}, {"key": "directory.dns", "name": "DNS entries"}, {"key": "directory.overview", "name": "Overview"}], "user": []}
+        "panels": {"admin": [{"key": "directory.users", "name": "Users"}, {"key": "directory.groups", "name": "Groups"}, {"key": "directory.dns", "name": "DNS entries"}, {"key": "directory.overview", "name": "Overview"}], "user": []}
 }

@@ -6,6 +6,11 @@
 	"dependency": "directory",
     "substates": ["fileshare.fileshare"],
         "module" : "fileshare",
+        "fields": [
+            {"type": "text", "name": "ip", "label": "IP address of DC"},
+            {"type": "text", "name": "username", "label": "Username"},
+            {"type": "password", "name": "password", "label": "Password"}
+        ],
 	"path": "-",
         "panels": {"admin": [{"key": "fileshare.fileshare", "name": "Fileshare"}], "user": []}
 }

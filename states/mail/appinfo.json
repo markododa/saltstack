@@ -4,7 +4,12 @@
 	"version": "1.1",
 	"icon": "fa-envelope",
 	"dependency": "directory,monitoring",
-    "substates" : ["mail"],
+        "substates" : ["mail"],
+        "fields": [
+            {"type": "text", "name": "ip", "label": "IP address of DC"},
+            {"type": "text", "name": "username", "label": "Username"},
+            {"type": "password", "name": "password", "label": "Password"}
+        ],
 	"path": "-",
         "panels": {"admin": [{"key": "email.user", "name": "List users"}], "user": []}
 }
