@@ -70,11 +70,16 @@ set -u
 #	DG_PATH - where the DansGuardian Binary is located
 #	
 # 
-#export BL_URL=${BL_URL:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&file=smalltestlist"}
-#export BL_URL_INFO=${BL_URL_INFO:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=information&file=bigblacklist"}
-export BL_URL_INFO=${BL_URL_INFO:="http://download.va.mk/blacklists.info"}
+export BL_URL=${BL_URL:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&file=smalltestlist"}
+export BL_URL_INFO=${BL_URL_INFO:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=information&file=bigblacklist"}
 #export BL_URL=${BL_URL:="http://urlblacklist.com/cgi-bin/commercialdownload.pl?type=download&file=bigblacklist"}
-export BL_URL=${BL_URL:="http://download.va.mk/blacklists.tar.gz"}
+
+
+#JUST TESTING THE STATE
+#export BL_URL=${BL_URL:="http://download.va.mk/blacklists.tar.gz"}
+#export BL_URL_INFO=${BL_URL_INFO:="http://download.va.mk/blacklists.info"}
+
+
 
 # IMPORTANT - The blacklist is COMMERCIAL.  If you download without a subscription you
 #             are stealing.  You may try 1 download of the big list for free to test.

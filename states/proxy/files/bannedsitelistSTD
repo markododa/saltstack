@@ -1,6 +1,6 @@
 #domains in banned list
 #Don't bother with the www. or the http://
-facebook.com
+banned.com
 
 #The bannedurllist is for blocking PART of a site
 #The bannedsitelist is for blocking ALL of a site
@@ -52,8 +52,8 @@ facebook.com
 #and CONNECT tunnels except to addresses in the
 #exceptionsitelist and greysitelist files, remove
 #the # from the next line to leave only a '**s':
-**s
-
+#**s
+facebook.com
 
 #Blanket IP Block.  To block all sites specified only as an IP,
 #remove the # from the next line to leave only a '*ip':

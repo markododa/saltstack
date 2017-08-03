@@ -28,7 +28,7 @@
 # and CONNECT tunnels except to addresses in the
 # exceptionsitelist and greysitelist files, remove
 # the # from the next line to leave only a '**s':
-#**s
+**s
 
 # Blanket IP exception.  To allow all sites specified only as an IP,
 # remove the # from the next line to leave only a '*ip':

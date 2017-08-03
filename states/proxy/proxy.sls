@@ -2,6 +2,10 @@ install_proxy:
   pkg.installed:
     - pkgs:
       - squid3
+      - lighttpd
+      - libtommath0
+      #OR
+      - libtommath1
 #    - e2guardian
      
 # squid da ne slusha osven za 127.0.0.1
@@ -10,6 +14,7 @@ install_proxy:
 # treba samo da slusha na 8080 i eventualno 80 (squid portata 3128 mora da e nedostapna)
 
 {% set domain = salt['pillar.get']('domain') %}
+{% set host_name = grains['id'] %}
 
 /root/e2guardian_3.4.0.3_wheezy-jessie_amd64.deb:
   file.managed:
@@ -21,12 +26,28 @@ install_proxy:
 install_e2b:
   cmd.run:
     - name: dpkg -i /root/e2guardian_3.4.0.3_wheezy-jessie_amd64.deb
-    
+
 fix_e2b:
   cmd.run:
     - name: apt-get install -f -y
 # ima li alternativna komanda za ova gore?  
-  
+
+# stop_e2g:
+  # cmd.run:
+    # - name: service e2guardian stop
+
+# stop_squid:
+  # cmd.run:
+    # - name: service squid stop
+ 
+stop_squid:
+  service.dead:
+    - name: squid
+
+stop_e2guardian:
+  service.dead:
+    - name: e2guardian
+   
 /etc/e2guardian/updateBL.sh:
   file.managed:
     - source: salt://proxy/files/updateBL.sh
@@ -97,15 +118,29 @@ fix_e2b:
     - group: root
     - mode: 755
  
-get_blacklists:
-  cmd.run:
-    - name: /etc/e2guardian/updateBL.sh
+#get_blacklists:
+# cmd.run:
+#    - name: /etc/e2guardian/updateBL.sh
     
-restart_e2g:
-  cmd.run:
-    - name: service e2guardian restart
+squid_use_hdd_as_cache_too:
+ file.replace:
+    - name: /etc/squid/squid.conf
+    - pattern: http_port 3128
+    - repl: http_port 127.0.0.1:3128
+       
+enable_hdd_cache:
+  file.uncomment:
+    - name: /etc/squid/squid.conf
+    - char: '#'
+    - regex: "cache_dir ufs /var.*"
+    
+prevent_localhost_url:
+  file.uncomment:
+    - name: /etc/squid/squid.conf
+    - char: '#'
+    - regex: "http_access deny to_localhost.*"
 
-# AUTO DISCOVERY, TREBA REALNO NA DRUG INTERENT WEB SERVER DA SE, SERVER SO HOSTNAME WPAD,
+    # AUTO DISCOVERY, TREBA REALNO NA DRUG WEB SERVER DA SE, SERVER SO HOSTNAME WPAD,
 
 /var/www/html/wpad.dat:
   file.managed:
@@ -114,12 +149,17 @@ restart_e2g:
     - group: root
     - mode: 777
 
-wpad:
+wpad_domain:
   file.replace:
     - name: /var/www/html/wpad.dat
     - pattern: DOMAIN
     - repl: {{ domain }}
 
+wpad_host:
+  file.replace:
+    - name: /var/www/html/wpad.dat
+    - pattern: PROXY_HOST
+    - repl: {{ host_name }}
     
 /var/www/html/proxy.pac:
   file.managed:
@@ -128,10 +168,54 @@ wpad:
     - group: root
     - mode: 777
        
-proxy:
+proxy_domain:
   file.replace:
     - name: /var/www/html/proxy.pac
     - pattern: DOMAIN
-    - repl: {{ domain }}
+    - repl: {{ domain }}       
+    
+proxy_host:
+  file.replace:
+    - name: /var/www/html/proxy.pac
+    - pattern: PROXY_HOST
+    - repl: {{ host_name }}
 
-  
+remove_default_index:
+  cmd.run:
+    - name: rm /var/www/html/index.lighttpd.html
+
+/var/www/html/index.html:
+  file.managed:
+    - source: salt://proxy/files/index.html
+    - user: root
+    - group: root
+    - mode: 777
+       
+index_domain:
+  file.replace:
+    - source: salt://proxy/files/index.html
+    - pattern: DOMAIN
+    - repl: {{ domain }}       
+
+index_host:
+  file.replace:
+    - source: salt://proxy/files/index.html
+    - pattern: PROXY_HOST
+    - repl: {{ host_name }}
+
+
+squid:
+  service.running:
+    - enable: True
+
+e2guardian:
+  service.running:
+    - enable: True
+
+# start_squid:
+  # cmd.run:
+    # - name: service squid start    
+
+# start_e2g:
+  # cmd.run:
+    # - name: service e2guardian start   
