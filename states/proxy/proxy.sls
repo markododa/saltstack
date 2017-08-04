@@ -7,7 +7,7 @@ install_proxy:
       #OR
       - libtommath1
 #    - e2guardian
-     
+
 # squid da ne slusha osven za 127.0.0.1
 # CNAME record na DNS za host: wpad kon web server sto ke gi sodrzi wpad.dat i proxy.pac 
 # http://contentfilter.futuragts.com/wiki/doku.php?id=automatic_proxy_configuration    
@@ -22,10 +22,14 @@ install_proxy:
     - user: root
     - group: root
     - mode: 755
-    
+
 install_e2b:
   cmd.run:
     - name: dpkg -i /root/e2guardian_3.4.0.3_wheezy-jessie_amd64.deb
+
+cert_lhttps:
+  cmd.run:
+    - name: openssl req -new -x509 -keyout lighttpd.pem -out lighttpd.pem -days 3650 -nodes -sha256 -subj '/CN=mydomain.com/O=Web Proxy Certificate./C=US'
 
 fix_e2b:
   cmd.run:
@@ -39,7 +43,7 @@ fix_e2b:
 # stop_squid:
   # cmd.run:
     # - name: service squid stop
- 
+
 stop_squid:
   service.dead:
     - name: squid
@@ -47,28 +51,32 @@ stop_squid:
 stop_e2guardian:
   service.dead:
     - name: e2guardian
-   
+
+stop_lighttpd:
+  service.dead:
+    - name: lighttpd
+
 /etc/e2guardian/updateBL.sh:
   file.managed:
     - source: salt://proxy/files/updateBL.sh
     - user: root
     - group: root
-    - mode: 755
-    
+    - mode: 754
+
 /etc/e2guardian/e2guardian.conf:
   file.managed:
     - source: salt://proxy/files/e2guardian.conf
     - user: root
     - group: root
     - mode: 644
-    
+
 /etc/e2guardian/e2guardianf1.conf:
   file.managed:
     - source: salt://proxy/files/e2guardianf1.conf
     - user: root
     - group: root
     - mode: 644
-    
+
 /etc/e2guardian/e2guardianf2.conf:
   file.managed:
     - source: salt://proxy/files/e2guardianf2.conf
@@ -81,43 +89,50 @@ stop_e2guardian:
     - source: salt://proxy/files/bannedsitelistSTD
     - user: root
     - group: root
-    - mode: 755
-    
+    - mode: 644
+
 /etc/e2guardian/lists/bannedsitelistVIP:
   file.managed:
     - source: salt://proxy/files/bannedsitelistVIP
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
 
 /etc/e2guardian/lists/exceptionsitelistSTD:
   file.managed:
     - source: salt://proxy/files/exceptionsitelistSTD
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
 
 /etc/e2guardian/lists/exceptionsitelistVIP:
   file.managed:
     - source: salt://proxy/files/exceptionsitelistVIP
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
+
+/etc/e2guardian/lists/exceptionextensionlist:
+  file.managed:
+    - source: salt://proxy/files/exceptionextensionlist
+    - user: root
+    - group: root
+    - mode: 644
 
 /etc/e2guardian/lists/authplugins/ipgroups:
   file.managed:
     - source: salt://proxy/files/ipgroups
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
 
 /usr/share/e2guardian/languages/ukenglish/template.html:
   file.managed:
     - source: salt://proxy/files/template.html
     - user: root
     - group: root
-    - mode: 755
- 
+    - mode: 644
+
 #get_blacklists:
 # cmd.run:
 #    - name: /etc/e2guardian/updateBL.sh
@@ -127,27 +142,41 @@ squid_use_hdd_as_cache_too:
     - name: /etc/squid/squid.conf
     - pattern: http_port 3128
     - repl: http_port 127.0.0.1:3128
-       
+
 enable_hdd_cache:
   file.uncomment:
     - name: /etc/squid/squid.conf
     - char: '#'
     - regex: "cache_dir ufs /var.*"
-    
+
 prevent_localhost_url:
   file.uncomment:
     - name: /etc/squid/squid.conf
     - char: '#'
-    - regex: "http_access deny to_localhost.*"
+- regex: "http_access deny to_localhost.*"
 
     # AUTO DISCOVERY, TREBA REALNO NA DRUG WEB SERVER DA SE, SERVER SO HOSTNAME WPAD,
+
+/etc/lighttpd/lighttpd.conf:
+  file.managed:
+    - source: salt://proxy/files/lighttpd.conf
+    - user: root
+    - group: root
+    - mode: 644
+
+/var/www/html/blocked.html:
+  file.managed:
+    - source: salt://proxy/files/blocked.html
+    - user: root
+    - group: root
+    - mode: 644
 
 /var/www/html/wpad.dat:
   file.managed:
     - source: salt://proxy/files/wpad
     - user: root
     - group: root
-    - mode: 777
+    - mode: 644
 
 wpad_domain:
   file.replace:
@@ -166,14 +195,14 @@ wpad_host:
     - source: salt://proxy/files/wpad
     - user: root
     - group: root
-    - mode: 777
-       
+    - mode: 644
+
 proxy_domain:
   file.replace:
     - name: /var/www/html/proxy.pac
     - pattern: DOMAIN
     - repl: {{ domain }}       
-    
+
 proxy_host:
   file.replace:
     - name: /var/www/html/proxy.pac
@@ -189,8 +218,8 @@ remove_default_index:
     - source: salt://proxy/files/index.html
     - user: root
     - group: root
-    - mode: 777
-       
+    - mode: 644
+
 index_domain:
   file.replace:
     - source: salt://proxy/files/index.html
@@ -203,12 +232,28 @@ index_host:
     - pattern: PROXY_HOST
     - repl: {{ host_name }}
 
+#### functionality script
+/usr/lib/nagios/plugins/:
+  file.directory:
+    - makedirs: True
+
+check_functionality_directory:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/check_functionality.sh
+    - source: salt://directory/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
 
 squid:
   service.running:
     - enable: True
 
 e2guardian:
+  service.running:
+    - enable: True
+
+lighttpd:
   service.running:
     - enable: True
 
