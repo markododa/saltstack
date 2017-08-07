@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# CHECK SCRIPT FOR VA-DIRECTORY
+# CHECK SCRIPT FOR VA-PROXY
 
 exitstate=0
 text=""

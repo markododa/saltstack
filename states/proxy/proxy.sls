@@ -3,12 +3,8 @@ install_proxy:
     - pkgs:
       - squid3
       - lighttpd
+      - libtommath0
 
-#      - libtommath0
-#      - libtommath1
-
-#    - e2guardian
-# squid da ne slusha osven za 127.0.0.1
 # CNAME record na DNS za host: wpad kon web server sto ke gi sodrzi wpad.dat i proxy.pac 
 # http://contentfilter.futuragts.com/wiki/doku.php?id=automatic_proxy_configuration    
 # treba samo da slusha na 8080 i eventualno 80 (squid portata 3128 mora da e nedostapna)
@@ -23,7 +19,6 @@ install_proxy:
     - group: root
     - mode: 755
 
-
 stop_squid:
   service.dead:
     - name: squid
@@ -35,7 +30,6 @@ stop_lighttpd:
 cert_lhttps:
   cmd.run:
     - name: openssl req -new -x509 -keyout lighttpd.pem -out lighttpd.pem -days 3650 -nodes -sha256 -subj '/CN=mydomain.com/O=Web Proxy Certificate./C=US'
-
   
 squid_use_hdd_as_cache_too:
  file.replace:
@@ -55,7 +49,7 @@ prevent_localhost_url:
     - char: '#'
     - regex: "http_access deny to_localhost.*"
 
-    # AUTO DISCOVERY, TREBA REALNO NA DRUG WEB SERVER DA SE, SERVER SO HOSTNAME WPAD,
+# AUTO DISCOVERY, TREBA REALNO NA DRUG WEB SERVER DA SE, SERVER SO HOSTNAME WPAD,
 
 /etc/lighttpd/lighttpd.conf:
   file.managed:
@@ -63,13 +57,6 @@ prevent_localhost_url:
     - user: root
     - group: root
     - mode: 644
-
-#/var/www/html/blocked.html:
-#  file.managed:
-#    - source: salt://proxy/files/blocked.html
-#    - user: root
-#    - group: root
-#    - mode: 644
 
 /var/www/html/wpad.dat:
   file.managed:
@@ -79,21 +66,10 @@ prevent_localhost_url:
     - mode: 644
     - template: jinja
     - context:
-      PROXY_DOMAIN: {{ domain }}
+      PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
 
-#wpad_domain:
-#  file.replace:
-#    - name: /var/www/html/wpad.dat
-#   - pattern: PROXY_DOMAIN
-#   - repl: {{ domain }}
-
-#wpad_host:
-#  file.replace:
-#    - name: /var/www/html/wpad.dat
-#    - pattern: PROXY_HOST
-#    - repl: {{ host_name }}
-    
+   
 /var/www/html/proxy.pac:
   file.managed:
     - source: salt://proxy/files/wpad
@@ -102,20 +78,9 @@ prevent_localhost_url:
     - mode: 644
     - template: jinja
     - context:
-      PROXY_DOMAIN: {{ domain }}
+      PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
 
-#proxy_domain:
-#  file.replace:
-#   - name: /var/www/html/proxy.pac
-#  - pattern: PROXY_DOMAIN
-# - repl: {{ domain }}       
-#
-#proxy_host:
-#  file.replace:
-#    - name: /var/www/html/proxy.pac
-#    - pattern: PROXY_HOST
-#    - repl: {{ host_name }}
 
 #remove_default_index:
 #  cmd.run:
@@ -130,7 +95,7 @@ prevent_localhost_url:
     - mode: 644
     - template: jinja
     - context:
-      PROXY_DOMAIN: {{ domain }}
+      PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
 
 
@@ -143,26 +108,13 @@ prevent_localhost_url:
     - mode: 644
     - template: jinja
     - context:
-      PROXY_DOMAIN: {{ domain }}
+      PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
-
-#### functionality script
-/usr/lib/nagios/plugins/:
-  file.directory:
-    - makedirs: True
-
-check_functionality_directory:
-  file.managed:
-    - name: /usr/lib/nagios/plugins/check_functionality.sh
-    - source: salt://directory/files/check_functionality.sh
-    - user: root
-    - group: root
-    - mode: 755
 
 # E2GUARDIAN
 install_e2b:
   cmd.run:
-    - name: dpkg --force -i /root/e2guardian.deb
+    - name: dpkg --force-all -i /root/e2guardian.deb
 
 fix_e2b:
   cmd.run:
@@ -171,6 +123,13 @@ fix_e2b:
 stop_e2guardian:
   service.dead:
     - name: e2guardian
+
+/etc/e2guardian/make_empty_bl.sh:
+  file.managed:
+    - source: salt://proxy/files/make_empty_bl.sh
+    - user: root
+    - group: root
+    - mode: 754
 
 /etc/e2guardian/updateBL.sh:
   file.managed:
@@ -194,7 +153,7 @@ stop_e2guardian:
     - group: root
     - mode: 644
     - context:
-      PROXY_DOMAIN: {{ domain }}
+      PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
 
 /etc/e2guardian/e2guardianf2.conf:
@@ -205,7 +164,7 @@ stop_e2guardian:
     - group: root
     - mode: 644
     - context:
-      PROXY_DOMAIN: {{ domain }}
+      PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
 
 
@@ -217,7 +176,7 @@ stop_e2guardian:
     - group: root
     - mode: 644
     - context:
-      PROXY_DOMAIN: {{ domain }}
+      PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
 
 
@@ -284,6 +243,10 @@ stop_e2guardian:
     - group: root
     - mode: 644
 
+make_blacklists:
+  cmd.run:
+    - name: /etc/e2guardian/make_empty_bl.sh
+
 #get_blacklists:
 # cmd.run:
 #    - name: /etc/e2guardian/updateBL.sh
@@ -300,10 +263,16 @@ lighttpd:
   service.running:
     - enable: True
 
-# start_squid:
-  # cmd.run:
-    # - name: service squid start    
+#### functionality script
+/usr/lib/nagios/plugins/:
+  file.directory:
+    - makedirs: True
 
-# start_e2g:
-  # cmd.run:
-    # - name: service e2guardian start   
+check_functionality_proxy:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/check_functionality.sh
+    - source: salt://proxy/files/check_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+
