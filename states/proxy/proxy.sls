@@ -36,14 +36,6 @@ fix_e2b:
     - name: apt-get install -f -y
 # ima li alternativna komanda za ova gore?  
 
-# stop_e2g:
-  # cmd.run:
-    # - name: service e2guardian stop
-
-# stop_squid:
-  # cmd.run:
-    # - name: service squid stop
-
 stop_squid:
   service.dead:
     - name: squid
@@ -73,41 +65,76 @@ stop_lighttpd:
 /etc/e2guardian/e2guardianf1.conf:
   file.managed:
     - source: salt://proxy/files/e2guardianf1.conf
+    - template: jinja
     - user: root
     - group: root
     - mode: 644
+    - context:
+      PROXY_DOMAIN: {{ domain }}
+      PROXY_HOSTNAME: {{ host_name }} 
 
 /etc/e2guardian/e2guardianf2.conf:
   file.managed:
     - source: salt://proxy/files/e2guardianf2.conf
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 644
+    - context:
+      PROXY_DOMAIN: {{ domain }}
+      PROXY_HOSTNAME: {{ host_name }} 
+
+
+/etc/e2guardian/e2guardianf3.conf:
+  file.managed:
+    - source: salt://proxy/files/e2guardianf3.conf
+    - template: jinja
+    - user: root
+    - group: root
+    - mode: 644
+    - context:
+      PROXY_DOMAIN: {{ domain }}
+      PROXY_HOSTNAME: {{ host_name }} 
+
+
+/etc/e2guardian/lists/bannedsitelist1:
+  file.managed:
+    - source: salt://proxy/files/bannedsitelist1
     - user: root
     - group: root
     - mode: 644
 
-/etc/e2guardian/lists/bannedsitelistSTD:
+/etc/e2guardian/lists/bannedsitelist2:
   file.managed:
-    - source: salt://proxy/files/bannedsitelistSTD
+    - source: salt://proxy/files/bannedsitelist2
     - user: root
     - group: root
     - mode: 644
 
-/etc/e2guardian/lists/bannedsitelistVIP:
+/etc/e2guardian/lists/bannedsitelist3:
   file.managed:
-    - source: salt://proxy/files/bannedsitelistVIP
+    - source: salt://proxy/files/bannedsitelist3
     - user: root
     - group: root
     - mode: 644
 
-/etc/e2guardian/lists/exceptionsitelistSTD:
+/etc/e2guardian/lists/exceptionsitelist1:
   file.managed:
-    - source: salt://proxy/files/exceptionsitelistSTD
+    - source: salt://proxy/files/exceptionsitelist1
     - user: root
     - group: root
     - mode: 644
 
-/etc/e2guardian/lists/exceptionsitelistVIP:
+/etc/e2guardian/lists/exceptionsitelist2:
   file.managed:
-    - source: salt://proxy/files/exceptionsitelistVIP
+    - source: salt://proxy/files/exceptionsitelist2
+    - user: root
+    - group: root
+    - mode: 644
+
+/etc/e2guardian/lists/exceptionsitelist3:
+  file.managed:
+    - source: salt://proxy/files/exceptionsitelist3
     - user: root
     - group: root
     - mode: 644
@@ -164,12 +191,12 @@ prevent_localhost_url:
     - group: root
     - mode: 644
 
-/var/www/html/blocked.html:
-  file.managed:
-    - source: salt://proxy/files/blocked.html
-    - user: root
-    - group: root
-    - mode: 644
+#/var/www/html/blocked.html:
+#  file.managed:
+#    - source: salt://proxy/files/blocked.html
+#    - user: root
+#    - group: root
+#    - mode: 644
 
 /var/www/html/wpad.dat:
   file.managed:
@@ -177,18 +204,22 @@ prevent_localhost_url:
     - user: root
     - group: root
     - mode: 644
+    - template: jinja
+    - context:
+      PROXY_DOMAIN: {{ domain }}
+      PROXY_HOSTNAME: {{ host_name }} 
 
-wpad_domain:
-  file.replace:
-    - name: /var/www/html/wpad.dat
-    - pattern: DOMAIN
-    - repl: {{ domain }}
+#wpad_domain:
+#  file.replace:
+#    - name: /var/www/html/wpad.dat
+#   - pattern: PROXY_DOMAIN
+#   - repl: {{ domain }}
 
-wpad_host:
-  file.replace:
-    - name: /var/www/html/wpad.dat
-    - pattern: PROXY_HOST
-    - repl: {{ host_name }}
+#wpad_host:
+#  file.replace:
+#    - name: /var/www/html/wpad.dat
+#    - pattern: PROXY_HOST
+#    - repl: {{ host_name }}
     
 /var/www/html/proxy.pac:
   file.managed:
@@ -196,41 +227,51 @@ wpad_host:
     - user: root
     - group: root
     - mode: 644
+    - template: jinja
+    - context:
+      PROXY_DOMAIN: {{ domain }}
+      PROXY_HOSTNAME: {{ host_name }} 
 
-proxy_domain:
-  file.replace:
-    - name: /var/www/html/proxy.pac
-    - pattern: DOMAIN
-    - repl: {{ domain }}       
-
-proxy_host:
-  file.replace:
-    - name: /var/www/html/proxy.pac
-    - pattern: PROXY_HOST
-    - repl: {{ host_name }}
+#proxy_domain:
+#  file.replace:
+#   - name: /var/www/html/proxy.pac
+#  - pattern: PROXY_DOMAIN
+# - repl: {{ domain }}       
+#
+#proxy_host:
+#  file.replace:
+#    - name: /var/www/html/proxy.pac
+#    - pattern: PROXY_HOST
+#    - repl: {{ host_name }}
 
 remove_default_index:
   cmd.run:
     - name: rm /var/www/html/index.lighttpd.html
 
+#show blocked info by default
 /var/www/html/index.html:
   file.managed:
     - source: salt://proxy/files/index.html
     - user: root
     - group: root
     - mode: 644
+    - template: jinja
+    - context:
+      PROXY_DOMAIN: {{ domain }}
+      PROXY_HOSTNAME: {{ host_name }} 
 
-index_domain:
-  file.replace:
-    - source: salt://proxy/files/index.html
-    - pattern: DOMAIN
-    - repl: {{ domain }}       
 
-index_host:
-  file.replace:
-    - source: salt://proxy/files/index.html
-    - pattern: PROXY_HOST
-    - repl: {{ host_name }}
+#show make different config page
+/var/www/html/config.html:
+  file.managed:
+    - source: salt://proxy/files/config.html
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
+    - context:
+      PROXY_DOMAIN: {{ domain }}
+      PROXY_HOSTNAME: {{ host_name }} 
 
 #### functionality script
 /usr/lib/nagios/plugins/:

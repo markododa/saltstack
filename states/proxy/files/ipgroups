@@ -10,4 +10,8 @@
 
 # Range matching:
 192.168.80.0-192.168.80.30 = filter1
-192.168.80.31-192.168.80.255 = filter2
+192.168.80.31-192.168.80.250 = filter2
+192.168.80.250-192.168.80.251 = filter3
+
+
+#Everything outside range definition will be in filter1 
