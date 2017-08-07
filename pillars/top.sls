@@ -1,4 +1,7 @@
 base:
+  'role:proxy':
+    - match: grain
+    - credentials
   'role:monitoring':
     - match: grain
     - credentials
