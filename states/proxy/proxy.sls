@@ -11,6 +11,7 @@ install_proxy:
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set host_name = grains['id'] %}
+{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
 
 /root/e2guardian.deb:
   file.managed:
@@ -27,11 +28,15 @@ stop_lighttpd:
   service.dead:
     - name: lighttpd
 
+/etc/lighttpd/certs/:
+  file.directory:
+    - makedirs: True
+
 cert_lhttps:
   cmd.run:
-    - name: openssl req -new -x509 -keyout lighttpd.pem -out lighttpd.pem -days 3650 -nodes -sha256 -subj '/CN=mydomain.com/O=Web Proxy Certificate./C=US'
+    - name: openssl req -new -x509 -keyout /etc/lighttpd/certs/lighttpd.pem -out /etc/lighttpd/certs/lighttpd.pem -days 3650 -nodes -sha256 -subj '/CN={{ host_name }}.{% filter lower %}{{ domain }}{% endfilter %}/O=VA-Proxy/C=US'
   
-squid_use_hdd_as_cache_too:
+squid_2_e2g_only:
  file.replace:
     - name: /etc/squid/squid.conf
     - pattern: http_port 3128
@@ -49,14 +54,14 @@ prevent_localhost_url:
     - char: '#'
     - regex: "http_access deny to_localhost.*"
 
-# AUTO DISCOVERY, TREBA REALNO NA DRUG WEB SERVER DA SE, SERVER SO HOSTNAME WPAD,
-
 /etc/lighttpd/lighttpd.conf:
   file.managed:
     - source: salt://proxy/files/lighttpd.conf
     - user: root
     - group: root
     - mode: 644
+
+# auto discovery, todo: register this hostname in dns server. also add record for host 'wpad'
 
 /var/www/html/wpad.dat:
   file.managed:
@@ -69,7 +74,6 @@ prevent_localhost_url:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
 
-   
 /var/www/html/proxy.pac:
   file.managed:
     - source: salt://proxy/files/wpad
@@ -80,11 +84,6 @@ prevent_localhost_url:
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }} 
-
-
-#remove_default_index:
-#  cmd.run:
-#    - name: rm /var/www/html/index.lighttpd.html
 
 #show blocked info by default
 /var/www/html/index.html:
@@ -250,7 +249,31 @@ make_blacklists:
 #get_blacklists:
 # cmd.run:
 #    - name: /etc/e2guardian/updateBL.sh
-  
+
+
+/etc/resolv.conf:
+  file.managed:
+    - source: salt://proxy/files/resolv.conf
+    - user: root
+    - group: root
+    - mode: 777
+
+resolv_proxy:
+  file.replace:
+    - name: /etc/resolv.conf
+    - pattern: DOMAIN
+    - repl: {{ domain }}
+
+resolvednsip_proxy:
+  file.replace:
+    - name: /etc/resolv.conf
+    - pattern: DCIP
+    - repl: {{ dcip }}
+    
+readableresolve_proxy:
+  cmd.run:
+    - name: chattr +i /etc/resolv.conf 
+ 
 squid:
   service.running:
     - enable: True
