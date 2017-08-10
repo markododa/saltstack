@@ -76,7 +76,7 @@ rsyslog:
   file.directory:
     - makedirs: True
 
-check_functionality_directory:
+check_functionality_va_master:
   file.managed:
     - name: /usr/lib/nagios/plugins/check_functionality.sh
     - source: salt://va-master/files/check_functionality.sh

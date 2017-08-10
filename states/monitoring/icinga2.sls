@@ -125,7 +125,7 @@ icinga2:
   file.directory:
     - makedirs: True
 
-check_functionality_directory:
+check_functionality_monitoring:
   file.managed:
     - name: /usr/lib/nagios/plugins/check_functionality.sh
     - source: salt://monitoring/files/check_functionality.sh
