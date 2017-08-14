@@ -4,7 +4,7 @@ exitstate=0
 text=""
 
 
-OUT=`cat /etc/ssmtp/ssmtp.conf | grep 'AuthPass=mailPASS' | wc -l`
+OUT=`cat /etc/ssmtp/ssmtp.conf | grep 'AuthPass=empty' | wc -l`
 if [ $OUT -eq 1 ];then
    text=$text"No config for mail notifications! "
    exitstate=1

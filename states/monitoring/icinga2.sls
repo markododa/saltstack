@@ -80,7 +80,19 @@ add-wmicpresets:
     - group: root
     - mode: 755
 
+/etc/icinga2/scripts/mail-tester.sh:
+  file.managed:
+    - source:
+      - salt://monitoring/files/icinga2mail/mail-tester.sh
+    - user: root
+    - group: root
+    - mode: 755
+
 #needs manual editing later, should be auto filled with credentails:	
+
+{% set domain = salt['pillar.get']('domain') %}
+{% set host_name = grains['id'] %}
+
 /etc/ssmtp/ssmtp.conf:
   file.managed:
     - source:
@@ -88,6 +100,10 @@ add-wmicpresets:
     - user: root
     - group: root
     - mode: 644
+    - template: jinja
+    - context:
+      MON_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
+      MON_HOSTNAME: {{ host_name }} 
    
 icinga2-feature:
   cmd.run:

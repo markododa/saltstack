@@ -13,5 +13,6 @@ Additional Info: $HOSTOUTPUT
 Comment: [$NOTIFICATIONAUTHORNAME] $NOTIFICATIONCOMMENT
 TEMPLATE
 `
-
-/usr/bin/printf "%b" "$template" | mail -a "From: va-monitoring@mydomain.com" -s "$NOTIFICATIONTYPE - $HOSTDISPLAYNAME is $HOSTSTATE" $USEREMAIL
+SENDER=`cat /etc/ssmtp/ssmtp.conf  | grep 'AuthUser=' | sed -e 's/AuthUser=//'`
+#SENDER="va-monitoring@mydomain.com"
+/usr/bin/printf "%b" "$template" | mail -a "From: $SENDER" -s "$NOTIFICATIONTYPE - $HOSTDISPLAYNAME is $HOSTSTATE" $USEREMAIL
