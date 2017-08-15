@@ -1,3 +1,7 @@
+timedatectl set-timezone {{ pillar['timezone'] }}:
+  cmd.run
+
+
 install_packages:
   pkg.installed:
     - pkgs:
