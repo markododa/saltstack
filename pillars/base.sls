@@ -1,4 +1,3 @@
-timezone: Europe/Skopje
 mine_functions:
   inventory:
     - mine_function: grains.item
