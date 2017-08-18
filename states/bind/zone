@@ -1,5 +1,5 @@
 zone "{{top_level_domain}}" IN {
   type forward;
   forward only;
-  forwarders { 127.0.0.1 port 8600; };
+  forwarders { {{ip}} port {{port}}; };
 };

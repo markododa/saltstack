@@ -14,7 +14,9 @@ bind_pkgs:
     - source: salt://bind/zone
     - template: jinja
     - context:
-        top_level_domain: "va"
+        top_level_domain: {{ salt['pillar.get']('top_level_domain') }}
+        ip: {{ salt['pillar.get']('zone_bind_ip') }}
+        port: {{ salt['pillar.get']('zone_bind_port') }}
 
 bind9:
   service.running:
