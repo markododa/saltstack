@@ -1,0 +1,32 @@
+{
+    "name": "ticketing",
+    "description": "Platform for managing tickets, track tasks and delagate duties.",
+    "version": "1.1",
+    "icon": "fa-shield",
+    "dependency": "directory,monitoring",
+    "substates": ["ticketing.ticketing"], 
+    "services": [
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 0,
+            "check_id": "ping",
+            "check_name": "Ping Check",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 22,
+            "check_id": "tcp",
+            "check_name": "SSH Interface",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 443,
+            "check_id": "http",
+            "check_name": "Web Interface",
+            "interval": "30s",
+            "timeout": "10s"}
+                         ],
+    "path": "-"
+}
