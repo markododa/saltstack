@@ -1,16 +1,39 @@
 {
-	"name": "fileshare",
-	"description": "Fileshare server for storing and sharing data. Manage priviledeges per user and groups.",
-	"version": "1.1",
-	"icon": "fa-folder-open",
-	"dependency": "directory",
+    "name": "fileshare",
+    "description": "Fileshare server for storing and sharing data. Manage priviledeges per user and groups.",
+    "version": "1.1",
+    "icon": "fa-folder-open",
+    "dependency": "directory",
     "substates": ["fileshare.fileshare"],
-        "module" : "fileshare",
-        "fields": [
+    "module" : "fileshare",
+    "fields": [
             {"type": "text", "name": "ip", "label": "IP address of DC"},
             {"type": "text", "name": "username", "label": "Username"},
             {"type": "password", "name": "password", "label": "Password"}
         ],
-	"path": "-",
-        "panels": {"admin": [{"key": "fileshare.fileshare", "name": "Fileshare"}], "user": []}
+    "services": [
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 0,
+            "check_id": "ping",
+            "check_name": "Ping Check",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 22,
+            "check_id": "tcp",
+            "check_name": "SSH Interface",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 445,
+            "check_id": "tcp",
+            "check_name": "SMB over TCP",
+            "interval": "30s",
+            "timeout": "10s"}
+                         ],
+    "path": "-",
+    "panels": {"admin": [{"key": "fileshare.fileshare", "name": "Fileshare"}], "user": []}
 }

@@ -1,9 +1,39 @@
 {
-	"name": "lamp",
-	"description": "Web server.",
-	"version": "1.1",
-	"icon": "fa-globe",
-	"dependency": "",
+    "name": "lamp",
+    "description": "LAMP Web server.",
+    "version": "1.1",
+    "icon": "fa-globe",
+    "dependency": "",
     "substates": ["lamp.lamp"], 
-	"path": "-"
+    "services": [
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 0,
+            "check_id": "ping",
+            "check_name": "Ping Check",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 22,
+            "check_id": "tcp",
+            "check_name": "SSH Interface",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 80,
+            "check_id": "http",
+            "check_name": "Web Server",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 3306,
+            "check_id": "tcp",
+            "check_name": "MySQL Port",
+            "interval": "30s",
+            "timeout": "10s"}
+                         ],
+    "path": "-"
 }

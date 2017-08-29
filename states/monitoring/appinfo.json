@@ -1,11 +1,34 @@
 {
-	"name": "monitoring",
-	"description": "Monitoring critical parameters for each server (Linux or Windows) and network devices. Support creating custom sensors.",
-	"version": "1.1",
-	"icon": "fa-heartbeat",
-	"dependency": "directory,vpn",
+    "name": "monitoring",
+    "description": "Monitoring critical parameters for each server (Linux or Windows) and network devices. Support creating custom sensors.",
+    "version": "1.1",
+    "icon": "fa-heartbeat",
+    "dependency": "directory,vpn",
     "substates": ["monitoring.icingaweb2", "salt-master.salt"], 
-	"module" : "monitoring",
-	"path": "-",
-        "panels": {"admin": [{"key": "monitoring.status", "name": "Status"}], "user": []}
+    "module" : "monitoring",
+    "services": [
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 0,
+            "check_id": "ping",
+            "check_name": "Ping Check",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 22,
+            "check_id": "tcp",
+            "check_name": "SSH Interface",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 80,
+            "check_id": "tcp",
+            "check_name": "Web Interface",
+            "interval": "30s",
+            "timeout": "10s"}
+                         ],    
+    "path": "-",
+    "panels": {"admin": [{"key": "monitoring.status", "name": "Status"}], "user": []}
 }

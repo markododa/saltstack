@@ -1,9 +1,39 @@
 {
-	"name": "proxy",
-	"description": "Filter web traffic by rules and categories. Make different policies for VIP users.",
-	"version": "1.1",
-	"icon": "fa-shield",
-	"dependency": "directory,monitoring",
+    "name": "proxy",
+    "description": "Filter web traffic by rules and categories. Make different policies for VIP users.",
+    "version": "1.1",
+    "icon": "fa-shield",
+    "dependency": "directory,monitoring",
     "substates": ["proxy.proxy"], 
-	"path": "-"
+    "services": [
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 0,
+            "check_id": "ping",
+            "check_name": "Ping Check",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 22,
+            "check_id": "tcp",
+            "check_name": "SSH Interface",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 8080,
+            "check_id": "http",
+            "check_name": "Proxy Gateway",
+            "interval": "30s",
+            "timeout": "10s"},
+            {
+            "tags": ["hostsvc", "web", "http"],
+            "port": 443,
+            "check_id": "http",
+            "check_name": "Local Web Server",
+            "interval": "30s",
+            "timeout": "10s"}
+                         ],
+    "path": "-"
 }
