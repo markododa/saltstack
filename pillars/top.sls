@@ -15,6 +15,10 @@ base:
   'role:lamp':
     - match: grain
     - lamp
+  'role:ticketing':
+    - match: grain
+    - credentials
+    - ticketing
   'role:backup':
     - match: grain
     - credentials

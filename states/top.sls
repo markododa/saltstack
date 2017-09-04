@@ -24,6 +24,9 @@ base:
   'role:email':
     - match: grain
     - mail
+  'role:ticketing':
+    - match: grain
+    - ticketing.ticketing
   'role:proxy':
     - match: grain
     - proxy.proxy
