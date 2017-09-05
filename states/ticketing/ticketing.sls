@@ -58,11 +58,6 @@ install_bundler:
   cmd.run:
     - name: gem install bundler --no-ri --no-rdoc
 
-# (native)
-#install_bundler:
-#  gem.installed:
-#    - name: bundler
-
 /etc/apache2/mods-available/passenger.conf:
   file.managed:
     - source: salt://ticketing/files/passenger.conf
@@ -117,6 +112,7 @@ apache2:
     - user: root
     - group: root
     - mode: 644
+
 
 #### functionality script
 /usr/lib/nagios/plugins/:
