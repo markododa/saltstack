@@ -1,4 +1,48 @@
-﻿THE BEST:
+﻿plugins
+
+/usr/share/redmine
+bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+
+/usr/share/redmine$ sudo bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+
+git clone https://github.com/gyselroth/redmine-plugin-autorespond.git
+
+
+-------
+git clone git://github.com/thorin/redmine_ldap_sync.git
+upgrade - Backup and replace the old plugin directory with the new plugin files. If you are downloading the plugin directly from GitHub, you can do so by changing into the plugin directory and issuing the command git pull.
+
+Update the ruby gems by changing into the redmine's directory and run the following command.
+
+bundle install
+upgrade - Still on the redmine's directory, run the following command to upgrade your database (make a db backup before).
+
+rake redmine:plugins:migrate RAILS_ENV=production
+Change into redmines directory {RAILS_ROOT} and run the following command.
+
+rake -T redmine:plugins:ldap_sync RAILS_ENV=production
+-------
+
+
+
+https://framagit.org/infopiiaf/redhopper.git
+
+stall the missing gems with bundle install (within redmine's root folder and not redhopper's one)
+Run the migrations of the plugin: RAILS_ENV=production bundle exec rake redmine:plugins:migrate NAME=redhopper
+
+-------------
+
+
+
+
+restart redmine
+
+touch /usr/share/redmine/tmp/restart.txt
+
+
+
+
+THE BEST:
 http://www.redmine.org/projects/redmine/wiki/HowTo_Install_Redmine_on_Ubuntu_step_by_step
 
 

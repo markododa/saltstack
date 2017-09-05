@@ -2,17 +2,28 @@
 #
 # CHECK SCRIPT FOR VA-TICKETING
 
+
 exitstate=0
 text=""
 
-OUT=`sudo pdbedit -Lv | grep 'administratively locked out' | wc -l`
+
+OUT=`ps aux | grep redmine | grep Passenger | wc -l`
 if [ $OUT -eq 0 ];then
-   text=$text"No locked users"
+   text=$text"RedMine is not running"
+  exitstate=2
 else
-    text=$text"Locked accounts: $OUT!"
-   exitstate=1
+    text=$text"RedMine is running"
 fi
 
+
+service apache2 status > /dev/null
+OUT=$?
+if [ $OUT -eq 0 ];then
+   text=$text", Web Server is OK"
+else
+   text=$text", Web Server is DOWN"
+   exitstate=1
+fi
 
 echo $text
 

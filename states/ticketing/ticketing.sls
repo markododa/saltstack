@@ -6,6 +6,12 @@ install_ticketing_phase1:
       - libapache2-mod-passenger
       - mysql-server
       - mysql-client 
+      - ruby-dev 
+      - gcc
+      - libmysqlclient-dev
+      - libpq-dev
+      - libsqlite3-dev
+      - libev-dev 
 
 {% set ticketing_password = salt['pillar.get']('redmine_password') %}
 
@@ -87,9 +93,30 @@ stop_apache2:
     - group: www-data
     - mode: 644
 
+/usr/share/redmine/config/settings.yml:
+  file.managed:
+    - source: salt://ticketing/files/settings.yml
+    - user: root
+    - group: root
+    - mode: 644
+
+theme-redmine:
+    file.recurse:
+        - name: /usr/share/redmine/public/themes/gitmake
+        - source: salt://ticketing/files/gitmake
+        - clean: True
+        - include_empty: True
+
 apache2:
   service.running:
     - enable: True
+
+/usr/share/redmine/tmp/restart.txt:
+  file.managed:
+    - source: salt://ticketing/files/Gemfile.lock
+    - user: root
+    - group: root
+    - mode: 644
 
 #### functionality script
 /usr/lib/nagios/plugins/:
