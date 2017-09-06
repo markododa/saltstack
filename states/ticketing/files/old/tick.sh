@@ -32,12 +32,64 @@ Run the migrations of the plugin: RAILS_ENV=production bundle exec rake redmine:
 
 -------------
 
+http://www.redmine.org/plugins/redmine_git_remote
+http://www.redmine.org/plugins/redmine_github_hook
+https://github.com/f0y/due_date_reminder
 
 
+
+
+------
+
+
+megacalendar
+
+
+d /srv/redmine/plugins<br>
+
+Download the latest plugin-Version:
+wget https://github.com/berti92/mega_calendar/archive/master.zip
+
+Unzip the downloaded zip-File
+unzip master.zip
+
+Rename the folder:
+mv mega_calendar-master mega_calendar
+
+Give the folder the right privileges in this case apache (to execute the command you must be root)
+chown -R www-data.www-data mega_calendar
+
+Go to the plugin folder
+cd /srv/redmine/plugins/mega_calendar
+
+Install the gems
+bundle
+
+Go back to your redmine folder
+cd /srv/redmine
+
+Migrate the database
+bundle exec rake redmine:plugins:migrate RAILS_ENV=production
+
+Now restart your redmine and you can configure the plugin in the admin settings in redmine.
+To start redmine under apache2/passenger, please execute the following commands 
+cd /srv/redmine
+
+touch tmp/restart.txt
+
+--------
 
 restart redmine
 
 touch /usr/share/redmine/tmp/restart.txt
+
+
+uninstall plugin
+
+bundle exec rake redmine:plugins:migrate NAME=plugin_name VERSION=0 RAILS_ENV=production
+
+
+gem install vpim
 
 
 

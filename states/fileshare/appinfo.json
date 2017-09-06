@@ -12,28 +12,26 @@
             {"type": "password", "name": "password", "label": "Password"}
         ],
     "services": [
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 0,
-            "check_id": "ping",
-            "check_name": "Ping Check",
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 22,
-            "check_id": "tcp",
-            "check_name": "SSH Interface",
+            "timeout": "5s"
+        },{
+            "id": "smb",
+            "name": "SMB over TCP",
+            "tcp": "VAR_DNS:445",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 445,
-            "check_id": "tcp",
-            "check_name": "SMB over TCP",
-            "interval": "30s",
-            "timeout": "10s"}
-                         ],
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
     "path": "-",
     "panels": {"admin": [{"key": "fileshare.fileshare", "name": "Fileshare"}], "user": []}
 }

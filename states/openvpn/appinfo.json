@@ -2,31 +2,29 @@
     "name": "vpn",
     "description": "Create private connection between offices and data centers and access work environment from home.",
     "version": "1.1",
-    "icon": "fa-heartbeat",
-    "dependency": "directory,vpn",
+    "icon": "fa-globe",
+    "dependency": "directory",
     "substates": [],
     "services": [
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 0,
-            "check_id": "ping",
-            "check_name": "Ping Check",
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 22,
-            "check_id": "tcp",
-            "check_name": "SSH Interface",
+            "timeout": "5s"
+        },{
+            "id": "vpn",
+            "name": "VPN UDP port",
+            "tcp": "VAR_DNS:1194",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 1194,
-            "check_id": "udp",
-            "check_name": "VPN Server port",
-            "interval": "30s",
-            "timeout": "10s"}
-                         ],
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
     "path": "-"
 }
