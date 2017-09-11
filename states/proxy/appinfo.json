@@ -6,34 +6,35 @@
     "dependency": "directory,monitoring",
     "substates": ["proxy.proxy"], 
     "services": [
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 0,
-            "check_id": "ping",
-            "check_name": "Ping Check",
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 22,
-            "check_id": "tcp",
-            "check_name": "SSH Interface",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "Local Web Server",
+            "http": "https://VAR_DNS:443/",
+            "tls_skip_verify": true,
+            "method" : "POST",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 8080,
-            "check_id": "http",
-            "check_name": "Proxy Gateway",
+            "timeout": "5s"
+        },{
+            "id": "proxy",
+            "name": "Web Interface",
+            "http": "http://VAR_DNS:8080",
+            "tls_skip_verify": true,
+            "method" : "POST",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 443,
-            "check_id": "http",
-            "check_name": "Local Web Server",
-            "interval": "30s",
-            "timeout": "10s"}
-                         ],
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
     "path": "-"
 }

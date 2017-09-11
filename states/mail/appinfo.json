@@ -11,49 +11,46 @@
             {"type": "password", "name": "password", "label": "Password"}
         ],
     "services": [
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 0,
-            "check_id": "ping",
-            "check_name": "Ping Check",
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 22,
-            "check_id": "tcp",
-            "check_name": "SSH Interface",
+            "timeout": "5s"
+        },{
+            "id": "imap",
+            "name": "IMAP Secure",
+            "tcp": "VAR_DNS:993",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 993,
-            "check_id": "tcp",
-            "check_name": "IMAP Secure",
+            "timeout": "5s"
+        },{
+            "id": "pop",
+            "name": "POP Secure",
+            "tcp": "VAR_DNS:995",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 995,
-            "check_id": "tcp",
-            "check_name": "POP Secure",
+            "timeout": "5s"
+        },{
+            "id": "smtp",
+            "name": "SMTP Secure",
+            "tcp": "VAR_DNS:587",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 587,
-            "check_id": "tcp",
-            "check_name": "SMTP Secure",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "Web Interface",
+            "http": "https://VAR_DNS:443",
+            "tls_skip_verify": true,
+            "method" : "POST",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 443,
-            "check_id": "http",
-            "check_name": "Web Mail",
-            "interval": "30s",
-            "timeout": "10s"}
-                         ],
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
     "path": "-",
     "panels": {"admin": [{"key": "email.user", "name": "List users"}], "user": []}
 }

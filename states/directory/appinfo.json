@@ -4,51 +4,47 @@
     "version": "1.1",
     "icon": "fa-group",
     "dependency": "monitoring",
-    "substates": ["directory.directory", "openvpn"],
+    "substates": ["directory.directory"],
     "module" : "samba",
     "fields": [
-            {"type": "text", "name": "domain", "label": "Domain-name"},
-            {"type": "text", "name": "ip", "label": "IP address of DC"},
+            {"type": "text", "name": "domain", "label": "Domain name"},
+            {"type": "text", "name": "ip", "label": "IP address of exisitng DC"},
             {"type": "text", "name": "username", "label": "Username"},
             {"type": "password", "name": "password", "label": "Password"}
         ],
     "services": [
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 0,
-            "check_id": "ping",
-            "check_name": "Ping Check",
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 22,
-            "check_id": "tcp",
-            "check_name": "SSH Interface",
+            "timeout": "5s"
+        },{
+            "id": "smb",
+            "name": "SMB over TCP",
+            "tcp": "VAR_DNS:445",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 445,
-            "check_id": "tcp",
-            "check_name": "SMB over TCP",
+            "timeout": "5s"
+        },{
+            "id": "smb",
+            "name": "LDAP",
+            "tcp": "VAR_DNS:389",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 389,
-            "check_id": "tcp",
-            "check_name": "LDAP",
+            "timeout": "5s"
+        },{
+            "id": "smb",
+            "name": "DNS",
+            "udp": "VAR_DNS:53",
             "interval": "30s",
-            "timeout": "10s"},
-            {
-            "tags": ["hostsvc", "web", "http"],
-            "port": 53,
-            "check_id": "udp",
-            "check_name": "DNS",
-            "interval": "30s",
-            "timeout": "10s"}
-                         ],
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
     "path": "-", 
     "panels": {"admin": [{"key": "directory.users", "name": "Users"}, {"key": "directory.groups", "name": "Groups"}, {"key": "directory.dns", "name": "DNS entries"}, {"key": "directory.overview", "name": "Overview"}], "user": []}
 }
