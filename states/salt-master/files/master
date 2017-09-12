@@ -23,3 +23,5 @@ reactor:
     - /srv/reactor/copykey.sls
   - 'salt/backup/installed':
     - /srv/reactor/old-host.sls
+  - 'mail/send':
+    - /srv/reactor/sendmail.sls
