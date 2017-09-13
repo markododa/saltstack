@@ -66,3 +66,15 @@ self_hostname:
 
 saltutil.sync_grains:
   module.run
+
+/etc/salt/minion:
+  file.line:
+    - content: "startup_states: highstate"
+    - mode: delete
+    - order: last
+
+/etc/cloud/cloud.cfg:
+  file.line:
+    - content: 'manage_etc_hosts: true'
+    - mode: delete
+    - order: last
