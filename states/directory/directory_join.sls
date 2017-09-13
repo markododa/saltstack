@@ -239,7 +239,7 @@ fixpermissions:
 dnsquery_user:
   cmd.run:
     - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` --description='VA Bot for DNS Query' --surname='DNS Query' --given-name='VA Bot' && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
-    - unless: test -e /vapour/dnsquery
+    - unless: samba-tool user list | grep -q dnsquery
 
 
 {% if pillar['query_user'] is defined %}
