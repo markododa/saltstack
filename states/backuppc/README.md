@@ -1,12 +1,15 @@
-# Monitoring
+# Backup
 
+The backup application, uses BackupPC for disk-to-disk incremental backup, of all of the VapourApps virtual appliances which are running and can be seen in Apps / Backup / Manage backups. Once VapourApps applications are enabled through the Overview dashboard, predefined backup paths are configured on the Backup application, so no additional configuration is required from the user to perform a daily backup of the configuration and data.
 
-The monitoring application uses Icinga2 as the backend monitoring system, in order to monitor the whole infrastructure of your private cloud. 
+Also through the Manage backups panel, external servers can be added with their paths. It is required for those servers to have salt-minion installed and joined to the salt-master. All servers which are part of the inventory (are joined on the corporate salt-stack) will be listed in the Manage backups panel. After that is configured, adding a backup can be done through the Add backup control, for a particular server.
 
-For every host which is running, sensors are added to check different services such as CPU or Disk usage. If the services are green and have status OK, this means that the parameters returned for that particular service are within the normal expected range. If a service returns a check-value outside of the normal expected range, it can have status of Warning or Critical, depending on the severity of the problem. 
+Once a week, regular full backup is performed on the defined folders and only incremental backup is performed on a daily basis.
 
-When an application is enabled, it will be automatically provisioned at the monitoring system. At the moment, adding other hosts and services can also be done, but from the command line, after connecting to the va-monitoring instance (va-monitoring) via ssh. You can get more details ofrom the [latest Icinga2 documentation](http://docs.icinga.org/icinga2/latest/doc/module/icinga2/toc) Adding new hosts and services can be done in the /etc/icinga2/conf.d folder. For upgrade purposes, do not change the existing va_*.cfg files. 
+The configuration of the backuppc can be found in /etc/backuppc, on the backuppc instance. Direct access to the backuppc web dashboard can be found at: http://%BACKUPPC_HOST%. From there, restoring of the particular files/folders can be performed, in two different ways:
 
-If you add additional hosts and services, they will automatically be displayed on the Apps / Monitoring / Status panel of the VapourApps dashboard, together with full performance data graphing. 
+- Direct restore to the location where the backup was initially made;
+- Download the desired files as a zip or a tar archive.
 
-If a problem occurs, the system will send notifications e-mail. You can access the Icinga2 web interface on http://%MONITORING_HOST%. 
+More details can be found on the [offical documentation on BackupPC](http://backuppc.sourceforge.net/faq/BackupPC.html)
+
