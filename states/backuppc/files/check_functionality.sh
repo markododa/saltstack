@@ -4,10 +4,11 @@
 
 exitstate=0
 text="OK: "
-
-OLDEST=`cat /var/lib/backuppc/log/status.pl | grep "lastGoodBackupTime" | sed 's/    "lastGoodBackupTime" => //' | sed 's/,//'| sort -nr | head -n 1 | awk '{print int($1)}'`
-SPACE=`cat /var/lib/backuppc/log/status.pl | grep '"DUlastValue" =>' | sed 's/  "DUlastValue" => //'  | sed 's/,//'`
-TOTALERRORS=`cat /var/lib/backuppc/log/status.pl | grep '"error" => "' | wc -l`
+OLDEST=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g'| grep 'lastGoodBackupTime' | sed "s/.*=> //" | sed 's/,//'| sort -nr | tail -n 1 | awk '{print int($1)}'`
+SPACE=`backuppc_servermsg status info | sed 's/,/,\n/g'| sed 's/},/\n/g' | grep "DUlastValue. =" | sed "s/.*=> //" | sed 's/,//'`
+TOTALBACKUPS=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g' | grep reason | wc -l`
+FAILEDBACKUPS=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g' |  grep 'Reason_backup_failed' | wc -l`
+RUNNING=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g' | grep Status_backup_in_progress | wc -l`
 NOW=`echo $(date +"%s")`
 #echo $OLDEST
 #echo $NOW
@@ -27,17 +28,20 @@ else
 	fi
 fi
 
-if [ "$TOTALERRORS" -gt "2" ]; then
+if [ "$FAILEDBACKUPS" -gt "2" ]; then
     text='CRITICAL: ' 
         exitstate=2
 else
-        if [ "$TOTALERRORS" -gt "1" ]; then
+        if [ "$FAILEDBACKUPS" -gt "1" ]; then
                 text='WARNING: ' 
                 exitstate=1
         fi
 fi
 
-text=$text' Last good backup is '$D' days, '$H' hours, '$M' minutes old. Total errors:'$TOTALERRORS'. Used pool space: '$SPACE'%'
+text=$text' Oldest backup is '$D' days, '$H' hours, '$M' minutes old. Currently running Jobs: '$RUNNING', Failed jobs: '$FAILEDBACKUPS', Total hosts to backup: '$TOTALBACKUPS'. Used pool space: '$SPACE'%'
+if [ -z "$SPACE" ]; then
+text="Can not test functionality"
+fi
 echo $text
 exit $exitstate
 #604800 is one week in ms
