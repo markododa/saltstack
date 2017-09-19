@@ -1,7 +1,7 @@
 {% set script = None %}
 
 {% if salt['cmd.retcode']("which mysqld") == 0 or grains['host'] in ['va-owncloud','va-monitoring'] %}
-{% set script = "/root/.va/db-backup.sh" %}
+{% set script_pre = "/root/.va/db-backup.sh" %}
 
 /root/.va/backup:
   file.directory:
@@ -22,5 +22,5 @@ salt/backup/new:
         ip: {{salt['network.ip_addrs']()[-1] }}
         type: {{ grains['role'] }}
         fqdn: {{ grains['fqdn'] }}
-        script: {{ script }}
+        script_pre: {{ script_pre }}
     - order: last
