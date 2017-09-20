@@ -1,0 +1,14 @@
+[Unit]
+Description=VA-Master
+Requires=network-online.target
+After=consul.service
+
+[Service]
+WorkingDirectory=/opt/va_master/
+Restart=on-failure
+ExecStart=/usr/bin/python -m va_master
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target
