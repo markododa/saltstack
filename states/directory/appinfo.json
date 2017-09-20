@@ -46,5 +46,5 @@
     }
     ],
     "path": "-", 
-    "panels": {"admin": [{"key": "directory.users", "name": "Users"}, {"key": "directory.groups", "name": "Groups"}, {"key": "directory.dns", "name": "DNS entries"}, {"key": "directory.overview", "name": "Overview"}], "user": []}
+    "panels": {"admin": [{"key": "directory.users", "name": "Users"}, {"key": "directory.groups", "name": "Groups"}, {"key": "directory.dns", "name": "DNS entries"}, {"key": "directory.org_units", "name": "Organizational Units"}], "user": []}
 }
