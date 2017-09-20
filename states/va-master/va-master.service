@@ -6,7 +6,7 @@ After=consul.service
 [Service]
 WorkingDirectory=/opt/va_master/
 Restart=on-failure
-ExecStart=/usr/bin/python -m va_master
+ExecStart=/usr/bin/python -m va_master start
 ExecReload=/bin/kill -HUP $MAINPID
 KillSignal=SIGINT
 
