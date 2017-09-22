@@ -227,6 +227,11 @@ restart_samba:
     - watch:
       - file: /etc/samba/smb.conf
 
+/opt/va-directory/samba.json:
+  file.copy:
+    source: salt://directory/files/samba.json
+    makedirs: True
+
 
 fixownership:
   cmd.run:

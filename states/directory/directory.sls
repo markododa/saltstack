@@ -258,6 +258,11 @@ restart_samba:
 
 {% endif %}
 
+/opt/va-directory/samba.json:
+  file.copy:
+    source: salt://directory/files/samba.json
+    makedirs: True
+
 /vapour/winexe_1.00.1-1_amd64.deb:
   file.managed:
     - source: salt://directory/files/winexe_1.00.1-1_amd64.deb
