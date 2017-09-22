@@ -24,10 +24,10 @@ restart_api:
 
 /etc/salt/master:
   file.managed:
-    - source: salt://salt-master/files/master-reactors
+    - source: salt://salt-master/files/master
 
 
-{% if salt['pillar.get']('openstack-old') != 'True' %}
+{% if salt['pillar.get']('openstack-old') == "True" %}
 cloud-profiles:
     file.recurse:
         - name: /etc/salt/cloud.profiles.d/
@@ -37,7 +37,7 @@ cloud-profiles:
 old-master-conf:
   file.managed:
     - name: /etc/salt/master
-    - source: salt://salt-master/files/master
+    - source: salt://salt-master/files/master-openstack
     - template: jinja
     - context:
       openstackhost: {{ salt['pillar.get']('openstackhost')}}
