@@ -31,6 +31,7 @@ base:
   'role:va-master':
     - match: grain
     - openvpn
+    - credentials
   'role:libvirt':
     - match: grain
     - credentials
