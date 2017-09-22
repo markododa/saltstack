@@ -81,12 +81,17 @@ def add_default_paths(hosts = []):
             result = add_folder(host, path)
     return True
 
+def test_mine(hostname):
+	address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
+	return address[address.keys()[0]]
+
 def hosts_file_add(hostname, address=False):
     hostname = hostname.lower()
     if not address:
         address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
         address = address[address.keys()[0]][0]
     __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
+    return address
 
 def add_host(hostname,address=False,script_pre="None",script_post="None"):
 	hostname = hostname.lower()
@@ -125,7 +130,7 @@ def rm_host(hostname):
     __salt__['file.line'](path='/etc/hosts',content='.*'+hostname+'.*', mode='delete')
     return __salt__['service.reload']('backuppc')
 
-def add_folder(hostname, folder,address=False,script_pre="None",script_post="None"):
+def add_folder(hostname, folder,script_pre="None",script_post="None",address=False):
     hostname = hostname.lower()
     if folder[-1] == '/':
         folder = folder[0:-1]
@@ -140,9 +145,9 @@ def add_folder(hostname, folder,address=False,script_pre="None",script_post="Non
     else:
         return False
 
-def add_folder_list(hostname, folder_list,script_pre="None", script_post="None"):
+def add_folder_list(hostname, folder_list,script_pre="None", script_post="None", address=False):
 	for folder in folder_list:
-		add_folder(hostname, folder,script_pre, script_post)
+		add_folder(hostname, folder,script_pre, script_post, address)
 
 def rm_folder(hostname, folder):
     hostname = hostname.lower()
