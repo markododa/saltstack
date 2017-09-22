@@ -53,15 +53,10 @@ contact:
     - repl: 'contact: support@vapour-apps.com'
 
 fqdn:
-  host.present:
-    - ip: 127.0.1.1
-    - names:
+  host.only:
+    - name: 127.0.1.1
+    - hostnames:
       - {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
-
-self_hostname:
-  host.present:
-    - ip: 127.0.1.1
-    - names:
       - {{ grains['host'] }}
 
 saltutil.sync_grains:
