@@ -36,6 +36,7 @@ install_samba:
 install_pip:
   pkg.installed:
     - name: python-pip
+    - upgrade: True
 
 install_peewee:
   pip.installed:
