@@ -227,10 +227,13 @@ restart_samba:
     - watch:
       - file: /etc/samba/smb.conf
 
+/opt/va-directory/:
+  file.directory:
+    - makedirs: True
+
 /opt/va-directory/samba.json:
-  file.copy:
-    source: salt://directory/files/samba.json
-    makedirs: True
+  file.managed:
+    - source: salt://directory/files/samba.json
 
 
 fixownership:
@@ -273,6 +276,6 @@ dpkg --install /vapour/winexe_1.00.1-1_amd64.deb:
   cmd.run
 #winexe -S on -U TEST/Administrator%P@ssw0rd //192.168.0.1 "cmd.exe"
 
-shutdown -r +1:
-  cmd.run:
-    - order: last
+#shutdown -r +1:
+#  cmd.run:
+#    - order: last
