@@ -21,3 +21,5 @@ reactor:
     - /srv/reactor/old-host.sls
   - 'mail/send':
     - /srv/reactor/sendmail.sls
+  - 'salt/dns':
+    - /srv/reactor/add_dns.sls
