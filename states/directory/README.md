@@ -21,3 +21,22 @@ To join PCs to the domain you need to setup DNS server settings to the IP addres
 The best practice is to use this IP address as first DNS servers for all computers. This is neceessary for Windows logging services. It will also make apps available by hostname. 
 
 Recommended folder for back-up is: /var/lib/samba/sysvol/ (Sysvol and Netlogon shares)
+
+
+
+SAMBA Active Directory Saltstack state
+
+To install manually on a single server run the masterless script from the vapourapps saltstack repo with the role of the server:
+./masterless.sh directory
+
+Then set up the file at /srv/pillar/credentials.sls with the following arguments:
+
+domain: The Main Domain of Active Directory
+shordomain: The Realm
+admin_password: Password of Administrator User
+
+Optional arguments are:
+dcip: ip of a running domain controler, setting this runs a join against an existing dc instead of provisioning
+query_user and query_password: Credentials that other servers can use to bind to Samba for user managment, used by vapour-apps owncloud and email
+
+After setting the pillars run salt-call --local state.highstate, the state will do a reboot.
