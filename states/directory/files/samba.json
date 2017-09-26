@@ -256,7 +256,7 @@
 			},
 			"actions": [{
 				"name": "Edit entry",
-				"action": "update_dns_entry"
+				"action": "edit_entry"
 			}, {
 				"name": "Delete entry",
 				"class": "danger",
@@ -308,6 +308,7 @@
 						"type": "Form",
 						"name": "form",
 						"class": "left",
+						"reducers": ["form"],
 						"elements": [{
 							"type": "text",
 							"name": "Username",
