@@ -89,7 +89,7 @@ if [ ! "$HOSTADDRESS" ] || [ ! "$LONGDATETIME" ] \
 fi
 
 ## Build the message's subject
-SUBJECT="[$NOTIFICATIONTYPE] Host $HOSTDISPLAYNAME is $HOSTSTATE!"
+SUBJECT="$NOTIFICATIONTYPE - Host $HOSTDISPLAYNAME is $HOSTSTATE!"
 
 ## Build the notification message
 NOTIFICATION_MESSAGE=`cat << EOF
