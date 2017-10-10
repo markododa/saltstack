@@ -116,6 +116,19 @@ libxml-rss-perl:
     - group: root
     - mode: 755
 
+/usr/bin/backuppc_servermsg:
+  file.managed:
+    - source:
+      - salt://backuppc/files/backuppc_servermsg
+      - user: root
+      - group: root
+      - mode: 755
+
+add_nagios_to_group:
+  user.present:
+    - name: nagios
+    - optional_groups: backuppc
+
 backuppc-restart:
   service.running:
     - name: backuppc
