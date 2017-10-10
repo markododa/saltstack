@@ -149,6 +149,13 @@ check_functionality_monitoring:
     - group: root
     - mode: 755
 
+/etc/icinga2/scripts/mail-report.sh:
+  cron.present:
+    - user: root
+    - minute: 0
+    - hour: 8
+    - dayweek: 1
+
 /opt/va/icinga2/va-host.tmpl:
   file.managed:
     - source: salt://monitoring/files/va_host.conf
