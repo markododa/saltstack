@@ -2,7 +2,7 @@
 debmon_repo_required_packages:
   pkg.installed:
     - name: python-apt
-
+    
 icinga_repo:
   pkgrepo.managed:
     - humanname: debmon
@@ -36,6 +36,11 @@ install_icinga2:
       - mailutils
       - ssmtp
 
+install_nagiosplugins:
+    pkg.installed:
+      - pkgs:
+        -libreadonly-xs-perl
+        -libnagios-plugin-perl
 
 add-checkcommands:
     file.recurse:
@@ -84,6 +89,23 @@ add-wmicpresets:
   file.managed:
     - source:
       - salt://monitoring/files/icinga2mail/mail-tester.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+
+/etc/icinga2/scripts/mail-report.sh:
+  file.managed:
+    - source:
+      - salt://monitoring/files/icinga2mail/mail-report.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+/etc/icinga2/scripts/mattermost.py:
+  file.managed:
+    - source:
+      - salt://monitoring/files/icinga2mail/mattermost.py
     - user: root
     - group: root
     - mode: 755
@@ -149,6 +171,22 @@ check_functionality_monitoring:
     - group: root
     - mode: 755
 
+check_blacklisted:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/check_rbl
+    - source: salt://monitoring/files/check_rbl
+    - user: root
+    - group: root
+    - mode: 755
+
+check_blacklisted_serverlist:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/check_rbl.ini
+    - source: salt://monitoring/files/check_rbl.ini
+    - user: root
+    - group: root
+    - mode: 555
+    
 /etc/icinga2/scripts/mail-report.sh:
   cron.present:
     - user: root
