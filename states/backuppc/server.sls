@@ -116,6 +116,21 @@ libxml-rss-perl:
     - group: root
     - mode: 755
 
+/usr/bin/backuppc_servermsg:
+  file.managed:
+    - source:
+      - salt://backuppc/files/backuppc_servermsg
+      - user: root
+      - group: root
+      - mode: 0755
+
+chmod +x /usr/bin/backuppc_servermsg:
+  cmd.run
+
+/etc/sudoers.d/nagios:
+  file.managed:
+    - content: "nagios ALL = (backuppc) NOPASSWD: /usr/share/backuppc/bin/BackupPC_serverMesg"
+
 backuppc-restart:
   service.running:
     - name: backuppc
