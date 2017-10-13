@@ -35,12 +35,8 @@ install_icinga2:
       - libdatetime-perl
       - mailutils
       - ssmtp
-
-install_nagiosplugins:
-    pkg.installed:
-      - pkgs:
-        -libreadonly-xs-perl
-        -libnagios-plugin-perl
+      - libreadonly-xs-perl
+      - libnagios-plugin-perl
 
 add-checkcommands:
     file.recurse:
@@ -68,47 +64,6 @@ add-wmicpresets:
     - user: root
     - group: root
     - mode: 755
-  
-/etc/icinga2/scripts/mail-host-notification.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mail-host-notification.sh
-    - user: root
-    - group: root
-    - mode: 755
-    
-/etc/icinga2/scripts/mail-service-notification.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mail-service-notification.sh
-    - user: root
-    - group: root
-    - mode: 755
-
-/etc/icinga2/scripts/mail-tester.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mail-tester.sh
-    - user: root
-    - group: root
-    - mode: 755
-
-
-/etc/icinga2/scripts/mail-report.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mail-report.sh
-    - user: root
-    - group: root
-    - mode: 755
-
-/etc/icinga2/scripts/mattermost.py:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mattermost.py
-    - user: root
-    - group: root
-    - mode: 755
 
 #needs manual editing later, should be auto filled with credentails:	
 
@@ -132,9 +87,9 @@ icinga2-feature:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql
 
 configure-icinga2:
-    file.recurse:
-        - name: /etc/icinga2/conf.d/
-        - source: salt://monitoring/files/icinga2
+  file.recurse:
+      - name: /etc/icinga2/conf.d/
+      - source: salt://monitoring/files/icinga2
 
 create-ca:
   cmd.run:
@@ -155,13 +110,11 @@ cp /var/lib/icinga2/ca/ca.crt /etc/icinga2/pki/ && chown nagios:nagios /etc/icin
   cmd.run:
   - onlyif: test ! -e /etc/icinga2/pki/ca.crt
 
-icinga2:
-  service.running: []
-
 #### functionality script
 /usr/lib/nagios/plugins/:
   file.directory:
     - makedirs: True
+
 
 check_functionality_monitoring:
   file.managed:
@@ -171,22 +124,10 @@ check_functionality_monitoring:
     - group: root
     - mode: 755
 
-check_blacklisted:
-  file.managed:
-    - name: /usr/lib/nagios/plugins/check_rbl
-    - source: salt://monitoring/files/check_rbl
-    - user: root
-    - group: root
-    - mode: 755
-
-check_blacklisted_serverlist:
-  file.managed:
-    - name: /usr/lib/nagios/plugins/check_rbl.ini
-    - source: salt://monitoring/files/check_rbl.ini
-    - user: root
-    - group: root
-    - mode: 555
-    
+icinga2:
+  service.running: []
+  
+#Weekly report cron job   
 /etc/icinga2/scripts/mail-report.sh:
   cron.present:
     - user: root
