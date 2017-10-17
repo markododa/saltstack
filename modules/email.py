@@ -1,4 +1,4 @@
-import subprocess, re
+import subprocess, re, netaddr
 
 panel = {"email.user":{"title":"List users","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"user","label":"User"},{"key":"samaccountname","label":"sAMAccountName"},{"key":"action","label":"Actions"}],"source":"list_users","panels":{"list_rules":"email.rules"},"actions":[{"action":"list_rules","name":"List rules"}],"id":["user"]}]},"email.rules":{"title":"List rules","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","reducers":["panel"],"elements":[{"type":"Button","name":"Add rule","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":"add_user_recipient"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"Rule","value":"","label":"Allow recipient","required":True},{"type":"label","name":"lbl","value":"example:\n- user@kam.com.mk (for particular user)\n- @gmail.com (for whole domain *@gmail.com)"}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]} }, {"type":"Button","name":"Add multiple users","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":"add_multiple_user_recipients"}],"content":[{"type":"Form","name":"form","class":"left","elements":[]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert","modal"],"columns":[{"key":"rule","label":"Rule"},{"key":"action","label":"Actions"}],"source":"get_user_rules","actions":[{"action":"rm_user_recipient","name":"Remove"}],"id":["rule"]}]}}
 
@@ -147,3 +147,25 @@ def list_users(email_domain):
     result = [{'user' : x.get('mail'), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get('mail', '')] 
     return result 
 
+def get_wblist(ruleset, direction='inbound', account='@.'):
+    array = __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --list --'+ruleset).split("\n")
+    if len(array) == 3:
+       return []
+    else:
+       return array[2:]
+
+def get_whitelist(ruleset='whitelist',direction='inbound', account='@.'):
+    return get_wblist(ruleset)
+
+def get_blacklist(ruleset='blacklist',direction='inbound', account='@.'):
+    return get_wblist(ruleset)
+
+def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
+    array = address.split(' ')
+    for i in range(len(array)):
+       if netaddr.valid_ipv4(array[i]) or netaddr.valid_ipv6(array[i]):
+           True
+       elif '@' not in array[i]:
+           array[i] = '@'+array[i]
+    address = ' '.join(array)
+    return __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --'+action+' --'+ruleset+' '+address)
