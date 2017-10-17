@@ -169,3 +169,12 @@ def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
            array[i] = '@'+array[i]
     address = ' '.join(array)
     return __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --'+action+' --'+ruleset+' '+address)
+
+def get_dns_config():
+   domains = []
+   keys = __salt__['cmd.run']('amavisd-new showkeys').split('; key#')[1:]
+   for domain in keys:
+       url = ''.join(domain.replace(' '*2,'').split("\n")[1].split('3600')[0])
+       dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
+       domains.append(url[0:-1]+' TXT '+dkim)
+   return domains
