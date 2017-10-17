@@ -131,10 +131,10 @@ def get_conf_vars_file(vars, path):
     return get_conf_vars(vars, conf)
 
 def get_ldap_users(path = '/etc/dovecot/dovecot-ldap.conf'):
-    vars = ['hosts', 'dn', 'dnpass']
+    vars = ['hosts', 'dn', 'dnpass', 'base']
     vars = get_conf_vars_file(vars, path)
 
-    cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], '-b', 'dc=kamdooel,dc=local', '-w', vars['dnpass'], 'sAMAccountName', 'mail', '-S', 'sAMAccountName']#, '"(&(mail=%u)(objectClass=person)"']
+    cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', 'mail', '-S', 'sAMAccountName']#, '"(&(mail=%u)(objectClass=person)"']
     result = subprocess.check_output(cmd)
     result = [x for x in result.split('#')]
     result = [[i for i in x.split('\n') if ':' in i] for x in result]
@@ -142,9 +142,8 @@ def get_ldap_users(path = '/etc/dovecot/dovecot-ldap.conf'):
     return result
 
 
-def list_users(email_domain = 'kam.com.mk'):
+def list_users(email_domain):
     users = get_ldap_users()
     result = [{'user' : x.get('mail'), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get('mail', '')] 
     return result 
-
 
