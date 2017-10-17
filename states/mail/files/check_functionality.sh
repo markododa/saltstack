@@ -38,6 +38,15 @@ else
 
 fi
 
+service clamav-daemon status > /dev/null
+if [ $? -eq 0 ];then
+    text=$text", ClamAV is OK"
+else
+    text=$text", ClamAV is DOWN"
+   exitstate=2
+
+fi
+
 
 #queue_id='^[A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9]'
 #queue_id='^(?:[0-9A-F]{10,11}|[0-9A-Za-z]{14,16})!\s'
