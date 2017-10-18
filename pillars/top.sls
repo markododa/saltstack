@@ -1,4 +1,7 @@
 base:
+  'role:proxy':
+    - match: grain
+    - credentials
   'role:monitoring':
     - match: grain
     - credentials
@@ -12,6 +15,10 @@ base:
   'role:lamp':
     - match: grain
     - lamp
+  'role:ticketing':
+    - match: grain
+    - credentials
+    - ticketing
   'role:backup':
     - match: grain
     - credentials
@@ -24,5 +31,9 @@ base:
   'role:va-master':
     - match: grain
     - openvpn
+    - credentials
+  'role:libvirt':
+    - match: grain
+    - credentials
   '*':
     - base

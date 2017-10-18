@@ -1,6 +1,6 @@
 #domains in banned list
 #Don't bother with the www. or the http://
-facebook.com
+
 
 #The bannedurllist is for blocking PART of a site
 #The bannedsitelist is for blocking ALL of a site
@@ -73,8 +73,8 @@ facebook.com
 #Remove the # from the following and edit as needed to use a stock
 #squidGuard/urlblacklists collection.
 .Include</etc/e2guardian/lists/blacklists/adult/domains>
-.Include</etc/e2guardian/lists/blacklists/aggressive/domains>
-.Include</etc/e2guardian/lists/blacklists/artnudes/domains>
+#.Include</etc/e2guardian/lists/blacklists/aggressive/domains>
+#.Include</etc/e2guardian/lists/blacklists/artnudes/domains>
 #.Include</etc/e2guardian/lists/blacklists/audio-video/domains>
 #.Include</etc/e2guardian/lists/blacklists/beerliquorinfo/domains>
 #.Include</etc/e2guardian/lists/blacklists/beerliquorsale/domains>

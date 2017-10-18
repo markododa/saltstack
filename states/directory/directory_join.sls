@@ -36,6 +36,7 @@ install_samba:
 install_pip:
   pkg.installed:
     - name: python-pip
+    - upgrade: True
 
 install_peewee:
   pip.installed:
@@ -227,6 +228,14 @@ restart_samba:
     - watch:
       - file: /etc/samba/smb.conf
 
+/opt/va-directory/:
+  file.directory:
+    - makedirs: True
+
+/opt/va-directory/samba.json:
+  file.managed:
+    - source: salt://directory/files/samba.json
+
 
 fixownership:
   cmd.run:
@@ -239,7 +248,7 @@ fixpermissions:
 dnsquery_user:
   cmd.run:
     - name: echo "dnsquery:"$(< /dev/urandom tr -dc _1-9A-Z | head -c15)$(< /dev/urandom tr -dc _A-Z-a-z-1-9 | head -c10) > /vapour/dnsquery && samba-tool user add `cat /vapour/dnsquery | tr ':' ' '` --description='VA Bot for DNS Query' --surname='DNS Query' --given-name='VA Bot' && samba-tool group addmembers 'Domain Admins' dnsquery && samba-tool user setexpiry dnsquery --noexpiry
-    - unless: test -e /vapour/dnsquery
+    - unless: samba-tool user list | grep -q dnsquery
 
 
 {% if pillar['query_user'] is defined %}
@@ -268,6 +277,6 @@ dpkg --install /vapour/winexe_1.00.1-1_amd64.deb:
   cmd.run
 #winexe -S on -U TEST/Administrator%P@ssw0rd //192.168.0.1 "cmd.exe"
 
-shutdown -r +1:
-  cmd.run:
-    - order: last
+#shutdown -r +1:
+#  cmd.run:
+#    - order: last

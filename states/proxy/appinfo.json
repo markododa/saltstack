@@ -1,9 +1,40 @@
 {
-	"name": "proxy",
-	"description": "Filter web traffic by rules and categories. Make different policies for VIP users.",
-	"version": "1.1",
-	"icon": "fa-shield",
-	"dependency": "directory,monitoring",
+    "name": "proxy",
+    "description": "Filter web traffic by rules and categories. Make different policies for VIP users.",
+    "version": "1.1",
+    "icon": "fa-shield",
+    "dependency": "directory,monitoring",
     "substates": ["proxy.proxy"], 
-	"path": "-"
+    "services": [
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "Local Web Server",
+            "http": "https://VAR_DNS:443/",
+            "tls_skip_verify": true,
+            "method" : "POST",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "proxy",
+            "name": "Web Interface",
+            "http": "http://VAR_DNS:8080",
+            "tls_skip_verify": true,
+            "method" : "POST",
+            "interval": "30s",
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
+    "path": "-"
 }

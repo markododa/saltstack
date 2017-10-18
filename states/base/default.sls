@@ -1,3 +1,7 @@
+timedatectl set-timezone {{ pillar['timezone'] }}:
+  cmd.run
+
+
 install_packages:
   pkg.installed:
     - pkgs:
@@ -49,16 +53,23 @@ contact:
     - repl: 'contact: support@vapour-apps.com'
 
 fqdn:
-  host.present:
-    - ip: 127.0.1.1
-    - names:
+  host.only:
+    - name: 127.0.1.1
+    - hostnames:
       - {{ grains['host'] }}.{% filter lower %}{{ salt['pillar.get']('domain') }}{% endfilter %}
-
-self_hostname:
-  host.present:
-    - ip: 127.0.1.1
-    - names:
       - {{ grains['host'] }}
 
 saltutil.sync_grains:
   module.run
+
+/etc/salt/minion:
+  file.line:
+    - content: "startup_states: highstate"
+    - mode: delete
+    - order: last
+
+/etc/cloud/cloud.cfg:
+  file.line:
+    - content: 'manage_etc_hosts: true'
+    - mode: delete
+    - order: last

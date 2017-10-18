@@ -8,6 +8,7 @@ external_auth:
   keystone-token:
     admin:
       - .*
+
 reactor:
   - 'salt/cloud/*/created':
     - /srv/reactor/startup-state.sls
@@ -23,3 +24,5 @@ reactor:
     - /srv/reactor/copykey.sls
   - 'salt/backup/installed':
     - /srv/reactor/old-host.sls
+  - 'mail/send':
+    - /srv/reactor/sendmail.sls

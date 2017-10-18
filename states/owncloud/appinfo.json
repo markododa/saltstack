@@ -1,9 +1,37 @@
 {
-	"name": "owncloud",
-	"description": "Store your files, calendar events and contacts in a private dropbox. Access them from web, mobile or use a desktop sync software",
-	"version": "1.1",
-	"icon": "fa-cloud",
-	"dependency": "directory,vpn",
+    "name": "owncloud",
+    "description": "Store your files, calendar events and contacts in a private dropbox. Access them from web, mobile or use a desktop sync software",
+    "version": "1.1",
+    "icon": "fa-cloud",
+    "dependency": "directory",
     "substates": ["owncloud"], 
-	"path": "-"
+    "fields": [
+            {"type": "text", "name": "ip", "label": "IP address of DC"},
+            {"type": "text", "name": "username", "label": "Username"},
+            {"type": "password", "name": "password", "label": "Password"}
+        ],
+    "services": [
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "WebDAV and Web Interface",
+            "http": "https://VAR_DNS:443/",
+            "tls_skip_verify": true,
+            "method" : "POST",
+            "interval": "30s",
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],,    
+    "path": "-"
 }

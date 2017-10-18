@@ -8,8 +8,13 @@
 #
 #You can also match IPs here too.
 #
-#You can now include
+#As of DansGuardian 2.7.3 you can now include
 #.tld so for example you can match .gov for example
+
+gmail.*
+google.*
+teamviwer.*
+yahoo.*
 
 # Time limiting syntax:
 # #time: <start hour> <start minute> <end hour> <end minute> <days>
@@ -22,7 +27,7 @@
 # Blanket exception.  To allow all sites except those in the
 # exceptionsitelist and greysitelist files, remove
 # the # from the next line to leave only a '**':
-**
+#**
 
 # Blanket SSL/CONNECT exception.  To allow all SSL 
 # and CONNECT tunnels except to addresses in the

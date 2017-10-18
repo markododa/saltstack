@@ -81,7 +81,7 @@ else
    exitstate=2
 fi
 
-sudo smbstatus -d 0 > /dev/null
+smbstatus -d 0 > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
     text=$text', '"Samba status OK"

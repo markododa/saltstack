@@ -1,0 +1,11 @@
+﻿/var/log/samba/%m.log {
+        weekly
+        missingok
+        rotate 4
+        sharedscripts
+        postrotate
+                service samba-ad-dc restart > /dev/null
+                /usr/bin/smbcontrol all reload-config > /dev/null
+        endscript
+        notifempty
+}

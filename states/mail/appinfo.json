@@ -1,10 +1,56 @@
 {
-	"name": "email",
-	"description": "Mail server with web interface and support for all popular mail clients.",
-	"version": "1.1",
-	"icon": "fa-envelope",
-	"dependency": "directory,monitoring",
+    "name": "email",
+    "description": "Mail server with web interface and support for all popular mail clients.",
+    "version": "1.1",
+    "icon": "fa-envelope",
+    "dependency": "directory,monitoring",
     "substates" : ["mail"],
-	"path": "-",
-        "panels": {"admin": [{"key": "email.user", "name": "List users"}], "user": []}
+    "fields": [
+            {"type": "text", "name": "ip", "label": "IP address of DC"},
+            {"type": "text", "name": "username", "label": "Username"},
+            {"type": "password", "name": "password", "label": "Password"}
+        ],
+    "services": [
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "imap",
+            "name": "IMAP Secure",
+            "tcp": "VAR_DNS:993",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "pop",
+            "name": "POP Secure",
+            "tcp": "VAR_DNS:995",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "smtp",
+            "name": "SMTP Secure",
+            "tcp": "VAR_DNS:587",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "Web Interface",
+            "http": "https://VAR_DNS:443",
+            "tls_skip_verify": true,
+            "method" : "POST",
+            "interval": "30s",
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
+    "path": "-",
+    "panels": {"admin": [{"key": "email.user", "name": "List users"}], "user": []}
 }

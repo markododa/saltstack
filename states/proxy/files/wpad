@@ -2,6 +2,6 @@
 
 function FindProxyForURL(url, host)
 {
-	//return "PROXY va-proxy.DOMAIN:8080; PROXY va-proxy2.DOMAIN:8080; DIRECT";
-	return "PROXY va-proxy.DOMAIN:8080; DIRECT";
+	//return "PROXY {{ PROXY_HOSTNAME }}.{{ PROXY_DOMAIN }}:8080; PROXY {{ PROXY_HOSTNAME }}2.{{ PROXY_DOMAIN }}:8080; DIRECT";
+	return "PROXY {{ PROXY_HOSTNAME }}.{{ PROXY_DOMAIN }}:8080; DIRECT";
 }

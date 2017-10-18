@@ -13,7 +13,8 @@
 
 gmail.*
 google.*
-
+teamviwer.*
+yahoo.*
 
 # Time limiting syntax:
 # #time: <start hour> <start minute> <end hour> <end minute> <days>

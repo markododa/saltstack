@@ -113,7 +113,6 @@ curl {{ipaddrss}} > /dev/null:
     - user: root
     - group: root
     - mode: 755
-	
  # DA SE ISKOPIRA TEMATA VA-THEME
   
 # fixredirect2contactsplus:

@@ -1,9 +1,38 @@
 {
-	"name": "lamp",
-	"description": "Web server.",
-	"version": "1.1",
-	"icon": "fa-globe",
-	"dependency": "",
+    "name": "lamp",
+    "description": "LAMP Web server. Host your own websites",
+    "version": "1.1",
+    "icon": "fa-internet-explorer",
+    "dependency": "",
     "substates": ["lamp.lamp"], 
-	"path": "-"
+    "services": [
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "mysql",
+            "name": "MySQL",
+            "tcp": "VAR_DNS:3306/",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "Web Server",
+            "http": "http://VAR_DNS:80",
+            "tls_skip_verify": true,
+            "method" : "POST",
+            "interval": "30s",
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
+    "path": "-"
 }
