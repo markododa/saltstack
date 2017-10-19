@@ -15,7 +15,8 @@ openvpn:
       status: /run/openvpn/openvpn-status.log
       crl: /etc/openvpn/crl.pem
       log: /var/log/openvpn.log
-      ccd: /etc/openvpn/ccd
+      ccd_dir: /etc/openvpn/ccd
+      client_to_client: True
   client:
     client:
       remote:
