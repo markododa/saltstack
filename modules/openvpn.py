@@ -1,8 +1,8 @@
 import salt, vpn_parser, re, os
 
-def add_user(username, create_ccd=True):
-    if create_ccd:
-        create_ccd(user)
+def add_user(username, ccd=True):
+    if ccd:
+        create_ccd(username)
     result =  __salt__['cmd.retcode']('/etc/openvpn/easyrsa/easyrsa build-client-full '+username+' nopass',cwd='/etc/openvpn/easyrsa')
     return result == 0
 
