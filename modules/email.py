@@ -178,3 +178,6 @@ def get_dns_config():
        dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
        domains.append(url[0:-1]+' TXT '+dkim)
    return domains
+
+def email_domains():
+    return open('/etc/postfix/transport', 'r').read().split(' dovecot\n')

@@ -16,6 +16,9 @@ postfix-ldap:
 dovecot-ldap:
   pkg.installed: []
 
+python-netaddr:
+  pkg.installed: []
+
 
 /root/:
   archive.extracted:
