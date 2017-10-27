@@ -52,5 +52,5 @@
     }
     ],
     "path": "-",
-    "panels": {"admin": [{"key": "email.users", "name": "email users"},{"key": "email.queue", "name": "Queue"},{"key": "email.filters", "name": "Filters"},{"key": "email.logs", "name": "Logs"}], "user": []}
+    "panels": {"admin":[{"key":"email.user","name":"Users 1"},{"key":"email.rules","name":"Rules"},{"key":"email.users","name":"Users2"},{"key":"email.queue","name":"Queue"},{"key":"email.filters","name":"Filters"},{"key":"email.logs","name":"Logs"}],"user":[]}
 }
