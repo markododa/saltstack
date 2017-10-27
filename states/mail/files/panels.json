@@ -1,10 +1,9 @@
 {
-		
-	"mail.list_logins": {
-		"title": "Login list",
+	"email.list_logins": {
+		"title": "Logs",
 		"tbl_source": {
 			"table": {
-				"action": "users_log",
+				"action": "mail_logs",
 				"var": "info",
 				"cols": ["date", "computer", "address"],
 				"source": [{
@@ -31,12 +30,12 @@
 			"source": "users_log"
 		}]
 	},
-	"mail.queue": {
-		"title": "Mail Queue",
+	"email.logs": {
+		"title": "Logs",
 		"tbl_source": {
 			"table": {
 				"action": "list_mail_queue",
-				"cols": ["group_name", "type", "value"],
+				"cols": ["queue_id", "queue_size", "queue_time", "queue_sender", "queue_receiver"],
 				"defaults": [],
 				"source": {}
 			}
@@ -47,21 +46,21 @@
 			"class": "tbl-ctrl",
 			"elements": [{
 				"type": "Button",
-				"name": "Add DNS entry",
+				"name": "Delete multiple items",
 				"glyph": "plus",
 				"action": "modal",
 				"reducers": ["modal", "alert"],
 				"modal": {
-					"title": "Add new DNS entry",
+					"title": "Delete messages from queue matching this filter",
 					"buttons": [{
 						"type": "Button",
 						"name": "Cancel",
 						"action": "cancel"
 					}, {
 						"type": "Button",
-						"name": "Add entry",
+						"name": "Delete all",
 						"class": "primary",
-						"action": "add_dns"
+						"action": "delete_queue_dns"
 					}],
 					"content": [{
 						"type": "Form",
@@ -76,15 +75,15 @@
 						}, {
 							"type": "dropdown",
 							"name": "Type",
-							"value": ["A", "AAAA", "MX", "NS", "CNAME"],
+							"value": ["Sender", "Recipient"],
 							"label": "Type",
-							"required": false
+							"required": true
 						}, {
 							"type": "text",
-							"name": "Address",
+							"name": "Filter",
 							"value": "",
-							"label": "Address",
-							"required": false
+							"label": "Filter",
+							"required": true
 						}]
 					}, {
 						"type": "Div",
@@ -92,10 +91,10 @@
 						"class": "right",
 						"elements": [{
 							"type": "Heading",
-							"name": "Fill the form to add a new DNS entry"
+							"name": "Fill the form to clean multiple items from queue matching the following filter"
 						}, {
 							"type": "Paragraph",
-							"name": "The IP must not be added until now. For type A use IPv4, for AAAA use IPv6."
+							"name": "All fields are required"
 						}]
 					}]
 				}
@@ -187,8 +186,164 @@
 			"source": "list_queue"
 		}]
 	},
-	"mail.users": {
-		"title": "View users",
+	"email.queue": {
+		"title": "Mail Queue",
+		"tbl_source": {
+			"table": {
+				"action": "list_mail_queue",
+				"cols": ["queue_id", "queue_size", "queue_time", "queue_sender", "queue_receiver"],
+				"defaults": [],
+				"source": {}
+			}
+		},
+		"content": [{
+			"type": "Form",
+			"name": "form",
+			"class": "tbl-ctrl",
+			"elements": [{
+				"type": "Button",
+				"name": "Delete multiple items",
+				"glyph": "plus",
+				"action": "modal",
+				"reducers": ["modal", "alert"],
+				"modal": {
+					"title": "Delete messages from queue matching this filter",
+					"buttons": [{
+						"type": "Button",
+						"name": "Cancel",
+						"action": "cancel"
+					}, {
+						"type": "Button",
+						"name": "Delete all",
+						"class": "primary",
+						"action": "delete_queue_dns"
+					}],
+					"content": [{
+						"type": "Form",
+						"name": "form",
+						"class": "left",
+						"elements": [{
+							"type": "text",
+							"name": "Entryname",
+							"value": "",
+							"label": "Entry name",
+							"required": false
+						}, {
+							"type": "dropdown",
+							"name": "Type",
+							"value": ["Sender", "Recipient"],
+							"label": "Type",
+							"required": true
+						}, {
+							"type": "text",
+							"name": "Filter",
+							"value": "",
+							"label": "Filter",
+							"required": true
+						}]
+					}, {
+						"type": "Div",
+						"name": "div",
+						"class": "right",
+						"elements": [{
+							"type": "Heading",
+							"name": "Fill the form to clean multiple items from queue matching the following filter"
+						}, {
+							"type": "Paragraph",
+							"name": "All fields are required"
+						}]
+					}]
+				}
+			}]
+		}, {
+			"type": "Table",
+			"name": "table",
+			"reducers": ["table", "filter", "panel", "modal", "alert", "form"],
+			"columns": [{
+				"key": "queue_id",
+				"label": "Message ID"
+			}, {
+				"key": "queue_size",
+				"label": "Size"
+			}, {
+				"key": "queue_time",
+				"label": "Arrival time"
+			}, {
+				"key": "queue_sender",
+				"label": "Sender"
+			}, {
+				"key": "queue_receiver",
+				"label": "Receiver"
+			}],
+			"modals": {
+				"edit_entry": {
+					"title": "DeleteMe",
+					"buttons": [{
+						"type": "Button",
+						"name": "Cancel",
+						"action": "cancel"
+					}, {
+						"type": "Button",
+						"name": "Update entry",
+						"class": "primary",
+						"action": "dns_update"
+					}],
+					"content": [{
+						"type": "Form",
+						"name": "form",
+						"class": "left",
+						"reducers": ["form"],
+						"elements": [{
+							"type": "readonly_text",
+							"name": "Entryname",
+							"value": "",
+							"label": "Entry name",
+							"required": false
+						}, {
+							"type": "readonly_text",
+							"name": "Type",
+							"value": "",
+							"label": "Type",
+							"required": false
+						}, {
+							"type": "text",
+							"name": "Address",
+							"value": "",
+							"label": "Address",
+							"required": false
+						}]
+					}, {
+						"type": "Div",
+						"name": "div",
+						"class": "right",
+						"elements": [{
+							"type": "Heading",
+							"name": "Edit the form to update DNS entry"
+						}, {
+							"type": "Paragraph",
+							"name": "If you leave a blank value, it will not change - the old value will be used."
+						}]
+					}]
+				}
+			},
+			"readonly": {
+				"group_name": "Entryname",
+				"type": "Type"
+			},
+			"actions": [{
+				"name": "Send again now",
+				"action": "send_queue_id"
+			}, {
+				"name": "Delete message",
+				"class": "danger",
+				"action": "delete_queue_id"
+			}],
+			"id": "group_name",
+			"source": "list_queue"
+		}]
+	},
+	"email.users": {
+		"title": "Mail users",
 		"tbl_source": {
 			"table": {
 				"action": "get_ldap_users",
@@ -236,24 +391,6 @@
 							"label": "Username",
 							"required": true
 						}, {
-							"type": "password",
-							"name": "Password",
-							"value": "",
-							"label": "Password",
-							"required": true
-						}, {
-							"type": "text",
-							"name": "Name",
-							"value": "",
-							"label": "First name",
-							"required": true
-						}, {
-							"type": "text",
-							"name": "Surname",
-							"value": "",
-							"label": "Last name",
-							"required": true
-						}, {
 							"type": "text",
 							"name": "email",
 							"value": "",
@@ -261,15 +398,9 @@
 							"required": true
 						}, {
 							"type": "text",
-							"name": "unit",
-							"value": "",
-							"label": "Organizational unit",
-							"required": true
-						}, {
-							"type": "checkbox",
-							"name": "vpn",
+							"name": "quota",
 							"value": false,
-							"label": "Change password at next login",
+							"label": "Quota (bytes)",
 							"required": false
 						}]
 					}, {
@@ -385,7 +516,7 @@
 				}
 			},
 			"panels": {
-				"list_logins": "mail.list_logins"
+				"list_logins": "email.list_logins"
 			},
 			"actions": [{
 				"name": "Delete Mailbox",
@@ -400,7 +531,7 @@
 			}]
 		}]
 	},
-	"mail.filters": {
+	"email.filters": {
 		"title": "Filter lists",
 		"tbl_source": {
 			"table": {
@@ -411,7 +542,7 @@
 			},
 			"table2": {
 				"action": "get_blacklist",
-				"cols": [],
+				"cols": ["item", "description"],
 				"lbl": "groupname",
 				"defaults": [],
 				"val": {}
@@ -423,12 +554,12 @@
 			"class": "tbl-ctrl",
 			"elements": [{
 				"type": "Button",
-				"name": "Add whitelist item",
+				"name": "Add item",
 				"glyph": "plus",
 				"action": "modal",
 				"reducers": ["modal"],
 				"modal": {
-					"title": "Add item",
+					"title": "Add item to whitelist",
 					"buttons": [{
 						"type": "Button",
 						"name": "Cancel",
@@ -445,9 +576,9 @@
 						"class": "left",
 						"elements": [{
 							"type": "text",
-							"name": "Groupname",
+							"name": "Item",
 							"value": "",
-							"label": "Group name",
+							"label": "Expression",
 							"required": true
 						}]
 					}, {
@@ -459,7 +590,7 @@
 							"name": "Fill the form to add a new item to whitelist"
 						},{
 								"type": "Paragraph",
-								"name": "Some more text."
+								"name": "Example expressions: @domain.com"
 							}]
 					}]
 				}
@@ -469,36 +600,26 @@
 			"name": "table",
 			"reducers": ["table", "filter", "panel", "alert"],
 			"columns": [{
-				"key": "groupname",
+				"key": "item",
 				"label": "Whitelist item"
-			}, {
-				"key": "description",
-				"label": "Description"
 			},{
 				"key": "action",
 				"label": "Actions"
 			}],
 			"actions": [{
-				"name": "List Members",
-				"action": "list_group_members"
-			},{
 				"name": "Delete item",
 				"class": "danger",
-				"action": "delete_item"
+				"action": "delete_item_whitelist"
 			}],
-			"id": "groupname",
+			"id": "item",
 			"source": "get_whitelist"
 		}, {
-			"type": "Div",
-			"name": "div2",
-			"reducers": ["div"],
-			"elements": [{
 				"type": "Form",
 				"name": "form2",
 				"class": "tbl-ctrl",
 				"elements": [{
 					"type": "Button",
-					"name": "Add blacklist item",
+					"name": "Add item",
 					"glyph": "plus",
 					"action": "modal",
 					"reducers": ["modal"],
@@ -510,7 +631,7 @@
 							"action": "cancel"
 						}, {
 							"type": "Button",
-							"name": "Add group",
+							"name": "Add item",
 							"class": "primary",
 							"action": "add_item_blacklist"
 						}],
@@ -520,9 +641,9 @@
 							"class": "left",
 							"elements": [{
 								"type": "text",
-								"name": "Groupname",
+								"name": "Item",
 								"value": "",
-								"label": "Group name",
+								"label": "Expression",
 								"required": true
 							}]
 						}, {
@@ -534,33 +655,29 @@
 								"name": "Fill the form to add a new item to blacklist"
 							}, {
 								"type": "Paragraph",
-								"name": "Some more text."
+								"name": "Example expressions: @domain.com"
 							}]
 						}]
 					}
 				}]
-			}, {
+			},{
 				"type": "Table",
 				"name": "table2",
 				"reducers": ["table", "filter", "panel", "alert"],
 				"columns": [{
-					"key": "groupname",
+					"key": "item",
 					"label": "Blacklist item"
 				}, {
 					"key": "action",
 					"label": "Actions"
 				}],
 				"actions": [{
-					"name": "List Members",
-					"action": "list_group_members"
-				}, {
-					"name": "Delete group",
+					"name": "Delete item",
 					"class": "danger",
-					"action": "delete_group"
+					"action": "delete_item_blacklist"
 				}],
-				"id": "groupname",
+				"id": "item",
 				"source": "get_blacklist"
 			}]
-		}]
 	}
 }
