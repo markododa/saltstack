@@ -144,7 +144,7 @@ def get_ldap_users(path = '/etc/dovecot/dovecot-ldap.conf'):
 
 def list_users(email_domain=''):
     if email_domain == '':
-        email_domain=email_domains()[0]
+        email_domain = email_domains()[0]
     users = get_ldap_users()
     result = [{'user' : x.get('mail'), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get('mail', '')] 
     return result 
@@ -182,4 +182,4 @@ def get_dns_config():
    return domains
 
 def email_domains():
-    return open('/etc/postfix/transport', 'r').read().split(' dovecot\n')
+    return open('/etc/postfix/transport', 'r').read().lower().split(' dovecot\n')
