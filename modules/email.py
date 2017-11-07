@@ -135,7 +135,6 @@ def get_ldap_users(path = '/etc/dovecot/dovecot-ldap.conf'):
     vars = get_conf_vars_file(vars, path)
     filter = '(&(objectCategory=CN=Person,CN=Schema,CN=Configuration,'+vars['base']+'))'
     cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], filter, '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', 'mail', '-S', 'sAMAccountName']
-    print(cmd)
     result = subprocess.check_output(cmd)
     result = [x for x in result.split('#')]
     result = [[i for i in x.split('\n') if ':' in i] for x in result]
