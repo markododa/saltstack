@@ -1,5 +1,5 @@
 salt/dns:
   event.send:
-    - data:                                                                                                                                                    
-        name: {{ grains['id'] }}                                                                                                                               
-        ip: {{ grains['ip4_interfaces']['eth0'][0] }}                                                                                                          
+    - data:
+        name: {{ grains['id'] }}
+        ip: {{ salt['network.get_route'](salt['network.default_route']()[0]['gateway'])['source'] }}

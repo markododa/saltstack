@@ -2,7 +2,7 @@
 debmon_repo_required_packages:
   pkg.installed:
     - name: python-apt
-
+    
 icinga_repo:
   pkgrepo.managed:
     - humanname: debmon
@@ -35,7 +35,8 @@ install_icinga2:
       - libdatetime-perl
       - mailutils
       - ssmtp
-
+      - libreadonly-xs-perl
+      - libnagios-plugin-perl
 
 add-checkcommands:
     file.recurse:
@@ -63,30 +64,6 @@ add-wmicpresets:
     - user: root
     - group: root
     - mode: 755
-  
-/etc/icinga2/scripts/mail-host-notification.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mail-host-notification.sh
-    - user: root
-    - group: root
-    - mode: 755
-    
-/etc/icinga2/scripts/mail-service-notification.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mail-service-notification.sh
-    - user: root
-    - group: root
-    - mode: 755
-
-/etc/icinga2/scripts/mail-tester.sh:
-  file.managed:
-    - source:
-      - salt://monitoring/files/icinga2mail/mail-tester.sh
-    - user: root
-    - group: root
-    - mode: 755
 
 #needs manual editing later, should be auto filled with credentails:	
 
@@ -110,9 +87,9 @@ icinga2-feature:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql
 
 configure-icinga2:
-    file.recurse:
-        - name: /etc/icinga2/conf.d/
-        - source: salt://monitoring/files/icinga2
+  file.recurse:
+      - name: /etc/icinga2/conf.d/
+      - source: salt://monitoring/files/icinga2
 
 create-ca:
   cmd.run:
@@ -133,13 +110,11 @@ cp /var/lib/icinga2/ca/ca.crt /etc/icinga2/pki/ && chown nagios:nagios /etc/icin
   cmd.run:
   - onlyif: test ! -e /etc/icinga2/pki/ca.crt
 
-icinga2:
-  service.running: []
-
 #### functionality script
 /usr/lib/nagios/plugins/:
   file.directory:
     - makedirs: True
+
 
 check_functionality_monitoring:
   file.managed:
@@ -148,6 +123,17 @@ check_functionality_monitoring:
     - user: root
     - group: root
     - mode: 755
+
+icinga2:
+  service.running: []
+  
+#Weekly report cron job   
+/etc/icinga2/scripts/mail-report.sh:
+  cron.present:
+    - user: root
+    - minute: 0
+    - hour: 8
+    - dayweek: 1
 
 /opt/va/icinga2/va-host.tmpl:
   file.managed:
