@@ -1,10 +1,3 @@
- {{{
-  "title": "E-mail account configuration for Microsoft Outlook",
-  "author": "Bojan Ivanovski",
-  "attachments": [],
-  "contentIsHTML": false
-}}}
-
 In order to start configuring an e-mail account, you will have to provide certain information from your server administrator. You will need to know the name of the account, password, and name of the e-mail server and the ports for the incoming and outgoing settings.
 
 
