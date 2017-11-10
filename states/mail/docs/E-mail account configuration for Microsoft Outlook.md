@@ -12,3 +12,5 @@ In order to start configuring an e-mail account, you will have to provide certai
 
 First step is to open the Outlook and select add new account, after this you will choose to set the account with manual settings. When you open this menu, you will have to type down all the information about your account. In addition, you have to choose to set your account as a POP3 (local account which is keeping the messages on your local storage) or IMAP (account which is keeping the messages on the e-mail server in a separate storage for your account). To finalize the setup of the e-mail you have to modify the specific ports and encryption, which you will use.
 
+![Account settings](./1.jpg)
+
