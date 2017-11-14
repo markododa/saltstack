@@ -38,7 +38,10 @@ wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip
 
 consul:
   service.running:
-    - enable: True 
+    - enable: True
+    - watch:
+      - file: /etc/systemd/system/consul.service
+
 
 va_master:
   git.latest:
