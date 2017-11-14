@@ -4,11 +4,11 @@ sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
 default_paths = {
-    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'],
-    'va-directory' : ['/root/.va/backup', '/etc/openvpn'],
+    'va-monitoring' : ['/etc/icinga2', '/usr/lib/nagios/plugins', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata'],
+    'va-directory' : ['/root/.va/backup', '/home', '/var/lib/samba', '/etc/openvpn'],
     'va-backup' : ['/etc/backuppc'],
     'va-fileshare' : ['/home', '/etc/samba'],
-    'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/'],
+    'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail'],
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
 }
 
