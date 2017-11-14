@@ -130,11 +130,14 @@ def get_conf_vars_file(vars, path):
 
     return get_conf_vars(vars, conf)
 
-def get_ldap_users(path = '/etc/dovecot/dovecot-ldap.conf'):
+def get_ldap_users(return_field, schema, path = '/etc/dovecot/dovecot-ldap.conf'):
     vars = ['hosts', 'dn', 'dnpass', 'base']
     vars = get_conf_vars_file(vars, path)
-
-    cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', 'mail', '-S', 'sAMAccountName']#, '"(&(mail=%u)(objectClass=person)"']
+    if schema:
+        filter = '(&(objectCategory=CN=Person,CN=Schema,CN=Configuration,'+vars['base']+'))'
+    else:
+        filter=''
+    cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], filter, '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', return_field, '-S', 'sAMAccountName']
     result = subprocess.check_output(cmd)
     result = [x for x in result.split('#')]
     result = [[i for i in x.split('\n') if ':' in i] for x in result]
@@ -142,9 +145,13 @@ def get_ldap_users(path = '/etc/dovecot/dovecot-ldap.conf'):
     return result
 
 
-def list_users(email_domain):
-    users = get_ldap_users()
-    result = [{'user' : x.get('mail'), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get('mail', '')] 
+def list_users(email_domain='',return_field='', schema=False):
+    if return_field == '':
+        return_field = 'userPrincipalName'
+    if email_domain == '':
+        email_domain = email_domains()[0]
+    users = get_ldap_users(return_field,schema)
+    result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get(return_field, '')] 
     return result 
 
 def get_wblist(ruleset, direction='inbound', account='@.'):
@@ -180,4 +187,10 @@ def get_dns_config():
    return domains
 
 def email_domains():
-    return open('/etc/postfix/transport', 'r').read().split(' dovecot\n')
+    return open('/etc/postfix/transport', 'r').read().lower().split(' dovecot\n')
+
+def dovecot_quota():
+    return __salt__['cmd.run']('/usr/bin/doveadm -f flow quota get -A')
+
+def mail_queue():
+    return __salt__['cmd.run']('mailq')
