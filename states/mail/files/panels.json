@@ -810,7 +810,7 @@
 										"name": "Rule",
 										"value": "",
 										"label": "Rule",
-										"required": True
+										"required": true
 									}
 								]
 							}, {
