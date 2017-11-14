@@ -61,7 +61,7 @@ pip_install:
 
 rsyslog:
   service.running:
-    - reload: True
+    - restart: True
     - watch:
       - file: /etc/rsyslog.d/70-va-master.conf
 
