@@ -1,0 +1,1 @@
+{"data_dir": "/usr/share/consul", "advertise_addr": "127.0.0.1", "bootstrap_expect": 1, "server": true}
