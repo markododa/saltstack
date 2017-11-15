@@ -1,3 +1,5 @@
+state_events: True
+publish_port: 4505
 rest_cherrypy:
   port: 8000
   disable_ssl: True
