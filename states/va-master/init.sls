@@ -44,7 +44,7 @@ consul:
 
 
 va_master:
-  git.latest:
+  git.latest
     - name: https://github.com/VapourApps/va_master.git
     - target: /opt/va_master
 
