@@ -130,14 +130,16 @@ def get_conf_vars_file(vars, path):
 
     return get_conf_vars(vars, conf)
 
-def get_ldap_users(return_field, schema, path = '/etc/dovecot/dovecot-ldap.conf'):
+def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
+    schema_filter = __salt__['pillar.get']('schema_filter',default='')
     vars = ['hosts', 'dn', 'dnpass', 'base']
     vars = get_conf_vars_file(vars, path)
-    if schema:
-        filter = '(&(objectCategory=CN=Person,CN=Schema,CN=Configuration,'+vars['base']+'))'
-    else:
-        filter=''
+    filter = schema_filter+vars['base']+'))'
     cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], filter, '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', return_field, '-S', 'sAMAccountName']
+#    cmd = "ldapsearch '-x' '-h' '{hosts}' '-D' '{dn}' '{filter}' '-b' '{base}' '-w' '{dnpass}' 'sAMAccountName' '{return_field}' '-S' 'sAMAccountName'".format(
+#        hosts = vars['hosts'], dn = vars['dn'], filter = filter, base = vars['base'], dnpass = vars['dnpass'], return_field = return_field
+#    )
+#    return subprocess.list2cmdline([cmd])
     result = subprocess.check_output(cmd)
     result = [x for x in result.split('#')]
     result = [[i for i in x.split('\n') if ':' in i] for x in result]
@@ -145,12 +147,11 @@ def get_ldap_users(return_field, schema, path = '/etc/dovecot/dovecot-ldap.conf'
     return result
 
 
-def list_users(email_domain='',return_field='', schema=False):
-    if return_field == '':
-        return_field = 'userPrincipalName'
+def list_users(email_domain=''):
+    return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
     if email_domain == '':
         email_domain = email_domains()[0]
-    users = get_ldap_users(return_field,schema)
+    users = get_ldap_users(return_field=return_field)
     result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get(return_field, '')] 
     return result 
 
