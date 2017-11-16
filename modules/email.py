@@ -134,7 +134,10 @@ def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
     schema_filter = __salt__['pillar.get']('schema_filter',default='')
     vars = ['hosts', 'dn', 'dnpass', 'base']
     vars = get_conf_vars_file(vars, path)
-    filter = schema_filter+vars['base']+'))'
+    if schema_filter != '':
+        filter = schema_filter+vars['base']+'))'
+    else:
+        filter = ''
     cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], filter, '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', return_field, '-S', 'sAMAccountName']
 #    cmd = "ldapsearch '-x' '-h' '{hosts}' '-D' '{dn}' '{filter}' '-b' '{base}' '-w' '{dnpass}' 'sAMAccountName' '{return_field}' '-S' 'sAMAccountName'".format(
 #        hosts = vars['hosts'], dn = vars['dn'], filter = filter, base = vars['base'], dnpass = vars['dnpass'], return_field = return_field
