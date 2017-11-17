@@ -47,6 +47,14 @@ else
 
 fi
 
+amavisd-new testkeys  > /dev/null
+if [ $? -eq 0 ];then
+    text=$text", DKIM is OK"
+else
+    text=$text", DKIM is DOWN"
+   exitstate=2
+
+fi
 
 #queue_id='^[A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9]'
 #queue_id='^(?:[0-9A-F]{10,11}|[0-9A-Za-z]{14,16})!\s'
