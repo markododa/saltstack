@@ -253,7 +253,7 @@ check_functionality_directory:
 
 restart_samba:
   cmd.run:
-    - name: /etc/init.d/samba restart
+    - name: systemctl unmask samba-ad-dc && systemctl start samba-ad-dc && systemctl enable samba-ad-dc
     - watch:
       - file: /etc/samba/smb.conf
 
