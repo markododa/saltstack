@@ -1,11 +1,18 @@
 import subprocess, re, netaddr
 
-panel = {"email.user":{"title":"List users","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"user","label":"User"},{"key":"samaccountname","label":"sAMAccountName"},{"key":"action","label":"Actions"}],"source":"list_users","panels":{"list_rules":"email.rules"},"actions":[{"action":"list_rules","name":"List rules"}],"id":["user"]}]},"email.rules":{"title":"List rules","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","reducers":["panel"],"elements":[{"type":"Button","name":"Add rule","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":"add_user_recipient"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"Rule","value":"","label":"Allow recipient","required":True},{"type":"label","name":"lbl","value":"example:\n- user@kam.com.mk (for particular user)\n- @gmail.com (for whole domain *@gmail.com)"}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]} }, {"type":"Button","name":"Add multiple users","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":["add_multiple_user_recipients","va-owncloud.kam.com.mk:add_user_contact"]}],"content":[{"type":"Form","name":"form","class":"left","elements":[]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert","modal"],"columns":[{"key":"rule","label":"Rule"},{"key":"action","label":"Actions"}],"source":"get_user_rules","actions":[{"action":"rm_user_recipient","name":"Remove"}],"id":["rule"]}]}}
+#2 panels
+#panel = {"email.user":{"title":"List users","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"user","label":"User"},{"key":"samaccountname","label":"sAMAccountName"},{"key":"action","label":"Actions"}],"source":"list_users","panels":{"list_rules":"email.rules"},"actions":[{"action":"list_rules","name":"List rules"}],"id":["user"]}]},"email.rules":{"title":"List rules","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","reducers":["panel"],"elements":[{"type":"Button","name":"Add rule","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":"add_user_recipient"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"Rule","value":"","label":"Allow recipient","required":true},{"type":"label","name":"lbl","value":"example:\n- user@kam.com.mk (for particular user)\n- @gmail.com (for whole domain *@gmail.com)"}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]} }, {"type":"Button","name":"Add multiple users","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":["add_multiple_user_recipients","va-owncloud.kam.com.mk:add_user_contact"]}],"content":[{"type":"Form","name":"form","class":"left","elements":[]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert","modal"],"columns":[{"key":"rule","label":"Rule"},{"key":"action","label":"Actions"}],"source":"get_user_rules","actions":[{"action":"rm_user_recipient","name":"Remove"}],"id":["rule"]}]}}
+
+panel={"email.filterlists":{"title":"Mail filterlists","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","reducers":["panel"],"elements":[{"type":"Button","name":"Resend All","glyph":"send","action":"modal","reducers":["modal"],"modal":{"title":"Resend All","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Resend All","class":"primary","action":"force_mail_queue"}],"content":[{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Confirmation"},{"type":"Paragraph","name":"This will force resending all unsent items. Are you sure?"}]}]}},{"type":"Button","name":"Clear Queue","glyph":"trash","class":"danger","action":"modal","reducers":["modal"],"modal":{"title":"Clear Queue","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Clear","class":"primary","action":["delete_mail_queue"]}],"content":[{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Confirmation"},{"type":"Paragraph","name":"This will remove all unsent messages from the queue. Are you sure?"}]}]}}]},{"type":"Table","name":"table","reducers":["table","alert"],"columns":[{"key":"arrival_time","label":"Time"},{"key":"queue_id","label":"Mail ID"},{"key":"sender","label":"Sender"},{"key":"recipients","label":"Recipients"},{"key":"size","label":"Size (b)"}],},{"type":"Form","name":"form2","class":"tbl-ctrl2","reducers":["panel"],"elements":[{"type":"Button","name":"Resend All","glyph":"send","action":"modal","reducers":["modal"],"modal":{"title":"Resend All","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Resend All","class":"primary","action":"force_mail_queue"}],"content":[{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Confirmation"},{"type":"Paragraph","name":"This will force resending all unsent items. Are you sure?"}]}]}},{"type":"Button","name":"Clear Queue","glyph":"trash","class":"danger","action":"modal","reducers":["modal"],"modal":{"title":"Clear Queue","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Clear","class":"primary","action":["delete_mail_queue"]}],"content":[{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Confirmation"},{"type":"Paragraph","name":"This will remove all unsent messages from the queue. Are you sure?"}]}]}}]}]},"email.user":{"title":"List users","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"user","label":"User"},{"key":"samaccountname","label":"sAMAccountName"},{"key":"action","label":"Actions"}],"source":"list_users","panels":{"list_rules":"email.rules"},"actions":[{"action":"list_rules","name":"List rules"}],"id":["user"]}]},"email.queue":{"title":"Mail queue","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","reducers":["panel"],"elements":[{"type":"Button","name":"Resend All","glyph":"send","action":"modal","reducers":["modal"],"modal":{"title":"Resend All","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Resend All","class":"primary","action":"force_mail_queue"}],"content":[{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Confirmation"},{"type":"Paragraph","name":"This will force resending all unsent items. Are you sure?"}]}]}},{"type":"Button","name":"Clear Queue","glyph":"trash","class":"danger","action":"modal","reducers":["modal"],"modal":{"title":"Clear Queue","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Clear","class":"primary","action":["delete_mail_queue"]}],"content":[{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Confirmation"},{"type":"Paragraph","name":"This will remove all unsent messages from the queue. Are you sure?"}]}]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"arrival_time","label":"Time"},{"key":"queue_id","label":"Mail ID"},{"key":"sender","label":"Sender"},{"key":"recipients","label":"Recipients"},{"key":"size","label":"Size (b)"},{"key":"action","label":"Actions"}],"source":"mail_queue","panels":{"list_rules":"email.rules"},"actions":[{"action":"force_mail_queue_id","name":"Send Now"},{"action":"delete_mail_queue_id","name":"Delete","class":"danger"}],"id":["queue_id"]}]},"email.rules":{"title":"List rules","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","reducers":["panel"],"elements":[{"type":"Button","name":"Add rule","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":"add_user_recipient"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"Rule","value":"","label":"Allow recipient","required":True},{"type":"label","name":"lbl","value":"example:\n- user@kam.com.mk (for particular user)\n- @gmail.com (for whole domain *@gmail.com)"}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]}},{"type":"Button","name":"Add multiple users","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add rule","refresh_action":"get_user_rules","table_name":"table","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add","class":"primary","action":["add_multiple_user_recipients","va-owncloud.kam.com.mk:add_user_contact"]}],"content":[{"type":"Form","name":"form","class":"left","elements":[]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to change rule for user"},{"type":"Paragraph","name":"The changed data for user will be automatically synchronized with Email server."}]}]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert","modal"],"columns":[{"key":"rule","label":"Rule"},{"key":"action","label":"Actions"}],"source":"get_user_rules","actions":[{"action":"rm_user_recipient","name":"Remove"}],"id":["rule"]}]}}
+
 
 def get_panel(panel_name, user = ''):
     ppanel = panel[panel_name]
     if panel_name == "email.user":
         data = list_users()
+        ppanel['tbl_source']['table'] = data
+    if panel_name == "email.queue":
+        data = mail_queue()
         ppanel['tbl_source']['table'] = data
     if panel_name == "email.rules":
         data = get_user_rules(user)
@@ -197,4 +204,48 @@ def dovecot_quota():
     return __salt__['cmd.run']('/usr/bin/doveadm -f flow quota get -A')
 
 def mail_queue():
-    return __salt__['cmd.run']('mailq')
+    output __salt__['cmd.run']('mailq')
+#    output = __salt__['cmd.run']('cat /root/testq.txt')
+    output_lines = output.split('\n')[1:-2]
+    output_lines_stripped = [x.strip() for x in output_lines]
+    output_lines_space_separated = [[i for i in x.split(' ') if i] for x in output_lines_stripped]
+
+    lines_sender_rcpnt_combined = []
+    for x in output_lines_space_separated:
+        if not x: continue
+        if len(x) > 1:
+            sender_dict = {
+                'queue_id' : x[0].split('*')[0],
+                'size' : x[1],
+                'arrival_time' : ' '.join(x[2:6]),
+                'recipients' : [],
+                'sender' : x[6],
+            }
+            lines_sender_rcpnt_combined.append(sender_dict)
+        elif x[0]:
+            lines_sender_rcpnt_combined[-1]['recipients'].append(x[0])
+
+    return lines_sender_rcpnt_combined
+
+def log_dovecot():
+    return __salt__['cmd.run']('cat /var/log/dovecot.log')
+
+
+def force_mail_queue():
+    return __salt__['cmd.run']('postqueue -f')
+
+def delete_mail_queue():
+    return __salt__['cmd.run']('postsuper -d ALL')
+
+def force_mail_queue_id(message_id):
+# postqueue -i queue_id
+    return __salt__['cmd.run']('postqueue -i '+message_id)
+
+def delete_mail_queue_id(message_id):
+# postsuper -d 5642B4D8647 (remove * at the end)
+    return __salt__['cmd.run']('postsupr -d '+messsage_id)
+
+def view_mail_queue_id(message_id):
+#postcat -vq 5642B4D8647
+    return __salt__['cmd.run']('postcat -vq '+messsage_id)
+
