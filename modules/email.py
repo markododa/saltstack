@@ -204,7 +204,7 @@ def dovecot_quota():
     return __salt__['cmd.run']('/usr/bin/doveadm -f flow quota get -A')
 
 def mail_queue():
-    output __salt__['cmd.run']('mailq')
+    output =  __salt__['cmd.run']('mailq')
 #    output = __salt__['cmd.run']('cat /root/testq.txt')
     output_lines = output.split('\n')[1:-2]
     output_lines_stripped = [x.strip() for x in output_lines]
