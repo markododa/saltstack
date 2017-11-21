@@ -1,6 +1,7 @@
 {
     "name": "email",
     "description": "E-mail server with web interface and support for all popular mail clients.",
+    "module" : "email",
     "version": "1.2",
     "icon": "fa-envelope",
     "dependency": "directory,monitoring",
