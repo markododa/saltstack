@@ -203,17 +203,22 @@ def email_domains():
 def dovecot_quota():
     return __salt__['cmd.run']('/usr/bin/doveadm -f flow quota get -A')
 
+def str_is_error(s):
+    return re.search('^\(.*\)$', s) is not None
+
 def mail_queue():
     output =  __salt__['cmd.run']('mailq')
 #    output = __salt__['cmd.run']('cat /root/testq.txt')
     output_lines = output.split('\n')[1:-2]
     output_lines_stripped = [x.strip() for x in output_lines]
-    output_lines_space_separated = [[i for i in x.split(' ') if i] for x in output_lines_stripped]
+    output_lines_space_separated = [[i for i in x.split(' ') if i] if not str_is_error(x) else x for x in output_lines_stripped]
 
     lines_sender_rcpnt_combined = []
     for x in output_lines_space_separated:
         if not x: continue
-        if len(x) > 1:
+        if type(x) == str:
+            lines_sender_rcpnt_combined[-1]['error'] = x
+        elif len(x) > 1:
             sender_dict = {
                 'queue_id' : x[0].split('*')[0],
                 'size' : x[1],
