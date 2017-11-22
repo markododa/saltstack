@@ -1,7 +1,10 @@
 import sys
 
-def parse_list(parsed_list, index = 0):
+def parse_list_as_dict(parsed_list, index = 0):
     return {parsed_list[i][index] : {parsed_list[0][j] : parsed_list[i][j] for j in range(0, len(parsed_list[i]))} for i in range(1, len(parsed_list))}
+
+def parse_list(parsed_list):
+    return [{parsed_list[0][j] : parsed_list[i][j] for j in range(0, len(parsed_list[i]))} for i in range(1, len(parsed_list))]
 
 def parse_data(data):
     #First separate tables to routing and client list
@@ -17,7 +20,7 @@ def parse_data(data):
 
     #Create dictionaries for client list and routing table
     client_list = parse_list(client_list)
-    routing_table = parse_list(routing_table, 1)
+    routing_table = parse_list(routing_table)
     return {'client_list' : client_list, 'routing_table' : routing_table, 'global_stats' : global_stats}
 
 def open_and_parse_log(log_file):
