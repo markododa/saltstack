@@ -16,6 +16,9 @@ postfix-ldap:
 dovecot-ldap:
   pkg.installed: []
 
+python-netaddr:
+  pkg.installed: []
+
 
 /root/:
   archive.extracted:
@@ -165,6 +168,14 @@ postfix:
   service.running:
     - watch:
       - file: /etc/postfix/main.cf
+
+/opt/va/:
+  file.directory:
+    - makedirs: True
+
+/opt/va/panels.json:
+  file.managed:
+    - source: salt://directory/files/panels.json
 
 {% set services = ['amavis-mc','amavis','amavisd-snmp-subagent','clamav-freshclam','fail2ban','nginx','php5-fpm','sogo'] %}
 {% for service in services %}

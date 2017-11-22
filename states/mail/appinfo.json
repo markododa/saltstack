@@ -1,12 +1,13 @@
 {
     "name": "email",
-    "description": "Mail server with web interface and support for all popular mail clients.",
-    "version": "1.1",
+    "description": "E-mail server with web interface and support for all popular mail clients.",
+    "module" : "email",
+    "version": "1.2",
     "icon": "fa-envelope",
     "dependency": "directory,monitoring",
-    "substates" : ["mail"],
+    "substates" : ["email"],
     "fields": [
-            {"type": "text", "name": "ip", "label": "IP address of DC"},
+            {"type": "text", "name": "mail_domain", "label": "Domain for emails"},
             {"type": "text", "name": "username", "label": "Username"},
             {"type": "password", "name": "password", "label": "Password"}
         ],
@@ -52,5 +53,5 @@
     }
     ],
     "path": "-",
-    "panels": {"admin": [{"key": "email.user", "name": "List users"}], "user": []}
+    "panels": {"admin":[{"key":"email.user","name":"Users 1"},{"key":"email.rules","name":"Rules"},{"key":"email.users","name":"Users2"},{"key":"email.queue","name":"Queue"},{"key":"email.filters","name":"Filters"},{"key":"email.logs","name":"Logs"}],"user":[]}
 }

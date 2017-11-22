@@ -32,18 +32,32 @@ wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip
     - source: /root/consul_0.7.4_linux_amd64.zip
     - enforce_toplevel: False
 
+/etc/consul.d:
+  file.directory
+
+/etc/consul.d/consul.json:
+  file.managed:
+    - source: salt://va-master/consul.json
+
 /etc/systemd/system/consul.service:
   file.managed:
     - source: salt://va-master/consul.service
 
 consul:
   service.running:
-    - enable: True 
+    - enable: True
+    - watch:
+      - file: /etc/systemd/system/consul.service
+
 
 va_master:
   git.latest:
     - name: https://github.com/VapourApps/va_master.git
     - target: /opt/va_master
+
+/etc/systemd/system/va-master.service:
+  file.managed:
+    - source: salt://va-master/va-master.service
 
 npm-build:
   cmd.run:
@@ -61,7 +75,7 @@ pip_install:
 
 rsyslog:
   service.running:
-    - reload: True
+    - restart: True
     - watch:
       - file: /etc/rsyslog.d/70-va-master.conf
 

@@ -4,12 +4,14 @@ sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
 default_paths = {
-    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'],
-    'va-directory' : ['/root/.va/backup', '/etc/openvpn'],
-    'va-backup' : ['/etc/backuppc'],
-    'va-fileshare' : ['/home', '/etc/samba'],
-    'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/'],
+    'va-monitoring' : ['/root/.va/backup', '/etc/icinga2', '/etc/ssmtp', '/usr/lib/nagios/plugins', '/var/lib/pnp4nagios/perfdata'],
+    'va-directory' : ['/root/.va/backup', '/home', '/var/lib/samba', '/etc/openvpn'],
+    'va-backup' : ['/root/.va/backup','/etc/backuppc'],
+    'va-fileshare' : ['/root/.va/backup','/home', '/etc/samba'],
+    'va-email' : ['/root/.va/backup', '/etc/postfix',  '/var/vmail'],
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
+    'va-proxy' : ['/root/.va/backup', '/etc/e2guardian', '/var/www/html', '/etc/lighttpd', '/etc/squid'], 
+    'va-ticketing' : ['/root/.va/backup', '/etc/dbconfig-common/redmine/instances', '/usr/share/redmine', '/var/www/html/redmine'], 
 }
 
 panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"subpanels":{"link":"backup.info"},"columns":[{"key":"app","label":"App","action":"all:link","colClass":"link"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"}],"id":["app","path"]}]}, "backup.browse": {"title":"Browse backups","tbl_source":{"table":{}},"content":[{"type":"Path","name":"path","action":"dir_structure1","target":"table","reducers":["table","panel"]},{"type":"Form","name":"form","target":"table","reducers":["panel","alert","table","form"],"class":"tbl-ctrl tbl-ctrl-dropdown","elements":[{"type":"dropdown","name":"dropdown","action":"dir_structure1"}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"dir","label":"Files","width":"30%","action": "folder:dir_structure1", "colClass": "type"},{"key":"size","label":"Size"},{"key":"time","label":"Time"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore","name":"Restore"},{"action":"restore_backup","name":"Restore to Host"},{"action":{"type":"download","name":"download_zip"},"name":"Download"}],"id":["dir"]}]}, "backup.info": {"title":"Backup info","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert"],"panels":{"link":"backup.browse"},"columns":[{"key":"age","label":"Age"},{"key":"backup","label":"Backup num","action":"all:link","colClass":"link"},{"key":"duration","label":"Duration"},{"key":"startTime","label":"Start time"},{"key":"endTime","label":"End time"},{"key":"type","label":"Type"}],"id":["link"]}]} }

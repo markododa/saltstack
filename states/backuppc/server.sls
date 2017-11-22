@@ -122,12 +122,14 @@ libxml-rss-perl:
       - salt://backuppc/files/backuppc_servermsg
       - user: root
       - group: root
-      - mode: 755
+      - mode: 0755
 
-add_nagios_to_group:
-  user.present:
-    - name: nagios
-    - optional_groups: backuppc
+chmod +x /usr/bin/backuppc_servermsg:
+  cmd.run
+
+/etc/sudoers.d/nagios:
+  file.managed:
+    - content: "nagios ALL = (backuppc) NOPASSWD: /usr/share/backuppc/bin/BackupPC_serverMesg"
 
 backuppc-restart:
   service.running:
