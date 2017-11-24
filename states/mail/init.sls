@@ -20,6 +20,9 @@ dovecot-ldap:
 python-netaddr:
   pkg.installed: []
 
+ldap-utils:
+  pkg.installed: []
+
 
 /root/:
   archive.extracted:
