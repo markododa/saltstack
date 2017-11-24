@@ -5,6 +5,7 @@
 {% set dcip = salt['pillar.get']('dcip') %}
 {% endif %}
 {% set domain = salt['pillar.get']('domain') %}
+{% set disk = salt['pillar.get']('disk') %}
 {% set query_user = salt['pillar.get']('query_user') %}
 {% set query_password = salt['pillar.get']('query_password')  %}
 {% set search_base = domain|replace(".", ",dc=") %}
@@ -128,12 +129,12 @@ iptables:
     - watch:
       - file: /etc/default/iptables
 
-/dev/vdb:
+{{ disk }}:
   blockdev.formatted
 
 /mnt/va-email:
   mount.mounted:
-    - device: /dev/vdb
+    - device: {{ disk }}
     - fstype: ext4
     - mkmnt: True
 
@@ -175,7 +176,7 @@ postfix:
 
 /opt/va/panels.json:
   file.managed:
-    - source: salt://directory/files/panels.json
+    - source: salt://mail/files/panels.json
 
 {% set services = ['amavis-mc','amavis','amavisd-snmp-subagent','clamav-freshclam','fail2ban','nginx','php5-fpm','sogo'] %}
 {% for service in services %}
