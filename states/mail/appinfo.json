@@ -1,7 +1,7 @@
 {
     "name": "email",
     "description": "E-mail server with web interface and support for all popular mail clients.",
-    "module" : "email",
+    "module" : "email", 
     "version": "1.2",
     "icon": "fa-envelope",
     "dependency": "directory,monitoring",
@@ -53,5 +53,5 @@
     }
     ],
     "path": "-",
-    "panels": {"admin":[{"key":"email.user","name":"Users 1"},{"key":"email.rules","name":"Rules"},{"key":"email.users","name":"Users2"},{"key":"email.queue","name":"Queue"},{"key":"email.filters","name":"Filters"},{"key":"email.logs","name":"Logs"}],"user":[]}
+    "panels": {"admin":[{"key":"email.user","name":"Users"},{"key":"email.queue","name":"Queue"},{"key":"email.rules","name":"Rules"},{"key":"email.filterlists","name":"Filters"}],"user":[]}
 }
