@@ -634,7 +634,7 @@ $Conf{PartialAgeMax} = 3;
 # The default is off.  You can turn this on or off at any
 # time without affecting existing backups.
 #
-$Conf{IncrFill} = 0;
+$Conf{IncrFill} = 1;
 
 #
 # Number of restore logs to keep.  BackupPC remembers information about
