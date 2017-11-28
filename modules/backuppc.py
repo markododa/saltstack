@@ -64,6 +64,7 @@ def dir_structure1(host, *args):
             result.append({'dir': key, 'type': type, 'size': size, 'time': time});
     if check:
         return {'val': backupNum, 'list': result}
+    [d.update({'size' : ''}) for d in result if d['type'] == 'folder']
     return result
 
 def last_backup(host):
@@ -275,6 +276,7 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     for key, val in dr.items():
         del dr[key]
         dr[key.replace('%2f', '/')] = val
+    
     return dr
 
 def hashtodict(hostname, backup):
@@ -407,20 +409,21 @@ def infodict(path):
         contents = contents.replace('(','{')
         contents = contents.replace(')','}')
         contents = contents.replace(';','')
+
+    contents = contents or '{}'
     with open(path+'/attrib.json', 'w') as f:
         json.dumps(f.write(contents))
 
 def backup_attrib(hostname, number, *args):
     start = '/var/lib/backuppc/pc/'
     newshare ='empty'
+    share = ''
+    path = ''
     try:
         len(backupNumbers(hostname)) > 0
     except:
         return "No files available."
-    if len(args) == 0:
-        share = ''
-        path = ''
-    elif len(args) == 1:
+    if len(args) == 1:
         share = args[0]
         share = 'f' + share.replace('/','%2f')
         path = ''
@@ -431,7 +434,12 @@ def backup_attrib(hostname, number, *args):
         path = path.replace('/', '/f')
     infodict(start+hostname+'/'+str(number)+'/'+share+path)
     content = {}
-    f = json.loads(open(start+hostname+'/'+str(number)+'/'+share+path+'/attrib.json').read())
+
+    attrib_file = start + hostname + '/' + str(number) + '/' + share + path + '/attrib.json'
+    with open(attrib_file) as f:
+        f = f.read()
+        f = json.loads(f)
+
     for key in f:
         name = key
         for keykey in f[key]:
