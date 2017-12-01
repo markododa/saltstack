@@ -7,6 +7,9 @@ text=""
 
 
 OUT=`postqueue -p | tail -n 1 | sed 's/^-- //g' | awk '{ print $4}'`
+if [ $OUT = "empty" ];then
+OUT=0
+fi
 if [ $OUT -le 5 ];then
     text=$text"Queue: "$OUT" messages"
 else
