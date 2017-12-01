@@ -2,7 +2,10 @@
 	"directory.org_units": {
 		"title": "Organizational units",
 		"tbl_source": {
-			"table": {}
+			"table": {
+				"action": "panel_list_organizational_units",
+				"cols": ["name", "description"]
+			}
 		},
 		"content": [{
 			"type": "Form",
@@ -81,6 +84,146 @@
 			}],
 			"id": ["name"]
 		}]
+	},
+	"directory.overview": {
+		"title": "Overview",
+
+		"tbl_source": {
+			"table_chkf": {
+				"action": "panel_check_functionality",
+				"cols": ["status", "output"]
+			},
+			"table_pass": {
+				"action": "panel_get_pass_settings",
+				"cols": ["key", "value"]
+			},
+			"table_info": {
+				"action": "panel_get_dc_info",
+				"cols": ["key", "value"]
+			},
+			"table_fsmo": {
+				"action": "panel_fsmo_show",
+				"cols": ["key", "value"]
+			},
+			"table_gpos": {
+				"action": "get_gpo",
+				"cols": ["name", "displayName"]
+			},
+			"table_jpcs": {
+				"action": "panel_get_pcs",
+				"cols": ["hostname"]
+			},
+			"table_domc": {
+				"action": "panel_get_dcs",
+				"cols": ["hostname"]
+			}
+		},
+		"content": [{
+                        "type": "Table",
+                        "name": "table_chkf",
+                        "reducers": ["table", "panel", "alert"],
+                        "columns": [{
+                                "key": "status",
+                                "label": "Status",
+                                "width": "30%"
+                          }, {
+                                "key": "output",
+                                "label": "Value"
+                        }],
+                        "id": ["status"],
+                        "source": "va_utils.check_functionality"
+                },{
+                        "type": "Table",
+                        "name": "table_info",
+                        "reducers": ["table", "panel", "alert"],
+                        "columns": [{
+                                "key": "key",
+                                "label": "Domain info",
+                                "width": "30%"
+                          }, {
+                                "key": "value",
+                                "label": "Value"
+                        }],
+                        "id": ["domain"],
+                        "source": "panel_get_dc_info"
+                },{
+			"type": "Table",
+			"name": "table_pass",
+			"reducers": ["table", "panel", "alert"],
+			"columns": [{
+				"key": "key",
+				"label": "Password Setting",
+				"width": "30%"
+                          }, {
+				"key": "value",
+				"label": "Value"
+			}],
+			"id": ["domain"],
+			"source": "panel_get_pass_settings"
+		},{
+                        "type": "Table",
+                        "name": "table_fsmo",
+                        "reducers": ["table", "panel", "alert"],
+                        "columns": [{
+                                "key": "key",
+                                "label": "FSMO Role",
+                                "width": "30%"
+                          }, {
+                                "key": "value",
+                                "label": "Owner"
+                        }],
+                        "id": ["domain"],
+                        "source": "panel_fsmo_show"
+                },{
+                        "type": "Table",
+                        "name": "table_levl",
+                        "reducers": ["table", "panel", "alert"],
+                        "columns": [{
+                                "key": "key",
+                                "label": "DC Levels",
+                                "width": "30%"
+                          }, {
+                                "key": "value",
+                                "label": "Value"
+                        }],
+                        "id": ["domain"],
+                        "source": "panel_level_show"
+                },{
+                        "type": "Table",
+                        "name": "table_gpos",
+                        "reducers": ["table", "panel", "alert"],
+                        "columns": [{
+                                "key": "displayName",
+                                "label": "Group Policy",
+                                "width": "30%"
+                          }, {
+                                "key": "name",
+                                "label": "GPO ID"
+                        }],
+                        "id": ["domain"],
+                        "source": "get_gpo"
+                },{
+                        "type": "Table",
+                        "name": "table_domc",
+                        "reducers": ["table", "panel", "alert"],
+                        "columns": [{
+                                "key": "hostname",
+                                "label": "Domain Controllers",
+                                "width": "30%"
+                        }],
+                        "id": ["domain"],
+                        "source": "panel_get_dcs"
+                },{
+                        "type": "Table",
+                        "name": "table_jpcs",
+                        "reducers": ["table", "panel", "alert"],
+                        "columns": [{
+                                "key": "hostname",
+                                "label": "Joined Computers"
+                        }],
+                        "id": ["domain"],
+                        "source": "panel_get_pcs"
+                }]
 	},
 	"directory.list_logins": {
 		"title": "Login list",
@@ -270,7 +413,7 @@
 		"title": "Add and view users",
 		"tbl_source": {
 			"table": {
-				"action": "list_users",
+				"action": "panel_list_users",
 				"var": "users",
 				"cols": ["username", "name", "description", "last_logon", "computer", "ip_address"],
 				"defaults": [{
@@ -578,13 +721,13 @@
 		"title": "All groups",
 		"tbl_source": {
 			"table": {
-				"action": "get_groups",
+				"action": "panel_get_groups",
 				"cols": ["groupname", "description", "email"],
 				"defaults": [],
 				"val": {}
 			},
 			"table2": {
-				"action": "get_groups",
+				"action": "panel_get_groups",
 				"cols": [],
 				"lbl": "groupname",
 				"defaults": [],
@@ -746,3 +889,4 @@
 		}]
 	}
 }
+
