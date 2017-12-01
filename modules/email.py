@@ -161,17 +161,19 @@ def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
 
 def list_users(email_domain=''):
     return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
-    if email_domain == '':
-        email_domain = email_domains()[0]
+    domains = email_domains()
+    if email_domain: 
+        domains = [x for x in domains if x == email_domain]
+
     users = get_ldap_users(return_field=return_field)
-    result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get(return_field, '')] 
+    user_in_domains = lambda user: any([domain in user.get(return_field, '') for domain in domains])
+
+    result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName')} for x in users if user_in_domains(x)] 
     return result 
 
 def get_wblist(ruleset, direction='inbound', account='@.'):
     array = __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --list --'+ruleset).split("\n")
     result = [{"filter_id" : x} for x in array[2:]]
-    if len(result) == 1 and result[0]['filter_id'] == '* No whitelist/blacklist.':
-        return []
     return result
 
 def get_whitelist(ruleset='whitelist',direction='inbound', account='@.'):
