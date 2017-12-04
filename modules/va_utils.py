@@ -52,7 +52,7 @@ def get_panel(module_name, panel_name, *args):
         panel_kwargs = {x : kwargs[x] for x in table_args}
         panel_data = panel_func(**panel_kwargs)
         if table_cols:
-            panel_data = [{i : x[i] for i in table_cols} for x in panel_data]
+            panel_data = [{i : x.get(i, '') for i in table_cols} for x in panel_data]
         panel['tbl_source'][t] = panel_data
 
     return panel
