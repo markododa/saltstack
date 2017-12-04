@@ -5,7 +5,7 @@
     "icon": "fa-group",
     "dependency": "monitoring",
     "substates": ["directory.directory"],
-    "module" : "samba",
+    "module" : "va_directory",
     "fields": [
             {"type": "text", "name": "domain", "label": "Domain name"},
             {"type": "text", "name": "ip", "label": "IP address of exisitng DC"},

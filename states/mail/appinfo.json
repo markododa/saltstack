@@ -5,7 +5,7 @@
     "version": "1.2",
     "icon": "fa-envelope",
     "dependency": "directory,monitoring",
-    "substates" : ["email"],
+    "substates" : ["va_email"],
     "fields": [
             {"type": "text", "name": "mail_domain", "label": "Domain for emails"},
             {"type": "text", "name": "username", "label": "Username"},

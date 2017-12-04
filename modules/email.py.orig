@@ -174,8 +174,6 @@ def list_users(email_domain=''):
 def get_wblist(ruleset, direction='inbound', account='@.'):
     array = __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --list --'+ruleset).split("\n")
     result = [{"filter_id" : x} for x in array[2:]]
-    if len(result) == 1 and result[0]['filter_id'] == '* No whitelist/blacklist.':
-        return []
     return result
 
 def get_whitelist(ruleset='whitelist',direction='inbound', account='@.'):
