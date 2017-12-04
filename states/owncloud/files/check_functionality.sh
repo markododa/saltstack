@@ -10,9 +10,9 @@ text=""
 #text=$OUT":"
 
 OUT=`sudo -u www-data /mnt/va-owncloud/owncloud/occ ldap:show-remnants | wc -l`
-OUT=$(($OUT-4))
+OUT=$(($OUT-3))
 if [ $OUT -eq 0 ];then
-    text=$text
+    text="No ghost profiles"
 else
 	if [ $OUT -gt 3 ];then
 		text=$text"Ghost profiles: "$OUT
