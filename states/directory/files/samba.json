@@ -106,8 +106,8 @@
 				"cols": ["key", "value"]
 			},
 			"table_gpos": {
-				"action": "panel_get_gpo",
-				"cols": ["name", "displayName"]
+				"action": "panel_gpo_polices",
+				"cols": ["display name", "gpo"]
 			},
 			"table_jpcs": {
 				"action": "panel_get_pcs",
@@ -193,15 +193,15 @@
                         "name": "table_gpos",
                         "reducers": ["table", "panel", "alert"],
                         "columns": [{
-                                "key": "displayName",
+                                "key": "display name",
                                 "label": "Group Policy",
                                 "width": "30%"
                           }, {
-                                "key": "name",
+                                "key": "gpo",
                                 "label": "GPO ID"
                         }],
                         "id": ["domain"],
-                        "source": "get_gpo"
+                        "source": "panel_gpo_polices"
                 },{
                         "type": "Table",
                         "name": "table_domc",
