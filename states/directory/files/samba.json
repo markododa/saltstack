@@ -106,7 +106,7 @@
 				"cols": ["key", "value"]
 			},
 			"table_gpos": {
-				"action": "get_gpo",
+				"action": "panel_get_gpo",
 				"cols": ["name", "displayName"]
 			},
 			"table_jpcs": {
