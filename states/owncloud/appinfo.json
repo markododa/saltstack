@@ -5,6 +5,7 @@
     "icon": "fa-cloud",
     "dependency": "directory",
     "substates": ["owncloud"], 
+    "module" : "cloudshare", 
     "fields": [
             {"type": "text", "name": "ip", "label": "IP address of DC"},
             {"type": "text", "name": "username", "label": "Username"},
@@ -32,6 +33,8 @@
         ]
 
     }
-    ],,    
-    "path": "-"
+    ],
+    "path": "-",
+    "panels": {"admin": [{"key": "owncloud.users", "name": "Users"},{"key": "owncloud.quotas", "name": "Quotas"},{"key": "owncloud.shares", "name": "Shares"},{"key": "owncloud.overview", "name": "Overview"}], "user": []}
+
 }
