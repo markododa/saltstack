@@ -103,7 +103,7 @@ postconf:
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
         query_password: '{{ query_password }}'
         search_base: cn=users,dc={{ search_base }}
-        result_attribute: {{ldap_field}}
+        ldap_field: {{ldap_field}}
 
 dovecot_ldap_path:
   file.replace:
