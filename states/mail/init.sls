@@ -92,7 +92,7 @@ postconf:
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
         query_password: '{{ query_password }}'
         search_base: cn=users,dc={{ search_base }}
-        ldap_field: {{ldap_field}}
+        result_attribute: {{ldap_field}}
 
 /etc/dovecot/dovecot-ldap.conf:
   file.managed:
@@ -103,7 +103,7 @@ postconf:
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
         query_password: '{{ query_password }}'
         search_base: cn=users,dc={{ search_base }}
-        ldap_field: {{ldap_field}}
+        result_attribute: {{ldap_field}}
 
 dovecot_ldap_path:
   file.replace:
