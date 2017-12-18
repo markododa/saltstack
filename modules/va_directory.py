@@ -55,8 +55,8 @@ def panel_get_dc_info():
 
 def panel_gpo_polices():
     res = output_to_dict(samba_tool(['gpo', 'listall']).split('\n'))
-#o    res = [{'key' : x, 'value'  : res[x]} for x in res]
-    return res
+    res['gpo'] = res.pop('GPO')
+    return [res]
 
 def panel_fsmo_show():
     domain_dn = sam_ldb.domain_dn()

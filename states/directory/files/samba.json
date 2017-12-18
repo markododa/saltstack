@@ -52,7 +52,7 @@
 						"class": "right",
 						"elements": [{
 							"type": "Heading",
-							"name": "Fill the form to add an new organizational unit"
+							"name": "Fill the form to add new organizational unit"
 						}, {
 							"type": "Paragraph",
 							"name": ""
@@ -79,7 +79,7 @@
 				"label": "Actions"
 			}],
 			"actions": [{
-				"action": "list_members",
+				"action": "get_ou_members",
 				"name": "List members"
 			}],
 			"id": ["name"]
@@ -106,8 +106,8 @@
 				"cols": ["key", "value"]
 			},
 			"table_gpos": {
-				"action": "get_gpo",
-				"cols": ["name", "displayName"]
+				"action": "panel_gpo_polices",
+				"cols": ["display name", "gpo"]
 			},
 			"table_jpcs": {
 				"action": "panel_get_pcs",
@@ -193,15 +193,15 @@
                         "name": "table_gpos",
                         "reducers": ["table", "panel", "alert"],
                         "columns": [{
-                                "key": "displayName",
+                                "key": "display name",
                                 "label": "Group Policy",
                                 "width": "30%"
                           }, {
-                                "key": "name",
+                                "key": "gpo",
                                 "label": "GPO ID"
                         }],
                         "id": ["domain"],
-                        "source": "get_gpo"
+                        "source": "panel_gpo_polices"
                 },{
                         "type": "Table",
                         "name": "table_domc",
@@ -398,10 +398,10 @@
 				"type": "Type"
 			},
 			"actions": [{
-				"name": "Edit entry",
+				"name": "Edit record",
 				"action": "update_dns_entry"
 			}, {
-				"name": "Delete entry",
+				"name": "Delete record",
 				"class": "danger",
 				"action": "delete_dns"
 			}],
@@ -415,11 +415,7 @@
 			"table": {
 				"action": "panel_list_users",
 				"var": "users",
-				"cols": ["username", "name", "description", "last_logon", "computer", "ip_address"],
-				"defaults": [{
-					"key": "status",
-					"value": "OK"
-				}],
+				"cols": ["username", "name", "description", "flags"],
 				"val": {}
 			}
 		},
@@ -506,10 +502,6 @@
 						}]
 					}]
 				}
-			}, {
-				"type": "Button",
-				"name": "Synchronize cache",
-				"action": "sync_cache"
 			}]
 		}, {
 			"type": "Table",
@@ -526,16 +518,7 @@
 				"key": "description",
 				"label": "Description"
 			}, {
-				"key": "last_logon",
-				"label": "Last login"
-			}, {
-				"key": "computer",
-				"label": "Computer"
-			}, {
-				"key": "ip_address",
-				"label": "IP address"
-			}, {
-				"key": "status",
+				"key": "flags",
 				"label": "Status"
 			}, {
 				"key": "action",
@@ -543,8 +526,8 @@
 			}],
 			"id": "username",
 			"modals": {
-				"change_name": {
-					"title": "Change user name",
+				"edit_user": {
+					"title": "Edit user",
 					"buttons": [{
 						"type": "Button",
 						"name": "Cancel",
@@ -553,7 +536,7 @@
 						"type": "Button",
 						"name": "Change",
 						"class": "primary",
-						"action": "change_name"
+						"action": "get_user_data"
 					}],
 					"content": [{
 						"type": "Form",
@@ -563,8 +546,80 @@
 							"type": "text",
 							"name": "Name",
 							"value": "",
-							"label": "Name",
+							"label": "Username",
 							"required": true
+						},{
+							"type": "text",
+							"name": "first_name",
+							"value": "",
+							"label": "First name",
+							"required": false
+						},{
+							"type": "text",
+							"name": "last_name",
+							"value": "",
+							"label": "Last name",
+							"required": false
+						},{
+							"type": "text",
+							"name": "display_name",
+							"value": "",
+							"label": "Display name",
+							"required": false
+						},{
+							"type": "text",
+							"name": "description",
+							"value": "",
+							"label": "Description",
+							"required": false
+						},{
+							"type": "text",
+							"name": "physical_delivery_office_name",
+							"value": "",
+							"label": "Office name",
+							"required": false
+						},{
+							"type": "text",
+							"name": "email",
+							"value": "",
+							"label": "Email address",
+							"required": false
+						},{
+							"type": "text",
+							"name": "phone",
+							"value": "",
+							"label": "Phone number",
+							"required": false
+						},{
+							"type": "text",
+							"name": "company",
+							"value": "",
+							"label": "Company",
+							"required": false
+						},{
+							"type": "text",
+							"name": "profile_path",
+							"value": "",
+							"label": "Roaming profile path",
+							"required": false
+						},{
+							"type": "text",
+							"name": "script_path",
+							"value": "",
+							"label": "Script path",
+							"required": false
+						},{
+							"type": "text",
+							"name": "mobile",
+							"value": "",
+							"label": "Mobile phone",
+							"required": false
+						},{
+							"type": "text",
+							"name": "home_phone",
+							"value": "",
+							"label": "Home phone",
+							"required": false
 						}]
 					}, {
 						"type": "Div",
@@ -689,19 +744,19 @@
 				"list_logins": "directory.list_logins"
 			},
 			"actions": [{
-				"name": "Delete Users",
-				"class": "danger",
-				"action": "delete_user"
-			}, {
-				"name": "Change name",
-				"action": "change_name"
+				"name": "Edit user",
+				"action": "edit_user"
 			}, {
 				"name": "Change password",
 				"action": "change_password"
 			}, {
-				"name": "Lock user",
+				"name": "Disable user",
 				"class": "danger",
-				"action": "lock_user"
+				"action": "disable_user"
+			},{
+				"name": "Enable user",
+				"class": "danger",
+				"action": "enable_user"
 			}, {
 				"name": "Unlock user",
 				"action": "unlock_user"
@@ -712,8 +767,8 @@
 				"name": "Manage groups",
 				"action": "manage_groups"
 			}, {
-				"name": "Change organizational unit",
-				"action": "manage_groups"
+				"name": "Change org. unit",
+				"action": "change_ou"
 			}]
 		}]
 	},
@@ -728,8 +783,7 @@
 			},
 			"table2": {
 				"action": "panel_get_groups",
-				"cols": [],
-				"lbl": "groupname",
+				"cols": ["groupname", "description", "email"],
 				"defaults": [],
 				"val": {}
 			}
@@ -868,13 +922,20 @@
 				"type": "Table",
 				"name": "table2",
 				"reducers": ["table", "filter", "panel", "alert"],
-				"columns": [{
-					"key": "groupname",
-					"label": "Group Name"
-				}, {
-					"key": "action",
-					"label": "Actions"
-				}],
+			"columns": [{
+				"key": "groupname",
+				"label": "Name"
+			}, {
+				"key": "description",
+				"label": "Description"
+			}, {
+				"key": "email",
+				"label": "E-mail",
+				"width": "10%"
+			}, {
+				"key": "action",
+				"label": "Actions"
+			}],
 				"actions": [{
 					"name": "List Members",
 					"action": "list_group_members"
@@ -889,4 +950,5 @@
 		}]
 	}
 }
+
 

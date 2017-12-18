@@ -7,6 +7,6 @@ bind_dn         = {{ query_user }}
 bind_pw         = {{ query_password }}
 search_base     = {{ search_base }}
 scope           = sub
-query_filter    = (&(userPrincipalName=%s)(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))
-result_attribute= userPrincipalName
+query_filter    = (&({{ result_attribute }}=%s)(objectClass=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))
+result_attribute= {{ result_attribute }}
 debuglevel      = 0

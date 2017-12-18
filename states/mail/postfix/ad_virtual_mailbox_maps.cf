@@ -7,7 +7,7 @@ bind_dn         = {{ query_user }}
 bind_pw         = {{ query_password }}
 search_base     = {{ search_base }}
 scope           = sub
-query_filter    = (&(objectclass=person)(userPrincipalName=%s))
-result_attribute= userPrincipalName
+query_filter    = (&(objectclass=person)({{ result_attribute }}=%s))
+result_attribute= {{ result_attribute }}
 result_format   = %d/%u/Maildir/
 debuglevel      = 0
