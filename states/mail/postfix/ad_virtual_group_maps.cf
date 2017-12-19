@@ -10,5 +10,5 @@ scope           = sub
 query_filter    = (&(objectClass=group)(sAMAccountName=%u))
 special_result_attribute = member
 leaf_result_attribute = mail
-result_attribute= userPrincipalName
+result_attribute= {{ result_attribute }}
 debuglevel      = 0

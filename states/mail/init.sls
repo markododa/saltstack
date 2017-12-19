@@ -5,8 +5,9 @@
 {% set dcip = salt['pillar.get']('dcip') %}
 {% endif %}
 {% set domain = salt['pillar.get']('domain') %}
-{% set disk = salt['pillar.get']('disk') %}
+{% set disk = salt['pillar.get']('disk', '/dev/vdb') %}
 {% set query_user = salt['pillar.get']('query_user') %}
+{% set ldap_field = salt['pillar.get']('ldap_field','userPrincipalName') %}
 {% set query_password = salt['pillar.get']('query_password')  %}
 {% set search_base = domain|replace(".", ",dc=") %}
 {% set iredmail_version = '0.9.7' %}
@@ -41,7 +42,7 @@ ldap-utils:
 generate_passwords:
   cmd.run:
     - name: for x in $(seq $(grep random_password /root/iRedMail-{{iredmail_version}}/config |wc -l)); do sed -i "0,/random_password/s//`openssl rand -hex 10`/" /root/iRedMail-{{ iredmail_version }}/config; done
-    - unless: test -e /var/vmail
+    - onlyif: grep -q random_password /root/iRedMail-{{iredmail_version}}/config 
 install_iredmail:
   cmd.run:
     - name: bash iRedMail.sh
@@ -91,6 +92,7 @@ postconf:
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
         query_password: '{{ query_password }}'
         search_base: cn=users,dc={{ search_base }}
+        result_attribute: {{ldap_field}}
 
 /etc/dovecot/dovecot-ldap.conf:
   file.managed:
@@ -101,7 +103,7 @@ postconf:
         query_user: {{ query_user }}@{% filter lower %}{{ domain }}{% endfilter %}
         query_password: '{{ query_password }}'
         search_base: cn=users,dc={{ search_base }}
-
+        ldap_field: {{ldap_field}}
 
 dovecot_ldap_path:
   file.replace:
