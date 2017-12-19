@@ -1,32 +1,35 @@
-import salt, os.path, os, json, datetime, time, re, subprocess
+import va_utils, salt, os.path, os, json, datetime, time, re, subprocess
+from va_utils import check_functionality as panel_check_functionality
+from va_backup_panels import panel
 
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
 default_paths = {
+    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'],
+    'va-directory' : ['/root/.va/backup', '/etc/openvpn'],
+    'va-backup' : ['/etc/backuppc'],
+    'va-fileshare' : ['/home', '/etc/samba'],
+    'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/'],
     'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
-    'va-monitoring' : ['/root/.va/backup', '/etc/icinga2', '/etc/ssmtp', '/usr/lib/nagios/plugins', '/var/lib/pnp4nagios/perfdata'],
-    'va-directory' : ['/root/.va/backup', '/home', '/var/lib/samba', '/etc/openvpn'],
-    'va-backup' : ['/root/.va/backup', '/etc/backuppc'],
-    'va-fileshare' : ['/root/.va/backup', '/home', '/etc/samba'],
-    'va-email' : ['/root/.va/backup', '/etc/postfix', '/var/vmail'],
-    'va-proxy' : ['/root/.va/backup', '/etc/e2guardian', '/var/www/html', '/etc/lighttpd', '/etc/squid'],
-    'va-ticketing' : ['/root/.va/backup', '/etc/dbconfig-common/redmine/instances', '/usr/share/redmine', '/var/www/html/redmine'],
-
 }
-
-panel = {"backup.manage": {"title":"All backups","tbl_source":{"table":{}},"content":[{"type":"Form","name":"form","class":"tbl-ctrl","elements":[{"type":"Button","name":"Add Backup","glyph":"plus","action":"modal","reducers":["modal"],"modal":{"title":"Add a backup","buttons":[{"type":"Button","name":"Cancel","action":"cancel"},{"type":"Button","name":"Add backup","class":"primary","action":"add_folder"}],"content":[{"type":"Form","name":"form","class":"left","elements":[{"type":"text","name":"hostname","value":"","label":"App","required":True},{"type":"text","name":"backup_path","value":"","label":"Backup path","required":True}]},{"type":"Div","name":"div","class":"right","elements":[{"type":"Heading","name":"Fill the form to add a new backup"},{"type":"Paragraph","name":"Enter the full absolute path to the backup. The file must exist."}]},]}}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"subpanels":{"link":"backup.info"},"columns":[{"key":"app","label":"App","action":"all:link","colClass":"link"},{"key":"path","label":"Path","width":"60%"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"}],"id":["app","path"]}]}, "backup.browse": {"title":"Browse backups","tbl_source":{"table":{}},"content":[{"type":"Path","name":"path","action":"dir_structure1","target":"table","reducers":["table","panel"]},{"type":"Form","name":"form","target":"table","reducers":["panel","alert","table","form"],"class":"tbl-ctrl tbl-ctrl-dropdown","elements":[{"type":"dropdown","name":"dropdown","action":"dir_structure1"}]},{"type":"Table","name":"table","reducers":["table","panel","alert"],"columns":[{"key":"dir","label":"Files","width":"30%","action": "folder:dir_structure1", "colClass": "type"},{"key":"size","label":"Size"},{"key":"time","label":"Time"},{"key":"action","label":"Actions"}],"actions":[{"action":"rm_folder","name":"Remove"},{"action":"restore","name":"Restore"},{"action":"restore_backup","name":"Restore to Host"},{"action":{"type":"download","name":"download_zip"},"name":"Download"}],"id":["dir"]}]}, "backup.info": {"title":"Backup info","tbl_source":{"table":{}},"content":[{"type":"Table","name":"table","reducers":["table","panel","alert"],"panels":{"link":"backup.browse"},"columns":[{"key":"age","label":"Age"},{"key":"backup","label":"Backup num","action":"all:link","colClass":"link"},{"key":"duration","label":"Duration"},{"key":"startTime","label":"Start time"},{"key":"endTime","label":"End time"},{"key":"type","label":"Type"}],"id":["link"]}]} }
 
 #def get_panel(panel_name, host = '', backupNum = -1):
 def get_panel(panel_name, server_name = '', backupNum = -1):
     host = server_name
     ppanel = panel[panel_name]
     hostnames = __salt__['backuppc.listHosts']()
-    if panel_name == "backup.manage":
+    if panel_name == "backup.hosts":
+        ppanel['tbl_source']['table'] = panel_list_hosts()
+        return ppanel
+
+    elif panel_name == "backup.manage":
         data  = list_folders(hostnames)
         data = [ {'app': key, 'path': v} for key,val in data.items() for v in val ]
         ppanel['tbl_source']['table'] = data
-    if panel_name == "backup.browse":
+        return ppanel
+
+    elif panel_name == "backup.browse":
         host = hostnames[0] if host == '' else host
         if backupNum == -1:
             backupNum = last_backup(host)
@@ -36,10 +39,12 @@ def get_panel(panel_name, server_name = '', backupNum = -1):
         ppanel["form_source"]["dropdown"]["select"] = host
         ppanel['tbl_source']['table'] = data
         ppanel['tbl_source']['path'] = [host, backupNum]
-    if panel_name == "backup.info":
+        return ppanel
+
+    elif panel_name == "backup.info":
         data = backup_info(host)
         ppanel['tbl_source']['table'] = data
-    return ppanel
+        return ppanel
 
 def dir_structure1(host, *args):
     check = False
@@ -69,6 +74,10 @@ def dir_structure1(host, *args):
         return {'val': backupNum, 'list': result}
     [d.update({'size' : ''}) for d in result if d['type'] == 'folder']
     return result
+
+def get_path_from_backup_number(hostname, backupnumber):
+    path = '/var/lib/backuppc/pc/'+hostname+'/'+str(backupnumber)
+    return path
 
 def last_backup(host):
     result = map(int, backupNumbers(host))
@@ -125,6 +134,7 @@ def add_host(hostname,address=False,scriptpre="None",scriptpost="None"):
 
 
 def rm_host(hostname):
+    #To completely remove a client and all its backups, you should remove its entry in the conf/hosts file, and then delete the __TOPDIR__/pc/$host directory. Whenever you change the hosts file, you should send BackupPC a HUP (-1) signal so that it re-reads the hosts file. If you don't do this, BackupPC will automatically re-read the hosts file at the next regular wakeup.
     hostname = hostname.lower()
     __salt__['file.remove']('/etc/backuppc/pc/'+hostname+'.pl')
     __salt__['file.line'](path='/etc/backuppc/hosts',content=hostname+'.*backuppc', mode='delete')
@@ -187,6 +197,44 @@ def listHosts():
                 word = line.split()
                 host_list.append(word[0])
     return host_list
+
+def panel_list_hosts():
+    host_list = listHosts()
+    host_list = [{'host' : x, 'total_backups': backupTotals(x)} for x in host_list]
+    return host_list
+
+
+def panel_statistics():
+    cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status info'
+    text =  __salt__['cmd.run'](cmd, runas='backuppc')
+    text = hashtodict(text)
+    text = text.split('=')[1]
+    text = json.loads(text)
+    i_version = text['Version']
+    i_todaypool = text['DUDailyMax']
+    i_yesterdaypool = text['DUDailyMaxPrev']
+    i_folders = text['cpoolDirCnt']
+    i_duplicates = text['cpoolFileCntRep']
+#"cpoolFileCnt" => 25690          files in pool
+#"cpoolDirCnt" => 4368,          directories in pool
+#"cpoolFileCntRep" => 0               repeated files
+    statistics = [{'key' : 'Version', 'value': text['Version']},
+		  {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
+		  {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
+		  {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
+		  {'key' : 'Nightly cleanup removed files', 'value': text['cpoolFileCntRm']},
+		  {'key' : 'Pool used size (KB)', 'value': __salt__['disk.usage']()['/mnt/va-backup']['used']},
+		  {'key' : 'Pool free space (KB)', 'value': __salt__['disk.usage']()['/mnt/va-backup']['available']},
+		  {'key' : 'Pool files system', 'value': __salt__['disk.usage']()['/mnt/va-backup']['filesystem']},
+		  {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
+		  {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
+    return statistics
+
+
+def backupTotals(hostname):
+    totalb = len(backupNumbers(hostname)) 
+    return totalb
+
 
 def backupNumbers(hostname):
     hostname = hostname.lower()
@@ -282,31 +330,37 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     
     return dr
 
-def hashtodict(hostname, backup):
+def hashtodict(contents):
+    contents = contents.replace('=>', ':')
+    contents = contents.replace('%','')
+    contents = contents.replace('\'','\"')
+    contents = contents.replace('(','{')
+    contents = contents.replace(')','}')
+    contents = contents.replace(';','')
+    contents = contents.replace('backupInfo = ','')
+    contents = contents.replace('\"fillFromNum\" : undef,','')
+    return contents
+
+def write_backupinfo_json(hostname, backup):
     hostname = hostname.lower()
     contents = ''
-    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo','r+') as f:
+    path = get_path_from_backup_number(hostname, backup)
+    with open(path + '/backupInfo','r+') as f:
         contents = f.read()
-        contents = contents.replace('=>', ':')
-        contents = contents.replace('%','')
-        contents = contents.replace('\'','\"')
-        contents = contents.replace('(','{')
-        contents = contents.replace(')','}')
-        contents = contents.replace(';','')
-        contents = contents.replace('backupInfo = ','')
-        contents = contents.replace('\"fillFromNum\" : undef,','')
-    with open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json', 'w') as f: 
+        contents = hashtodict(contents)
+    with open(path + '/backupInfo.json', 'w') as f: 
         json.dumps(f.write(contents))
-    f.close()
-
+    
 def backup_info(hostname):
     hostname = hostname.lower()
     backup_list = backupNumbers(hostname)
     content = []
     for backup in backup_list:
         info = {}
-        hashtodict(hostname, str(backup))
-        f = json.loads(open('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json').read())
+        write_backupinfo_json(hostname, str(backup))
+        json_path = get_path_from_backup_number(hostname, backup)
+
+        f = json.loads(open(json_path + '/backupInfo.json').read())
         for key in f:
             if key == "startTime":
                 info.update({"startTime" : str(datetime.datetime.fromtimestamp(int(f["startTime"])).strftime('%Y-%m-%d %H:%M:%S')) })
@@ -318,11 +372,15 @@ def backup_info(hostname):
             a = int(time.time()) - int(f["endTime"])
             m, s = divmod(a, 60)
             h, m = divmod(m, 60)
-            info.update({"age" : str("%d:%02d:%02d") % (h, m, s)})
-            info.update({"backup" : str(backup)})
+            info.update({
+                "age" : str("%d:%02d:%02d") % (h, m, s),
+                "backup" : str(backup),
+                "absolute_age" : str(a)
+            })
         #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
         content.append(info)
-        os.remove('/var/lib/backuppc/pc/'+hostname+'/'+str(backup)+'/backupInfo.json')
+        os.remove(json_path + '/backupInfo.json')
+    content = sorted(content, key = lambda x: x['startTime'], reverse = True)
     return content
 
 def tar_create(arguments, location='/usr/share', backupname='test_backup', backupnumber=-1):
