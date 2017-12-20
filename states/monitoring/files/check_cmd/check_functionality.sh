@@ -1,5 +1,3 @@
-  GNU nano 2.2.6                                         File: /usr/lib/nagios/plugins/check_functionality.sh                                                                               Modified  
-
 #!/bin/bash
 #
 # GENERIC CHECK FUNCTIONALITY SCRIPT, SHOULD BE REPLACED WITH MACHINE SPECIFIC SCRIPT.
