@@ -42,6 +42,6 @@ text=$text' Oldest backup is '$D' days, '$H' hours, '$M' minutes old. Currently 
 if [ -z "$SPACE" ]; then
 text="Can not test functionality"
 fi
-echo $text
+echo $text" | exit_status="$exitstate
 exit $exitstate
 #604800 is one week in ms

@@ -46,6 +46,6 @@ fi
 text=$text"Last log entry: "`TZ='Europe/Skopje' /bin/date +%Y-%m-%d" "%H:%M" "\(%Z\) -r /var/log/icinga2/icinga2.log`
 
 
-echo $text
+echo $text" | exit_status="$exitstate
 
 exit $exitstate

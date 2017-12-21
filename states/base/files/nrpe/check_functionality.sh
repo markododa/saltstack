@@ -16,6 +16,6 @@ text="There is no functionality test script for this machine"
 
 
 
-echo $text
+echo $text" | exit_status="$exitstate
 
 exit $exitstate
