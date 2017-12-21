@@ -1,16 +1,18 @@
 import salt, os.path, subprocess, json, requests
 from va_utils import check_functionality as panel_check_functionality
+from va_cloudshare_panels import panel
 
 admin_user = 'admin'
 
-try:
-    admin_pass = __salt__['pillar.get']('credentials.admin_password')
-except NameError: 
-    #This happens when the module is first imported and the __salt__ dict is not instantiated. 
-    admin_pass = '' 
 
+#panel={"owncloud.overview":{"title":"Overview","tbl_source":{"table_chkf":{"action":"panel_check_functionality","cols":["status","output"]},"table_plugins":{"action":"panel_plugins","cols":["plugin","status"]}},"content":[{"type":"Table","name":"table_chkf","reducers":["table","panel","alert"],"columns":[{"key":"status","label":"Status","width":"30%"},{"key":"output","label":"Value"}],"id":["status"],"source":"va_utils.check_functionality"},{"type":"Table","name":"table_plugins","reducers":["table","panel","alert"],"columns":[{"key":"plugin","label":"Plugin name","width":"30%"},{"key":"status","label":"Status"}],"id":["status"],"source":"panel_plugins"}]},"owncloud.users":{"title":"Users","tbl_source":{"table_users":{"action":"panel_list_users","cols":["name","username","lastlogin"]}},"content":[{"type":"Table","name":"table_users","reducers":["table","panel","alert"],"columns":[{"key":"username","label":"Username"},{"key":"name","label":"Name",},{"key":"lastlogin","label":"Last Login"}],"id":["username"],"source":"panel_list_users"}]},"owncloud.quotas":{"title":"Quotas","tbl_source":{"table_quota":{"action":"panel_quota","cols":["displayname","enabled","used","total"]}},"content":[{"type":"Table","name":"table_quota","reducers":["table","panel","alert"],"columns":[{"key":"displayname","label":"Name",},{"key":"enabled","label":"Enabled"},{"key":"used","label":"Used bytes"},{"key":"total","label":"Total bytes"}],"id":["displayname"],"source":"panel_quota"}]},"owncloud.shares":{"title":"Shares","tbl_source":{"table_shares":{"action":"panel_shares","cols":["displayname_owner","expiration","file_target","item_type","share_with"]}},"content":[{"type":"Table","name":"table_shares","reducers":["table","panel","alert"],"columns":[{"key":"displayname_owner","label":"Share Owner",},{"key":"expiration","label":"Expire"},{"key":"file_target","label":"Target"},{"key":"item_type","label":"Type"},{"key":"share_with","label":"Shared with"}],"id":["displayname"],"source":"panel_shares"}]}}
 
-panel={"owncloud.overview":{"title":"Overview","tbl_source":{"table_chkf":{"action":"panel_check_functionality","cols":["status","output"]},"table_plugins":{"action":"panel_plugins","cols":["plugin","status"]}},"content":[{"type":"Table","name":"table_chkf","reducers":["table","panel","alert"],"columns":[{"key":"status","label":"Status","width":"30%"},{"key":"output","label":"Value"}],"id":["status"],"source":"va_utils.check_functionality"},{"type":"Table","name":"table_plugins","reducers":["table","panel","alert"],"columns":[{"key":"plugin","label":"Plugin name","width":"30%"},{"key":"status","label":"Status"}],"id":["status"],"source":"panel_plugins"}]},"owncloud.users":{"title":"Users","tbl_source":{"table_users":{"action":"panel_list_users","cols":["name","username","lastlogin"]}},"content":[{"type":"Table","name":"table_users","reducers":["table","panel","alert"],"columns":[{"key":"username","label":"Username"},{"key":"name","label":"Name",},{"key":"lastlogin","label":"Last Login"}],"id":["username"],"source":"panel_list_users"}]},"owncloud.quotas":{"title":"Quotas","tbl_source":{"table_quota":{"action":"panel_quota","cols":["displayname","enabled","used","total"]}},"content":[{"type":"Table","name":"table_quota","reducers":["table","panel","alert"],"columns":[{"key":"displayname","label":"Name",},{"key":"enabled","label":"Enabled"},{"key":"used","label":"Used bytes"},{"key":"total","label":"Total bytes"}],"id":["displayname"],"source":"panel_quota"}]},"owncloud.shares":{"title":"Shares","tbl_source":{"table_shares":{"action":"panel_shares","cols":["displayname_owner","expiration","file_target","item_type","share_with"]}},"content":[{"type":"Table","name":"table_shares","reducers":["table","panel","alert"],"columns":[{"key":"displayname_owner","label":"Share Owner",},{"key":"expiration","label":"Expire"},{"key":"file_target","label":"Target"},{"key":"item_type","label":"Type"},{"key":"share_with","label":"Shared with"}],"id":["displayname"],"source":"panel_shares"}]}}
+def get_admin_pass():
+    admin_pass = __salt__['pillar.get']('admin_password')
+    if not admin_pass: 
+        raise Exception("admin_password from pillar is empty - can not perform authorized requests. ")
+    return admin_pass
+
 
 def bytes_to_readable(num, suffix='B'):
     """Converts bytes integer to human readable"""
@@ -24,14 +26,14 @@ def bytes_to_readable(num, suffix='B'):
 
 #For some reason, using /shares or /users only gives you some information. You have to manually iterate through users or shares to get data like quota. This is done through salt for efficiency.
 def panel_shares():
-        url = 'https://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares'
+        url = 'https://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares'
         params = {"format" : "json"}
         files = requests.get(url, params = params, verify = False).text
         files = json.loads(files)['ocs']['data']
         if not files : return []
         files_list = []
         for f in files:
-                url = 'https://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares/' + str(f['id']) + '?format=json'
+                url = 'https://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares/' + str(f['id']) + '?format=json'
                 result = requests.get(url, verify = False).text
                 new_file = json.loads(result)['ocs']['data']['element']
                 files_list.append(new_file)
@@ -39,13 +41,13 @@ def panel_shares():
 
 #For some reason, using /users only gives you the usernames. You have to manually retrieve all users using /users/getuser.
 def panel_quota():
-        url = 'https://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/cloud/users'
+        url = 'https://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/cloud/users'
         params = {"format" : "json"}
         users = requests.get(url, params = params, verify = False).text
         users = json.loads(users)['ocs']['data']['users']
         users_list = []
         for user in users:
-                url = 'https://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/cloud/users/'+user+'?format=json'
+                url = 'https://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/cloud/users/'+user+'?format=json'
                 new_user = requests.get(url, verify = False).text
                 new_user =json.loads(new_user)
                 new_user = new_user['ocs']['data']

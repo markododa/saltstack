@@ -12,6 +12,39 @@ from va_utils import check_functionality as panel_check_functionality
 
 panel_list_dns = list_dns
 
+def panel_ou_members(ou_name):
+    ou_members = get_ou_members(ou_name)
+    ou_source = [{'member' : x[0],"type":', '.join(x[1])} for x in ou_members]
+    return ou_source
+
+def format_dns_arguments(entry_data):
+    if entry_type in ['A', 'AAAA']:
+        entry_data = {'address' : entry_data[0]}
+    elif entry_type == 'MX':
+        entry_data = {'hostname' : entry_data[0], 'priority' : entry_data[1]}
+    elif entry_type in ['NS', 'CNAME']:
+        entry_data = {'hostname' : entry_data[0]}
+
+    return entry_data
+
+def action_add_dns(entry_name, entry_type, *entry_data):
+    entry_data = format_dns_arguments(entry_data)
+    return add_dns(entry_name, entry_type, entry_data) 
+
+def action_rm_dns(entry_name, entry_type, *entry_data):
+    entry_data = format_dns_arguments(entry_data)
+    return delete_dns(entry_name, entry_type, entry_data)
+
+def panel_manage_groups(user_name):
+    group_memberships = get_user_groups(user_name)
+    membership_source = [{'groupname' : x} for x in group_memberships]
+    return membership_source
+
+def panel_list_group_members(group_name):
+    group_members = list_group_members(group_name)
+    group_source = [{'username' : x} for x in group_members]
+    return group_source
+
 def panel_list_users():
     return list_users()['users']
 
@@ -59,6 +92,13 @@ def panel_gpo_polices():
     return [res]
 
 def panel_fsmo_show():
+    res = samba_tool(['fsmo', 'show']).split('\n')
+    res = [{'key' : x.split(' owner: ')[0].replace('MasterRole',''), 'value': x.split(' owner: ')[1].replace('CN=NTDS Settings,CN=','').split(',CN=Servers,')[0]} for x in res if x]
+    #CN=NTDS Settings,CN=VA-DIRECTORY,CN=Servers,CN=Default-First-Site-Name,CN=Sites,CN=Configuration,DC=domain,DC=com
+    return res
+
+
+def panel_fsmo_show_old():
     domain_dn = sam_ldb.domain_dn()
 
     fsmo_args = { 'infrastructure_dn' : "CN=Infrastructure," + domain_dn, 'naming_dn' : "CN=Partitions,%s" % sam_ldb.get_config_basedn(), 'schema_dn' : sam_ldb.get_schema_basedn(), 'rid_dn' : "CN=RID Manager$,CN=System," + domain_dn}
