@@ -60,6 +60,6 @@ text=$text', '"Active apps: "$ENA'/'$OUT
 
 
 
-echo $text
+echo $text" | exit_status="$exitstate
 
 exit $exitstate
