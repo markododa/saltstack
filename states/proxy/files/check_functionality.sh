@@ -16,7 +16,7 @@ PERCHIL=`awk -v m=$MAXCHILDREN -v c=$CHILDREN 'BEGIN { printf "%.1f", ( ( c / m 
 service squid status > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
-   text=$text"Squid Server is OK"
+   text=$text"Squid Server is up"
 else
    text=$text"Squid Server is DOWN"
    exitstate=1
@@ -25,7 +25,7 @@ fi
 service e2guardian status > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
-   text=$text", E2Guardian is OK ("$CHILDREN"/"$MAXCHILDREN" children)"
+   text=$text", E2Guardian is up ("$CHILDREN"/"$MAXCHILDREN" children)"
 else
    text=$text", E2Guardian is DOWN"
    exitstate=1

@@ -100,6 +100,6 @@ else
    exitstate=2
 fi
 
-echo $text
+echo $text" | exit_status="$exitstate
 
 exit $exitstate

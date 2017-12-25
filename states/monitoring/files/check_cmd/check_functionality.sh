@@ -1,18 +1,6 @@
-  GNU nano 2.2.6                                         File: /usr/lib/nagios/plugins/check_functionality.sh                                                                               Modified  
-
 #!/bin/bash
 #
-# GENERIC CHECK FUNCTIONALITY SCRIPT, SHOULD BE REPLACED WITH MACHINE SPECIFIC SCRIPT.
-
-
-#/usr/lib/nagios/plugins/check_functionality.sh:
-#  file.managed:
-#    - source:
-#      - salt://XXXX/files/check_functionality.sh
-#    - user: root
-#    - group: root
-#    - mode: 755
-
+# VA-MONITORING CHECK FUNCTIONALITY SCRIPT
 
 exitstate=0
 text=""
@@ -26,7 +14,8 @@ else
     text=$text""
 fi
 
-
+grep '<RC>' /var/lib/pnp4nagios/perfdata/* -R > /dev/null
+if [ $? -eq 0 ];then
 
 OUT=`grep '<RC>1' /var/lib/pnp4nagios/perfdata/* -R | wc -l`
 if [ $OUT -eq 0 ];then
@@ -36,9 +25,27 @@ else
    exitstate=1
 fi
 
+
+
+else
+   text=$text"No chart data. " 
+   exitstate=1
+fi
+
+
+service npcd status > /dev/null
+OUT=$?
+if [ $OUT -eq 0 ];then
+   text=$text"Chart service is OK. "
+else
+   text=$text"Chart service is DOWN. "
+   exitstate=1
+fi
+
+
 text=$text"Last log entry: "`TZ='Europe/Skopje' /bin/date +%Y-%m-%d" "%H:%M" "\(%Z\) -r /var/log/icinga2/icinga2.log`
 
 
-echo $text
+echo $text" | exit_status="$exitstate
 
 exit $exitstate

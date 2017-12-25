@@ -23,6 +23,6 @@ else
    exitstate=1
 fi
 
-echo $text
+echo $text" | exit_status="$exitstate
 
 exit $exitstate

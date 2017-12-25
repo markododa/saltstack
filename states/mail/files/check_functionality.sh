@@ -59,17 +59,7 @@ else
 
 fi
 
-#queue_id='^[A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9][A-F0-9]'
-#queue_id='^(?:[0-9A-F]{10,11}|[0-9A-Za-z]{14,16})!\s'
 
-# determine queue size
-#OUT=$(mailq | egrep -c $queue_id)
-#if [ -z $qsize ]
-#then
-#    exit $e_unknown
-#fi
-
-
-echo $text
+echo $text" | exit_status="$exitstate
 
 exit $exitstate
