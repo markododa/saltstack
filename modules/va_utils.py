@@ -124,13 +124,14 @@ def get_content_data_for_modal(content_source, module_name, *args, **kwargs):
 def get_panel(module_name, panel_name, *args, **kwargs):
     #If the module already has a get_panel function, we just return that. 
     panel = None
+    kwargs = {x : kwargs[x] for x in kwargs if x[0] != '_'}
     if module_name + '.get_panel' in __salt__:
 
-        try:
-            panel =  __salt__[module_name + '.get_panel'](panel_name, *args)
-        except: 
-            panel = None
-
+#        try:
+            panel =  __salt__[module_name + '.get_panel'](panel_name, *args, **kwargs)
+#        except: 
+#            panel = None
+            return panel
     if panel: 
         return panel
 
@@ -139,7 +140,6 @@ def get_panel(module_name, panel_name, *args, **kwargs):
         panel = json.load(open(panel_jsons[module_name]))
     else:
         panel = module.panel
-
     panel = panel.get(panel_name)
     for t in panel['tbl_source']:
         table = panel['tbl_source'][t]
