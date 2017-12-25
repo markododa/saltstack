@@ -127,10 +127,10 @@ def get_panel(module_name, panel_name, *args, **kwargs):
     kwargs = {x : kwargs[x] for x in kwargs if x[0] != '_'}
     if module_name + '.get_panel' in __salt__:
 
-#        try:
+        try:
             panel =  __salt__[module_name + '.get_panel'](panel_name, *args, **kwargs)
-#        except: 
-#            panel = None
+        except: 
+            panel = None
             return panel
     if panel: 
         return panel
