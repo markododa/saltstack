@@ -45,6 +45,56 @@ def panel_networking():
     result = [{"ip":get_ip_addresses(), "dns":get_dns_addresses()}]
     return result
 
+def get_pdf(panel, pdf_file = '/tmp/table.pdf', range_from = 0):
+    from reportlab.platypus import SimpleDocTemplate
+    from reportlab.lib.pagesizes import letter, inch
+
+    if range_from: return
+    pdf_contents = {
+        'title' : 'Some title',
+        'tables' : [],
+    }
+
+    for table in panel['tbl_source']:
+        panel_table = [x for x in panel['content'] if x.get('name') == table]
+        columns = []
+        if panel_table:
+            panel_table = panel_table[0]
+            columns = [x['label'] for x in panel_table['columns']]
+        pdf_contents['tables'].append({'table' : panel['tbl_source'][table], 'name' : table, 'columns' : columns})
+
+    elements = contents_to_elements(pdf_contents, pdf_file)
+ 
+    doc = SimpleDocTemplate(pdf_file, pagesize=letter)
+
+    doc.build(elements)
+  
+
+def contents_to_elements(pdf_contents, pdf_file):
+    from reportlab.lib import colors
+    from reportlab.platypus import Table, TableStyle
+
+
+    #    elements = [pdf_contents['title']]
+    elements = []
+    for table in pdf_contents['tables']:
+#        elements.append(table['name'])
+        columns = table['table'][0].keys()
+        columns = table.get('columns', columns)
+
+        data = [columns]
+        for row in table['table']:
+            for x in row: 
+                row[x] = str(row[x]) #TODO properly convert lists to string
+
+            data.append(row.values())
+
+            pdf_table=Table(data)
+            pdf_table.setStyle(TableStyle([('INNERGRID', (0,0), (-1,-1), 0.25, colors.black), ('BOX', (0,0), (-1,-1), 0.25, colors.black)]))
+
+        elements.append(pdf_table)
+
+    return elements
 
 def get_panel_data_for_table(table, module_name, *args, **kwargs):
     table_cols = table.get('cols')
@@ -89,14 +139,12 @@ def get_panel(module_name, panel_name, *args, **kwargs):
         panel = json.load(open(panel_jsons[module_name]))
     else:
         panel = module.panel
- 
-    panel = panel.get(panel_name)
 
+    panel = panel.get(panel_name)
     for t in panel['tbl_source']:
         table = panel['tbl_source'][t]
         panel_data = get_panel_data_for_table(table, module_name, *args, **kwargs)
 
-#        return 'Panel data elements have keys : ' + str(panel_data[0].keys()) + ' while Im getting cols : ' + str(table.get('cols'))
         panel_data = [{i : x.get(i, '') for i in table.get('cols', [])} for x in panel_data]
         panel['tbl_source'][t] = panel_data
 
