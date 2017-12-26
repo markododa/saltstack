@@ -157,9 +157,9 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
     else:
         return False
 
-def add_folder_list(hostname, folder_list,script="None"):
+def add_folder_list(hostname, folder_list,address,scriptpre="None",scriptpost="None"):
 	for folder in folder_list:
-		add_folder(hostname, folder,script)
+		add_folder(hostname, folder,address,scriptpre,scriptpost)
 
 def rm_folder(hostname, folder):
     hostname = hostname.lower()
