@@ -20,6 +20,8 @@ panel = {
 		"content": [{
 				"type": "Table",
 				"name": "table_chkf",
+
+                                "pagination": False,
 				"reducers": ["table", "panel", "alert"],
 				"columns": [{
 						"key": "status",
@@ -35,6 +37,7 @@ panel = {
 			}, {
 				"type": "Table",
 				"name": "table_statistics",
+                                "pagination": False,
 				"reducers": ["table", "panel", "alert"],
 				"columns": [{
 						"key": "key",
@@ -50,11 +53,12 @@ panel = {
 			}, {
 				"type": "Table",
 				"name": "table_net",
+                                "pagination": False,
 				"reducers": ["table", "panel", "alert"],
 				"columns": [{
 						"key": "ip",
 						"label": "IP addresses",
-						"width": "50%"
+						"width": "20%"
 					}, {
 						"key": "dns",
 						"label": "DNS servers"
