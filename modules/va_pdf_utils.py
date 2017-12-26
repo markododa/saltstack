@@ -53,19 +53,22 @@ def pdf_styles():
     return styles
 
 def get_pdf(panel, pdf_file = '/tmp/table.pdf', range_from = 0):
+    if type(panel) == str: panel = json.loads(panel)
     if range_from: return
+
     pdf_contents = {
         'title' : panel['title'],
         'tables' : [],
     }
+    for element in panel['content']:
+        if element.get('type', '') != 'Table' :
+            continue
+        panel_table = element
+        table = panel['tbl_source'][panel_table['name']]
+        if not table: 
+            continue
+        pdf_contents['tables'].append({'table' : table, 'name' : panel_table['name'], 'columns' : panel_table['columns']})
 
-    for table in panel['tbl_source']:
-        panel_table = [x for x in panel['content'] if x.get('name') == table]
-        columns = []
-        if panel_table:
-            panel_table = panel_table[0]
-            columns = panel_table['columns']
-        pdf_contents['tables'].append({'table' : panel['tbl_source'][table], 'name' : table, 'columns' : columns})
 
     elements = contents_to_elements(pdf_contents, pdf_file)
  
@@ -89,6 +92,8 @@ def contents_to_elements(pdf_contents, pdf_file):
     for table in pdf_contents['tables']:
         default_columns = [{'label' : x, 'key' : x} for x in table['table'][0].keys()]
         columns = table.get('columns', default_columns)
+
+        columns = [x for x in columns if 'Action' not in x['label']]
 
         data = [[x['label'] for x in columns]]
         for row in table['table']:

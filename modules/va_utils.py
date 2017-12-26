@@ -81,7 +81,6 @@ def get_panel(module_name, panel_name, *args, **kwargs):
             panel =  __salt__[module_name + '.get_panel'](panel_name, *args, **kwargs)
         except: 
             panel = None
-            return panel
     if panel: 
         return panel
 
