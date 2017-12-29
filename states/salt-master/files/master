@@ -25,3 +25,5 @@ reactor:
     - /srv/reactor/sendmail.sls
   - 'salt/dns':
     - /srv/reactor/add_dns.sls
+  - 'salt/minion/*/start':
+    - /srv/reactor/update.sls
