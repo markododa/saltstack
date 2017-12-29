@@ -28,8 +28,9 @@ default_va_cfg:
     - pattern: 'allowed_hosts=127.0.0.1'
     - repl: 'allowed_hosts={{salt['mine.get'](tgt='*',fun='address')['va-monitoring'][0]}}'
 
-/etc/nagios/nrpe.cfg:
+timeout:
   file.replace:
+    - name: /etc/nagios/nrpe.cfg
     - pattern: 'command_timeout=60'
     - repl: 'command_timeout=250'
     
