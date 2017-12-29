@@ -1,5 +1,7 @@
 timedatectl set-timezone {{ pillar['timezone'] }}:
-  cmd.run
+  cmd.run:
+    - require:
+      - pkg: install_packages
 
 
 install_packages:
@@ -7,6 +9,7 @@ install_packages:
     - pkgs:
       - rsync
       - sudo
+      - dbus
 
 /root/.bashrc:
   file.append:
