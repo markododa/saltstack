@@ -1,3 +1,3 @@
 mine_update:
   local.mine.update:
-    - tgt: {{ data['name'] }}
+    - tgt: {{ data['id'] }}
