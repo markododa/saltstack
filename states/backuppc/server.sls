@@ -145,7 +145,9 @@ backuppc-restart:
   service.running:
     - name: backuppc
     - watch:
-      - event: salt/backup/installed
+      - event: salt/app/new
 
-salt/backup/installed:
-  event.send
+salt/app/new:
+  event.send:
+    - data:
+        sls: base.backup 

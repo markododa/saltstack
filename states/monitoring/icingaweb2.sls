@@ -111,3 +111,8 @@ apache2:
       - file: /etc/apache2/conf-available/icingaweb2.conf
 
 {% endif %}
+
+salt/app/new:
+  event.send:
+    - data:
+        sls: base.nrpe
