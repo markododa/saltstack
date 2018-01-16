@@ -7,6 +7,7 @@ add_host:
     - arg:
       - /opt/va/icinga2/va-host.tmpl
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
+      - unless: test -e /etc/icinga2/conf.d/{{ data['name'] }}.conf
 
 instance_name:
   local.file.replace:
