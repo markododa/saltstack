@@ -7,7 +7,6 @@ add_host:
     - arg:
       - /opt/va/icinga2/va-host.tmpl
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
-      - unless: test -e /etc/icinga2/conf.d/{{ data['name'] }}.conf
 
 instance_name:
   local.file.replace:
@@ -25,8 +24,8 @@ instance_ip:
     - expr_form: grain
     - arg:
       - /etc/icinga2/conf.d/{{ data['name'] }}.conf
-      - pattern="{INSTANCE_IP}"
-      - repl='{{ data['ip']}}'
+      - pattern="^.*address = .*$"
+      - repl=" address = '{{ data['ip']}}'"
       - backup=False
 
 instance_type:
@@ -45,3 +44,5 @@ restart_icinga2:
     - expr_form: grain
     - arg:
       - icinga2
+      - watch:
+        - file: /etc/icinga2/conf.d/{{ data['name'] }}.conf
