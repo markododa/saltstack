@@ -4,15 +4,18 @@
 {% set os_family = salt['grains.get']('os_family', None) %}
 {% set backuppc_password = salt['pillar.get']('admin_password') %}
 
-smbclient:
-  pkg.installed
+install-pkgs:
+  pkg.installed:
+    - pkgs:
+      - smbclient
+      - netcat
+    - require_in:
+      - file: /etc/samba/smb.conf
 
 /etc/samba/smb.conf:
   file.replace:
     - pattern: "workgroup = .*"
     - repl: 'workgroup = {% filter upper %}{{salt['pillar.get']('shortdomain')}}{% endfilter %}'
-    - require:
-      - pkg: smbclient
 
 backuppc:
   pkg.installed:
