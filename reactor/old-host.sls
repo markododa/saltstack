@@ -1,8 +1,6 @@
-existing-to-backup:
-  local.state.apply:
+{% set data = data['data'] %}
+existing-to-new-app:
+  local.state.sls:
     - tgt: '*'
-    - name: base.backup
-existing-to-monitoring:
-  local.state.apply:
-    - tgt: '*'
-    - name: base.nrpe
+    - arg:
+      - {{data['sls']}}

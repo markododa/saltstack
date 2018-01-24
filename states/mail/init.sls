@@ -38,6 +38,7 @@ ldap-utils:
     - defaults:
         domain: {% filter lower %}{{ domain }}{% endfilter %}
         admin_password: {{ salt['pillar.get']('admin_password') }}
+    - unless: test -f /root/iRedMail-{{iredmail_version}}/config
 
 generate_passwords:
   cmd.run:

@@ -9,7 +9,7 @@ install_pkgs:
       - python-dev
       - libssl-dev
       - libffi-dev
-      - libzmq-dev
+      - libzmq3-dev
       - unzip
       - supervisor
       - curl
@@ -19,6 +19,7 @@ install_pkgs:
       - salt-master
       - salt-cloud
       - git
+      - rsyslog
 
 easy_install pip:
   cmd.run

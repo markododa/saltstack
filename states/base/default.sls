@@ -1,11 +1,15 @@
 timedatectl set-timezone {{ pillar['timezone'] }}:
-  cmd.run
+  cmd.run:
+    - require:
+      - pkg: install_packages
 
 
 install_packages:
   pkg.installed:
     - pkgs:
       - rsync
+      - sudo
+      - dbus
 
 /root/.bashrc:
   file.append:
@@ -68,8 +72,10 @@ saltutil.sync_grains:
     - mode: delete
     - order: last
 
+
 /etc/cloud/cloud.cfg:
   file.line:
     - content: 'manage_etc_hosts: true'
     - mode: delete
     - order: last
+    - onlyif: test -e /etc/cloud/cloud.cfg

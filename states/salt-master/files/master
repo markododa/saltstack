@@ -1,5 +1,6 @@
 state_events: True
 publish_port: 4505
+debug: True
 rest_cherrypy:
   port: 8000
   disable_ssl: True
@@ -19,9 +20,11 @@ reactor:
     - /srv/reactor/pubkey.sls
   - 'backuppc/copykey':
     - /srv/reactor/copykey.sls
-  - 'salt/backup/installed':
+  - 'salt/app/new':
     - /srv/reactor/old-host.sls
   - 'mail/send':
     - /srv/reactor/sendmail.sls
   - 'salt/dns':
     - /srv/reactor/add_dns.sls
+  - 'salt/minion/*/start':
+    - /srv/reactor/update.sls

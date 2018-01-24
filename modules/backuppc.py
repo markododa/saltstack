@@ -97,19 +97,19 @@ def add_default_paths(hosts = []):
             result = add_folder(host, path)
     return True
 
-def hosts_file_add(hostname, address=False):
+def get_ip(hostname):
     hostname = hostname.lower()
-    if not address:
-        address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
-        address = address[address.keys()[0]][0]
-    __salt__['file.append']('/etc/hosts',address+'\t'+hostname)
+    address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
+    return address[address.keys()[0]][0]
 
-def add_host(hostname,address=False,scriptpre="None",scriptpost="None"):
+def add_host(hostname,address=False,method='rsync',scriptpre="None",scriptpost="None"):
+        rsync = '$Conf{XferMethod} = \'rsync\';\n$Conf{RsyncShareName} = [\n];'
+        methods = { 'rsync': rsync ,}
 	hostname = hostname.lower()
 	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		hosts_file_add(hostname,address)
-    		__salt__['file.touch']('/etc/backuppc/pc/'+hostname+'.pl')
-    		__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl', '$Conf{XferMethod} = \'rsync\';\n$Conf{RsyncShareName} = [\n];')
+		#hosts_file_add(hostname,address)
+    		__salt__['file.write'](path='/etc/backuppc/pc/'+hostname+'.pl', args=methods[method])
+    		__salt__['file.append'](path='/etc/backuppc/pc/'+hostname+'.pl', args='$Conf{ClientNameAlias} = '+get_ip(hostname)+';')
     		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
     		__salt__['file.append']('/etc/backuppc/hosts', hostname+'       0       backuppc')
         	__salt__['event.send']('backuppc/copykey', fqdn=hostname)
@@ -136,18 +136,18 @@ def add_host(hostname,address=False,scriptpre="None",scriptpost="None"):
 def rm_host(hostname):
     #To completely remove a client and all its backups, you should remove its entry in the conf/hosts file, and then delete the __TOPDIR__/pc/$host directory. Whenever you change the hosts file, you should send BackupPC a HUP (-1) signal so that it re-reads the hosts file. If you don't do this, BackupPC will automatically re-read the hosts file at the next regular wakeup.
     hostname = hostname.lower()
-    __salt__['file.remove']('/etc/backuppc/pc/'+hostname+'.pl')
+    retcode = __salt__['file.remove']('/etc/backuppc/pc/'+hostname+'.pl')
     __salt__['file.line'](path='/etc/backuppc/hosts',content=hostname+'.*backuppc', mode='delete')
     __salt__['file.chown']('/etc/backuppc/hosts', 'backuppc', 'www-data')
-    __salt__['file.line'](path='/etc/hosts',content='.*'+hostname+'.*', mode='delete')
-    return __salt__['service.reload']('backuppc')
+    __salt__['service.reload']('backuppc')
+    return retcode
 
-def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"):
+def add_folder(hostname, folder,address=False,method='rsync',scriptpre="None",scriptpost="None"):
     hostname = hostname.lower()
     if folder[-1] == '/':
         folder = folder[0:-1]
     if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-	    add_host(hostname,address,scriptpre,scriptpost)
+	    add_host(hostname=hostname,address=address,scriptpre=scriptpre,scriptpost=scriptpost,method=method)
     if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
 		return False
     elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
@@ -157,9 +157,9 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
     else:
         return False
 
-def add_folder_list(hostname, folder_list,script="None"):
+def add_folder_list(hostname, folder_list,address, method='rsync',scriptpre="None",scriptpost="None"):
 	for folder in folder_list:
-		add_folder(hostname, folder,script)
+		add_folder(hostname=hostname,folder=folder,address=address,method=method,scriptpre=scriptpre,scriptpost=scriptpost)
 
 def rm_folder(hostname, folder):
     hostname = hostname.lower()

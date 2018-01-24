@@ -12,7 +12,7 @@ fi
 
 if ! (  command lsb_release );then
         apt-get update
-        apt-get -y install lsb-release
+        apt-get -y install lsb-release wget gnupg
 fi
 
 

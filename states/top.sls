@@ -3,6 +3,7 @@ base:
     - base.default
     - base.backup
     - base.nrpe
+    - base.dns
   'role:monitoring':
     - match: grain
     - monitoring.icingaweb2

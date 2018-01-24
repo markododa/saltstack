@@ -100,7 +100,7 @@ curl {{ipaddrss}} > /dev/null:
   
 /etc/sudoers.d/occ:
   file.managed:
-    - source: salt://directory/files/occ
+    - source: salt://owncloud/files/occ
     - user: root
     - group: root
     - mode: 440
