@@ -1,4 +1,5 @@
-import va_utils, salt, os.path, os, json, datetime, time, re, subprocess
+import va_utils, salt, os.path, os, json, datetime, time, re, subprocess, fnmatch
+
 from va_utils import check_functionality as panel_check_functionality
 from va_backup_panels import panel
 
@@ -18,7 +19,7 @@ default_paths = {
 def get_panel(panel_name, server_name = '', backupNum = -1):
     host = server_name
     ppanel = panel[panel_name]
-    hostnames = __salt__['backuppc.listHosts']()
+    hostnames = listHosts()
     if panel_name == "backup.hosts":
         ppanel['tbl_source']['table'] = panel_list_hosts()
         return ppanel
@@ -105,21 +106,21 @@ def get_ip(hostname):
 def add_host(hostname,address=False,method='rsync',scriptpre="None",scriptpost="None"):
         rsync = '$Conf{XferMethod} = \'rsync\';\n$Conf{RsyncShareName} = [\n];'
         methods = { 'rsync': rsync ,}
-	hostname = hostname.lower()
-	if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-		#hosts_file_add(hostname,address)
-    		__salt__['file.write'](path='/etc/backuppc/pc/'+hostname+'.pl', args=methods[method])
-    		__salt__['file.append'](path='/etc/backuppc/pc/'+hostname+'.pl', args='$Conf{ClientNameAlias} = '+get_ip(hostname)+';')
-    		__salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
-    		__salt__['file.append']('/etc/backuppc/hosts', hostname+'       0       backuppc')
-        	__salt__['event.send']('backuppc/copykey', fqdn=hostname)
+        hostname = hostname.lower()
+        if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
+                #hosts_file_add(hostname,address)
+                __salt__['file.write'](path='/etc/backuppc/pc/'+hostname+'.pl', args=methods[method])
+                __salt__['file.append'](path='/etc/backuppc/pc/'+hostname+'.pl', args='$Conf{ClientNameAlias} = \''+get_ip(hostname)+'\';')
+                __salt__['file.chown']('/etc/backuppc/pc/'+hostname+'.pl', 'backuppc', 'www-data')
+                __salt__['file.append']('/etc/backuppc/hosts', hostname+'       0       backuppc')
+                __salt__['event.send']('backuppc/copykey', fqdn=hostname)
                 __salt__['cmd.retcode'](cmd=rm_key+hostname, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
                 __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-		if scriptpre != "None":
-			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+scriptpre+'\';')
-		if scriptpost != "None":
-			__salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPostUserCmd} = \'$sshPath -q -x -l root $host '+scriptpost+'\';')
-	return True
+                if scriptpre != "None":
+                        __salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPreUserCmd} = \'$sshPath -q -x -l root $host '+scriptpre+'\';')
+                if scriptpost != "None":
+                        __salt__['file.append']('/etc/backuppc/pc/'+hostname+'.pl','$Conf{DumpPostUserCmd} = \'$sshPath -q -x -l root $host '+scriptpost+'\';')
+        return True
 
 # $Conf{ClientCharset} = 'cp1252';
 # $Conf{RsyncShareName} = [
@@ -142,14 +143,16 @@ def rm_host(hostname):
     __salt__['service.reload']('backuppc')
     return retcode
 
-def add_folder(hostname, folder,address=False,method='rsync',scriptpre="None",scriptpost="None"):
+def add_folder(hostname, folder,address=False,method='rsync',scriptpre="None",scriptpost="None",include=""):
     hostname = hostname.lower()
     if folder[-1] == '/':
         folder = folder[0:-1]
     if not __salt__['file.file_exists']('/etc/backuppc/pc/'+hostname+'.pl'):
-	    add_host(hostname=hostname,address=address,scriptpre=scriptpre,scriptpost=scriptpost,method=method)
+            add_host(hostname=hostname,address=address,scriptpre=scriptpre,scriptpost=scriptpost,method=method)
     if __salt__['file.search']('/etc/backuppc/pc/'+hostname+'.pl','\''+folder+'/?\''):
-		return False
+                return False
+#NINO
+#Add logic for smb method + add lines for include attribute
     elif __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
         __salt__['file.replace']('/etc/backuppc/pc/'+hostname+'.pl', pattern="\$Conf\{RsyncShareName\} \= \[", repl="$Conf{RsyncShareName} = [\n  '"+folder+'\',')
         __salt__['service.reload']('backuppc')
@@ -157,9 +160,9 @@ def add_folder(hostname, folder,address=False,method='rsync',scriptpre="None",sc
     else:
         return False
 
-def add_folder_list(hostname, folder_list,address, method='rsync',scriptpre="None",scriptpost="None"):
-	for folder in folder_list:
-		add_folder(hostname=hostname,folder=folder,address=address,method=method,scriptpre=scriptpre,scriptpost=scriptpost)
+def add_folder_list(hostname, folder_list,address, method='rsync',scriptpre="None",scriptpost="None",include=""):
+        for folder in folder_list:
+                add_folder(hostname=hostname,folder=folder,address=address,method=method,scriptpre=scriptpre,scriptpost=scriptpost,include=include)
 
 def rm_folder(hostname, folder):
     hostname = hostname.lower()
@@ -171,23 +174,47 @@ def rm_folder(hostname, folder):
     else:
         return 'Folder not in backup list'
 
-#def backup_count():
 
+def get_folders_from_config(hostname):
+    shares = {
+        'rsync' : 'RsyncShareName', 
+        'smb' : 'SmbShareName', 
+    }
+    conf_dir = '/etc/backuppc/'+hostname+'.pl'
+    host_protocol = get_host_protocol(hostname)
+    default_protocol = get_host_protocol()
+
+    share_name = shares[host_protocol]
+    default_share_name = shares[default_protocol]
+
+    folders = get_global_config(share_name, hostname) or get_global_config(default_share_name, hostname)
+    return folders
+
+    if os.path.exists(conf_dir):
+        config_file = open(conf_dir, 'r').read().replace('\n', '')
+        for sh in [share_name, default_share_name]: 
+            share_regex = '\$Conf\{%s\} = \[(\'.*\')\];' % sh
+            folders = re.search(share_regex, config_file)
+
+            if not folders: 
+                continue
+
+            folders = folders.groups()[0]
+            #Need to refine the regex, folders are returned in the following weird format, so we remove the whitespace and quotes
+            #["  '/etc/backuppc'", "  '/etc/example_1'", "  '/etc/example_2'"]
+
+            folders = [x.strip()[1:-1] for x in folders.split(',')]
+            return folders
+   
 
 def list_folders(hostnames):
-	folders_list = dict()
-	if type(hostnames) == str:
-		hostname = hostnames
-		hostnames = []
-		hostnames.append(hostname)
-	for hostname in hostnames:
-		folders = []
-		if os.path.exists('/etc/backuppc/'+hostname+'.pl'):
-			config_file = open('/etc/backuppc/'+hostname+'.pl', 'r').read().splitlines()
-			for folder in config_file[config_file.index('$Conf{RsyncShareName} = [')+1:config_file.index('];')]:
-				folders.append(folder.split('\'')[1])
-		folders_list[hostname] = folders
-	return folders_list
+    folders_list = dict()
+    if type(hostnames) == str:
+        hostnames = [hostnames]
+    for hostname in hostnames:
+        folders = get_folders_from_config(hostname)
+        folders_list[hostname] = folders
+    return folders_list
 
 def listHosts():
     host_list = []
@@ -198,16 +225,52 @@ def listHosts():
                 host_list.append(word[0])
     return host_list
 
+
+def list_folders_and_filters(hostnames):
+#NINO
+# wrapper for list_folders, should include one more column
+# for each folder there is include filter in $Conf{BackupFilesOnly} attribute
+
+    list_and_filters = []
+    return list_and_filters
+
+
+def find_matching_shares(host, share_path):
+    folders = []
+    shares = get_global_config('BackupFilesOnly', host)
+    for share in shares: 
+        if fnmatch.fnmatch(share_path, share):
+            folders += shares[share]
+    return folders
+
 def panel_list_hosts():
     host_list = listHosts()
-    host_list = [{'host' : x, 'total_backups': backupTotals(x)} for x in host_list]
+    host_list = [{'host' : x, 'total_backups': backupTotals(x), 'protocol' : get_host_protocol(x)} for x in host_list]
+    host_list = append_host_status(host_list)
     return host_list
 
+
+#def append_host_status():
+def append_host_status(host_list):
+    cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status hosts'
+    text =  __salt__['cmd.run'](cmd, runas='backuppc')
+    text = hashtodict(text)
+    text = text.split('=')[1]
+    text = text.replace(' undef' ,' \"undef\"')
+    text = text.replace('_' ,' ')
+    text = json.loads(text)
+#loop the output and for each host find the reason attribute ;
+#NINO
+    for x in host_list:
+        x['status'] = text[x['host']]['reason']
+#    text = text['virt7']['reason']
+    return host_list
 
 def panel_statistics():
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status info'
     text =  __salt__['cmd.run'](cmd, runas='backuppc')
     text = hashtodict(text)
+    text1 = hashtodict(text)
     text = text.split('=')[1]
     text = json.loads(text)
     i_version = text['Version']
@@ -215,25 +278,136 @@ def panel_statistics():
     i_yesterdaypool = text['DUDailyMaxPrev']
     i_folders = text['cpoolDirCnt']
     i_duplicates = text['cpoolFileCntRep']
-#"cpoolFileCnt" => 25690          files in pool
-#"cpoolDirCnt" => 4368,          directories in pool
-#"cpoolFileCntRep" => 0               repeated files
+    diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
     statistics = [{'key' : 'Version', 'value': text['Version']},
-		  {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
-		  {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
-		  {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
-		  {'key' : 'Nightly cleanup removed files', 'value': text['cpoolFileCntRm']},
-		  {'key' : 'Pool used size (KB)', 'value': __salt__['disk.usage']()['/mnt/va-backup']['used']},
-		  {'key' : 'Pool free space (KB)', 'value': __salt__['disk.usage']()['/mnt/va-backup']['available']},
-		  {'key' : 'Pool files system', 'value': __salt__['disk.usage']()['/mnt/va-backup']['filesystem']},
-		  {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
-		  {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
+                  {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
+                  {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
+                  {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
+                  {'key' : 'Nightly cleanup removed files', 'value': text['cpoolFileCntRm']},
+                  {'key' : 'Pool used size (KB)', 'value': diskusage['used']},
+                  {'key' : 'Pool free space (KB)', 'value': diskusage['available']},
+                  {'key' : 'Pool files system', 'value': diskusage['filesystem']},
+                  {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
+                  {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
     return statistics
+
+def panel_default_config():
+    cmd = 'cat /etc/backuppc/config.pl'
+    text =  __salt__['cmd.run'](cmd)
+#    text = conftodict(text)
+#New parser for this
+#$Conf{FullPeriod} = 6.97;
+#NINO
+#    text = text.split('=')[1]
+#    text = json.loads(text)
+    def_config = [{'key' : 'Full Backups period', 'value': get_global_config('FullPeriod')},
+                  {'key' : 'Full Backups to keep (max)', 'value': get_global_config('FullKeepCnt')},
+                  {'key' : 'Full Backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
+                  {'key' : 'Remove Full Backups older then', 'value': get_global_config('FullAgeMax')},
+                  {'key' : 'Incremental Backups period', 'value': get_global_config('IncrPeriod')},
+                  {'key' : 'Incremental Backups to keep (max)', 'value': get_global_config('IncrKeepCnt')},
+                  {'key' : 'Incremental Backups to keep (min)', 'value': get_global_config('IncrKeepCntMin')},
+                  {'key' : 'Remove incremental Backups older then', 'value': get_global_config('IncrAgeMax')}]
+                 # {'key' : 'Pool used size (KB)', 'value': __salt__['disk.usage']()['/mnt/va-backup']['used']},
+    return def_config
+
+
+backuppc_dir = '/etc/backuppc/'
+
+def get_global_config(item, hostname = 'config'):
+#    item = get_item_from_conf(item, hostname) or get_item_from_conf(item, 'config')
+    perl_simple_element = ['perl','-e', 'require "/etc/backuppc/%s.pl"; print $Conf{%s};' % (hostname, item)]
+    perl_complex_element = ['perl', '-MJSON', '-e', 'require "/etc/backuppc/%s.pl"; $json_data = encode_json $Conf{%s}; print $json_data' % (hostname, item)]
+
+    item = subprocess.check_output(perl_simple_element)
+    if any([x in item for x in ['ARRAY', 'HASH']]):
+        item = json.loads(subprocess.check_output(perl_complex_element))
+
+    return item
+
+    
+def get_item_from_conf(item, hostname = 'config'):
+    host_conf = backuppc_dir + hostname + '.pl'
+    with open(host_conf) as f:
+       config = f.read()
+
+    #you can probably do some more regexing to get perl values but this seems to work
+    item_regex_comment_group = '(#.*)?'
+    item_regex_var_definition = "\$Conf{%s}\s*=\s*" % item
+    item_regex_value_characters = '([a-zA-Z\/0-9\.\,]*)'
+    item_regex_value = "'?%s'?;" % item_regex_value_characters
+
+    item_regex = item_regex_comment_group + item_regex_var_definition + item_regex_value
+#    return item_regex
+    item = re.findall(item_regex, config)
+    item = [x[1] for x in item if '#' not in x[0]] or [None]
+
+    if not item: 
+        return None
+
+    item = item[0]
+    return item
+
+
+def conftodict(contents):
+#DELETE
+#    text = ""
+#    for i, line in contents:
+#        if i == 0 or not line.startswith('#'):
+#            text=text + line
+    contents = re.sub(' +', ' ',contents)
+    contents = contents.replace('\"', '')
+
+    contents = contents.replace('$ENV{\'PATH\'} = \'/bin:/usr/bin\';', '')
+    contents = contents.replace('delete @ENV{\'IFS\', \'CDPATH\', \'ENV\', \'BASH_ENV\'};', '')
+    contents = contents.replace('chomp($Conf{ServerHost});', '')
+    contents = contents.replace('<<', '\"')
+    contents = contents.replace('if -x', ',\"if x\":')
+    contents = contents.replace('EOF\n', '\n')
+    contents = contents.replace('`', '\"')
+    contents = contents.replace(' #', '#')
+    list_of_lines = contents.split('\n')
+    list_of_lines = [x for x in list_of_lines if x]
+    list_of_lines = [x for x in list_of_lines if x[0] != '#']
+    contents = '\n'.join(list_of_lines)
+    contents = contents.replace('$Conf{','\"')
+    contents = contents.replace('} = ', '\":')
+
+#    contents = contents.replace('{', '\"{')
+#    contents = contents.replace('}', '}\"')
+#    contents = contents.replace('  ', ' ')
+#    contents = contents.replace('=>', '":')
+    contents = contents.replace(':[',':\"')
+    contents = contents.replace('];','\",')
+    contents = contents.replace(',\n',',')
+    contents = contents.replace('\"\n','\"')
+    #contents = contents.replace('\n','')
+    contents = contents.replace('undef','\"undef\"')
+    contents = contents.replace(';',',')
+    contents = contents.replace('\'','\"')
+    contents = contents.replace('\"\n . \"','')
+
+    contents = "{" + contents
+
+    contents = contents + "}"
+
+    text = "tt"
+#    for i, line in contents:
+#        if i == 0 or not line.startswith('#'):
+#            text="gg"
+
+    return contents
+
 
 
 def backupTotals(hostname):
     totalb = len(backupNumbers(hostname)) 
     return totalb
+
+
+def get_host_protocol(hostname = 'config'):
+    protocol = get_global_config('XferMethod', hostname) or get_global_config('XferMethod')
+    return protocol
 
 
 def backupNumbers(hostname):
@@ -372,8 +546,9 @@ def backup_info(hostname):
             a = int(time.time()) - int(f["endTime"])
             m, s = divmod(a, 60)
             h, m = divmod(m, 60)
+            d, h = divmod(h, 24)
             info.update({
-                "age" : str("%d:%02d:%02d") % (h, m, s),
+                "age" : str("%d day(s) %d:%02d:%02d") % (d, h, m, s),
                 "backup" : str(backup),
                 "absolute_age" : str(a)
             })
