@@ -50,12 +50,12 @@ else
 
 fi
 
-amavisd-new testkeys  > /dev/null
-if [ $? -eq 0 ];then
+OUT=`amavisd-new testkeys | grep ' => invalid' | wc -l`
+if [ $OUT -eq 0 ];then
     text=$text", DKIM is OK"
 else
-    text=$text", DKIM is DOWN"
-   exitstate=2
+    text=$text", invalid public DKIM record"
+   exitstate=1
 
 fi
 
