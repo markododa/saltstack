@@ -5,13 +5,13 @@
 exitstate=0
 text="OK: "
 CLEAN_OUT=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g'`
-OLDEST=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g'| grep 'lastGoodBackupTime' | sed "s/.*=> //" | sed 's/,//'| sort -nr | tail -n 1 | awk '{print int($1)}'`
-GOODBACKUPS=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g'| grep 'lastGoodBackupTime' | wc -l`
-TOTALBACKUPS=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g' | grep reason | wc -l`
-FAILEDBACKUPS=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g' |  grep 'Reason_backup_failed' | wc -l`
-RUNNING=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g' | grep Status_backup_in_progress | wc -l`
+OLDEST=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | sed "s/.*=> //" | sed 's/,//'| sort -nr | tail -n 1 | awk '{print int($1)}'`
+GOODBACKUPS=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | wc -l`
+TOTALBACKUPS=`echo "$CLEAN_OUT" | grep reason | wc -l`
+FAILEDBACKUPS=`echo "$CLEAN_OUT" |  grep 'Reason_backup_failed' | wc -l`
+RUNNING=`echo "$CLEAN_OUT" |  grep Status_backup_in_progress | wc -l`
 
-EMPTYBACKUPS=`$TOTALBACKUPS - $GOODBACKUPS`
+EMPTYBACKUPS=`expr $TOTALBACKUPS - $GOODBACKUPS`
 SPACE=`backuppc_servermsg status info | sed 's/,/,\n/g'| sed 's/},/\n/g' | grep "DUlastValue. =" | sed "s/.*=> //" | sed 's/,//'`
 
 NOW=`echo $(date +"%s")`
