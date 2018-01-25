@@ -141,8 +141,8 @@ chmod +x /usr/bin/backuppc_servermsg:
   cmd.run
 
 /etc/sudoers.d/nagios:
-  file.managed:
-    - content: "nagios ALL = (backuppc) NOPASSWD: /usr/share/backuppc/bin/BackupPC_serverMesg"
+  file.append:
+    - text: "nagios ALL = (backuppc) NOPASSWD: /usr/share/backuppc/bin/BackupPC_serverMesg"
 
 backuppc-restart:
   service.running:
