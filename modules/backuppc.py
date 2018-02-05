@@ -144,7 +144,7 @@ def add_host(hostname,address=False,method='rsync', backup_arguments = {}): #scr
     if not __salt__['file.file_exists'](host_file(hostname)):
         #If the file doesn't exist, we create the full file_data dict.
         file_data = file_data_methods[method]
-        file_data['ClientNameAlias'] = get_ip(hostname)
+        file_data['ClientNameAlias'] = address 
 
         #Various arguments, like SmbSharePasswd and SmbShareUserName for smb shares and DumpPreUserCmd and DumpPostUserCmd for rsync. 
         file_data.update(backup_arguments)
@@ -204,6 +204,16 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
 def add_folder_list(hostname, folder_list,address,scriptpre="None",scriptpost="None",include=""):
     for folder in folder_list:
         add_folder(hostname=hostname,folder=folder,address=address,scriptpre=scriptpre,scriptpost=scriptpost,include=include)
+
+
+def add_filter_to_path(hostname, path, backup_filter):
+    host_conf = conf_file_to_dict(hostname)
+    backup_filters = host_conf.get('BackupFilesOnly', {})
+
+    path_filters = backup_filters.get(path, []) + [backup_filter]
+    backup_filters[path] = path_filters
+
+    edit_conf_var(hostname, 'BackupFilesOnly', backup_filters)
 
 
 def rm_folder(hostname, folder):
