@@ -10,7 +10,8 @@ sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
 #Used when converting hash to json - replaces all instances of the first char with the second one. 
-hash_to_json_characters_map = [('\\', '\\\\'), ('\n', ''), ('=>', ':'), ('\'', '"'), (';', ','), ('=', ':')]
+#Backslashes are a nightmare; json likes to have double backslashes. So we take any already double backslashes and reduce them by half, and then double all backslashes. 
+hash_to_json_characters_map = [('\\\\', '\\'), ('\\', '\\\\'), ('\n', ''), ('=>', ':'), ('\'', '"'), (';', ','), ('=', ':')]
 json_to_hash_characters_map = [(':', '=>'), (':','='), ('"', '\'')]
 
 
@@ -191,8 +192,7 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
         return False
 
     method = get_host_protocol(hostname)
-    new_folders = host_conf[method].append(folder)
-
+    new_folders = host_conf[method] + [folder]
     edit_conf_var(hostname, method, new_folders)
     if method == 'rsync':
         if __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
@@ -208,7 +208,7 @@ def add_folder_list(hostname, folder_list,address,scriptpre="None",scriptpost="N
 
 def rm_folder(hostname, folder):
     hostname = hostname.lower()
-    method = host_conf['XferMethod']
+    host_conf = conf_file_to_dict(hostname)
     method = get_host_protocol(hostname)
     if os.path.exists(host_file(hostname)):
         host_conf = conf_file_to_dict(hostname)
@@ -225,12 +225,9 @@ def rm_folder(hostname, folder):
 def get_folders_from_config(hostname):
     conf_dir = host_file(hostname)
     host_protocol = get_host_protocol(hostname)
-#    default_protocol = get_host_protocol()
-
-#    default_share_name = shares[default_protocol]
 
     host_config = conf_file_to_dict(hostname)
-    folders = host_config.get(host_protocol)
+    folders = host_config.get(host_protocol, [])
 
     return folders
    
@@ -246,7 +243,7 @@ def list_folders(hostnames):
 
 def panel_list_folders(hostnames):
     data  = list_folders(hostnames)
-    data = [ {'app': key, 'path': v, 'include' : find_matching_shares(key, v)} for key,val in data.items() for v in val ]
+    data = [ {'app': key, 'path': v, 'include' : find_matching_shares(key, v)} for key in data for v in data[key] ]
     return data
 
 def listHosts():
@@ -261,7 +258,7 @@ def listHosts():
 
 def find_matching_shares(host, share_path):
     folders = []
-    shares = conf_file_to_dict(host)['BackupFilesOnly']
+    shares = conf_file_to_dict(host).get('BackupFilesOnly', [])
     for share in shares: 
         if fnmatch.fnmatch(share_path, share):
             folders += shares[share]
@@ -279,23 +276,21 @@ def panel_list_schedule():
     return host_schedule
 
 def get_full_period(hostname):
-    p = conf_file_to_dict(hostname).get('FullPeriod') or conf_file_to_dict('config')['FullPeriod'] + ' *'
+    p = conf_file_to_dict(hostname).get('FullPeriod') or get_global_config('FullPeriod') + ' *'
     return p
 
 def get_incr_period(hostname):
-    p = conf_file_to_dict(hostname).get('IncrPeriod') or conf_file_to_dict('config')['IncrPeriod']+" *"
+    p = conf_file_to_dict(hostname).get('IncrPeriod') or get_global_config('IncrPeriod')+" *"
     return p
 
 def get_full_max(hostname):
-    p = conf_file_to_dict(hostname).get('FullKeepCnt') or conf_file_to_dict('config')['FullKeepCnt']+" *"
+    p = conf_file_to_dict(hostname).get('FullKeepCnt') or get_global_config('FullKeepCnt')+" *"
     return p
 
 def get_incr_max(hostname):
  #   protocol = get_global_config('IncrKeepCnt', hostname) or "Global"
-    p = conf_file_to_dict(hostname).get('IncrKeepCnt') or conf_file_to_dict('config')['IncrKeepCnt']+" *"
+    p = conf_file_to_dict(hostname).get('IncrKeepCnt') or get_global_config('IncrKeepCnt')+" *"
     return p
-
-
 
 def append_host_status(host_list):
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status hosts'
@@ -312,8 +307,6 @@ def append_host_status(host_list):
         x['status'] = text[x['host']]['reason']
         x['error'] = text[x['host']].get('error', "-")
     return host_list
-
-
 
 def panel_statistics():
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status info'
@@ -453,8 +446,8 @@ def get_host_protocol(hostname = 'config'):
     host_conf = conf_file_to_dict(hostname)
     method = host_conf.get('XferMethod') or get_global_config('XferMethod')
     method_vars = {
-        'smb' : 'RsyncShareName',
-        'rsync' : 'SmbShareName'
+        'rsync' : 'RsyncShareName',
+        'smb' : 'SmbShareName'
     }
     protocol = method_vars[method]
 
