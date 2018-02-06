@@ -9,6 +9,7 @@ install-pkgs:
     - pkgs:
       - smbclient
       - netcat
+      - sshpass
     - require_in:
       - file: /etc/samba/smb.conf
 
