@@ -119,9 +119,22 @@ def get_ip(hostname):
     address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
     return address[address.keys()[0]][0]
 
+#Temporary functions
+#TODO: remove all add_*_host wrappers and just use the original add_host() function. 
+def add_smb_host(hostname, address, username, password):
+    backup_arguments = {
+        'SmbShareUserName' : username, 
+        'SmbSharePasswd' : password
+    }
+    return add_host(hostname, address, 'smb', backup_arguments)
+
+def add_rsync_host(hostname, address, password):
+
+    putkey_windows(hostname, password)
+    return add_host(hostname, address, 'rsync')
 
 #backup_arguments is a list of whatever other arugments we want, for instance {"SmbSharePasswd" : "pass", "SmbShareUserName" : "backuppc", "DumpPreUserCmd" : "arg", "DumpPostUserCmd" : "arg"}}
-def add_host(hostname,address=False,method='rsync', backup_arguments = {}): #scriptpre="None",scriptpost="None"):
+def add_host(hostname, address=None, method='rsync', backup_arguments = {}):
 
     #Holds initial file_data for all methods. 
     file_data_methods = {
@@ -139,12 +152,17 @@ def add_host(hostname,address=False,method='rsync', backup_arguments = {}): #scr
     hostname = hostname.lower()
 
     if not address:
-        address = get_ip(hostname)
+        try:
+            address = get_ip(hostname)
+        except: 
+            #TODO proper error handling
+            pass
 
     if not __salt__['file.file_exists'](host_file(hostname)):
         #If the file doesn't exist, we create the full file_data dict.
         file_data = file_data_methods[method]
-        file_data['ClientNameAlias'] = address 
+        if address:
+            file_data['ClientNameAlias'] = address 
 
         #Various arguments, like SmbSharePasswd and SmbShareUserName for smb shares and DumpPreUserCmd and DumpPostUserCmd for rsync. 
         file_data.update(backup_arguments)
@@ -165,6 +183,9 @@ def add_host(hostname,address=False,method='rsync', backup_arguments = {}): #scr
         write_dict_to_conf(file_data, hostname)
     else:
         edit_conf_var(hostname, 'ClientNameAlias', str(address))
+    
+    __salt__['service.reload']('backuppc')
+
     return True
 
 
@@ -196,10 +217,11 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
     edit_conf_var(hostname, method, new_folders)
     if method == 'rsync':
         if __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
-            __salt__['service.reload']('backuppc')
             return True
         else:
             return False
+
+    __salt__['service.reload']('backuppc')
 
 def add_folder_list(hostname, folder_list,address,scriptpre="None",scriptpost="None",include=""):
     for folder in folder_list:
@@ -276,7 +298,7 @@ def find_matching_shares(host, share_path):
 
 def panel_list_hosts():
     host_list = listHosts()
-    host_list = [{'host' : x, 'total_backups': backupTotals(x), 'protocol' : get_host_protocol(x)} for x in host_list]
+    host_list = [{'host' : x, 'total_backups': backupTotals(x), 'protocol' : get_host_protocol(x).replace('ShareName', '')} for x in host_list]
     host_list = append_host_status(host_list)
     return host_list
 
@@ -286,20 +308,20 @@ def panel_list_schedule():
     return host_schedule
 
 def get_full_period(hostname):
-    p = conf_file_to_dict(hostname).get('FullPeriod') or get_global_config('FullPeriod') + ' *'
+    p = conf_file_to_dict(hostname).get('FullPeriod') or pretty_global_config('FullPeriod') + ' *'
     return p
 
 def get_incr_period(hostname):
-    p = conf_file_to_dict(hostname).get('IncrPeriod') or get_global_config('IncrPeriod')+" *"
+    p = conf_file_to_dict(hostname).get('IncrPeriod') or pretty_global_config('IncrPeriod')+" *"
     return p
 
 def get_full_max(hostname):
-    p = conf_file_to_dict(hostname).get('FullKeepCnt') or get_global_config('FullKeepCnt')+" *"
+    p = conf_file_to_dict(hostname).get('FullKeepCnt') or pretty_global_config('FullKeepCnt')+" *"
     return p
 
 def get_incr_max(hostname):
  #   protocol = get_global_config('IncrKeepCnt', hostname) or "Global"
-    p = conf_file_to_dict(hostname).get('IncrKeepCnt') or get_global_config('IncrKeepCnt')+" *"
+    p = conf_file_to_dict(hostname).get('IncrKeepCnt') or pretty_global_config('IncrKeepCnt')+" *"
     return p
 
 def append_host_status(host_list):
@@ -308,14 +330,15 @@ def append_host_status(host_list):
     text = hashtodict(text)
     text = text.split('=')[1]
     text = text.replace(' undef' ,' \"undef\"')
-    text = text.replace('_' ,' ')
-    text = text.replace('Reason ' ,'')
+    text = text.replace('Reason_' ,'')
     text = text.replace('\\', '\\\\')
     text = json.loads(text)
 
     for x in host_list:
-        x['status'] = text[x['host']]['reason']
-        x['error'] = text[x['host']].get('error', "-")
+        x['status'] = text[x['host']].get('reason', '-')
+        x['status'] = x['status'].replace('_', ' ').capitalize()
+
+        x['error'] = text[x['host']].get('error', "-").replace('_', ' ').capitalize()
     return host_list
 
 def panel_statistics():
@@ -346,26 +369,19 @@ def panel_statistics():
 def panel_default_config():
     cmd = 'cat /etc/backuppc/config.pl'
     text =  __salt__['cmd.run'](cmd)
-#    text = conftodict(text)
-#New parser for this
-#$Conf{FullPeriod} = 6.97;
-#NINO
-#    text = text.split('=')[1]
-#    text = json.loads(text)
-    def_config = [{'key' : 'Full Backups period', 'value': float(get_global_config('FullPeriod'))},
-                  {'key' : 'Full Backups to keep (max)', 'value': float(get_global_config('FullKeepCnt'))},
-                  {'key' : 'Full Backups to keep (min)', 'value': float(get_global_config('FullKeepCntMin'))},
-                  {'key' : 'Remove Full Backups older then', 'value': float(get_global_config('FullAgeMax'))},
-                  {'key' : 'Incremental Backups period', 'value': float(get_global_config('IncrPeriod'))},
-                  {'key' : 'Incremental Backups to keep (max)', 'value': float(get_global_config('IncrKeepCnt'))},
-                  {'key' : 'Incremental Backups to keep (min)', 'value': float(get_global_config('IncrKeepCntMin'))},
-                  {'key' : 'Remove incremental Backups older then', 'value': float(get_global_config('IncrAgeMax'))}]
+    def_config = [{'key' : 'Full Backups period', 'value': get_global_config('FullPeriod')},
+                  {'key' : 'Full Backups to keep (max)', 'value': get_global_config('FullKeepCnt')},
+                  {'key' : 'Full Backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
+                  {'key' : 'Remove Full Backups older then', 'value': get_global_config('FullAgeMax')},
+                  {'key' : 'Incremental Backups period', 'value': get_global_config('IncrPeriod')},
+                  {'key' : 'Incremental Backups to keep (max)', 'value': get_global_config('IncrKeepCnt')},
+                  {'key' : 'Incremental Backups to keep (min)', 'value': get_global_config('IncrKeepCntMin')},
+                  {'key' : 'Remove incremental Backups older then', 'value': get_global_config('IncrAgeMax')}]
     return def_config
 
 
 
 def get_global_config(item, hostname = 'config'):
-#    item = get_item_from_conf(item, hostname) or get_item_from_conf(item, 'config')
     perl_simple_element = ['perl','-e', 'require "/etc/backuppc/%s.pl"; print $Conf{%s};' % (hostname, item)]
     perl_complex_element = ['perl', '-MJSON', '-e', 'require "/etc/backuppc/%s.pl"; $json_data = encode_json $Conf{%s}; print $json_data' % (hostname, item)]
 
@@ -374,6 +390,12 @@ def get_global_config(item, hostname = 'config'):
         item = json.loads(subprocess.check_output(perl_complex_element))
 
     return item
+
+def pretty_global_config(item, hostname = 'config'):
+    value = get_global_config(item, hostname)
+    if type(value) == list:
+        value = ', '.join([str(x) for x in value])
+    return value
 
     
 def get_item_from_conf(item, hostname = 'config'):
@@ -444,6 +466,8 @@ def write_dict_to_conf(data, hostname):
 def edit_conf_var(hostname, var, new_data):
     conf_data = conf_file_to_dict(hostname)
     conf_data[var] = new_data
+    if not conf_data[var]: 
+        conf_data.pop(var)
     return write_dict_to_conf(conf_data, hostname)
 
 
@@ -467,7 +491,11 @@ def get_host_protocol(hostname = 'config'):
 def backupNumbers(hostname):
     hostname = hostname.lower()
     limit = re.compile("^[0-9]*$")
-    dirs = [d for d in os.listdir('/var/lib/backuppc/pc/'+hostname+'/') if os.path.isdir(os.path.join('/var/lib/backuppc/pc/'+hostname+'/', d)) and limit.match(d)]
+    hostname_path = '/var/lib/backuppc/pc/'+hostname+'/'
+    if not os.path.isdir(hostname_path):
+        return []
+
+    dirs = [d for d in os.listdir(hostname_path) if os.path.isdir(os.path.join(hostname_path, d)) and limit.match(d)]
     return dirs
 
 def backupFiles(hostname, number = -1):
@@ -495,11 +523,11 @@ def backupFiles(hostname, number = -1):
         ffolders.append(value.replace('%2f','/'))
     return ffolders
 
-def start_backup(hostname, tip='Inc'):
+def start_backup(hostname, tip='Full'):
     hostname = hostname.lower()
     if tip == 'Inc':
         tip = '0'
-    elif tip == 'Full':
+    elif tip == 'Full' or tip is None:
         tip = '1'
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
     return __salt__['cmd.run'](cmd, runas='backuppc')
