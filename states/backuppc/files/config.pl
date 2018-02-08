@@ -979,7 +979,7 @@ $Conf{SmbClientPath} = '/usr/bin/smbclient';
 # redirection and pipes; put that in a script if you need it.
 #
 $Conf{SmbClientFullCmd} = '$smbClientPath \\\\$host\\$shareName'
-      . ' $I_option -U $userName -E -d 1'
+      . ' $I_option -U $userName -E -d 5'
             . ' -c tarmode\\ full -Tc$X_option - $fileList';
 
 #
@@ -993,7 +993,7 @@ $Conf{SmbClientFullCmd} = '$smbClientPath \\\\$host\\$shareName'
 # redirection and pipes; put that in a script if you need it.
 #
 $Conf{SmbClientIncrCmd} = '$smbClientPath \\\\$host\\$shareName'
-      . ' $I_option -U $userName -E -d 1'
+      . ' $I_option -U $userName -E -d 5'
       . ' -c tarmode\\ full -TcN$X_option $timeStampFile - $fileList';
 
 #
@@ -1011,7 +1011,7 @@ $Conf{SmbClientIncrCmd} = '$smbClientPath \\\\$host\\$shareName'
 # redirection and pipes; put that in a script if you need it.
 #
 $Conf{SmbClientRestoreCmd} = '$smbClientPath \\\\$host\\$shareName'
-            . ' $I_option -U $userName -E -d 1'
+            . ' $I_option -U $userName -E -d 5'
             . ' -c tarmode\\ full -Tx -';
 
 ###########################################################################
