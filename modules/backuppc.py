@@ -173,8 +173,8 @@ def add_host(hostname, address=None, method='rsync', backup_arguments = {}):
 
         if method == 'rsync':
             __salt__['event.send']('backuppc/copykey', fqdn=hostname)
-            __salt__['cmd.retcode'](cmd=rm_key+hostname, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-            __salt__['cmd.retcode'](cmd=sshcmd+hostname+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+            __salt__['cmd.retcode'](cmd=rm_key+get_ip(hostname), runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+            __salt__['cmd.retcode'](cmd=sshcmd+get_ip(hostname)+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
 
         elif method == 'smb':
             file_data['PingCmd'] = '/bin/nc -z $host 445'
@@ -216,7 +216,7 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
     new_folders = host_conf[method] + [folder]
     edit_conf_var(hostname, method, new_folders)
     if method == 'rsync':
-        if __salt__['cmd.retcode'](cmd=sshcmd+hostname+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
+        if __salt__['cmd.retcode'](cmd=sshcmd+get_ip(hostname)+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
             return True
         else:
             return False
