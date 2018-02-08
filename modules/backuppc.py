@@ -227,15 +227,35 @@ def add_folder_list(hostname, folder_list,address,scriptpre="None",scriptpost="N
     for folder in folder_list:
         add_folder(hostname=hostname,folder=folder,address=address,scriptpre=scriptpre,scriptpost=scriptpost,include=include)
 
-
-def add_filter_to_path(hostname, path, backup_filter):
+def get_filters_for_host(hostname, path):
     host_conf = conf_file_to_dict(hostname)
     backup_filters = host_conf.get('BackupFilesOnly', {})
 
-    path_filters = backup_filters.get(path, []) + [backup_filter]
+    return backup_filters
+
+def manage_host_filter(hostname, path, backup_filter, action = 'add'):
+    if not backup_filter: 
+        return
+
+    backup_filters = get_filters_for_host(hostname, path)
+
+    if action == 'add': 
+        path_filters = backup_filters.get(path, []) + [backup_filter]
+    elif action == 'remove' : 
+        path_filters = [x for x in backup_filters.get(path, []) if x != backup_filter]
+
+    else: 
+        raise Exception('Invalid action in manage_host_filter: ' + str(action))
+
     backup_filters[path] = path_filters
 
     edit_conf_var(hostname, 'BackupFilesOnly', backup_filters)
+
+def add_filter_to_path(hostname, path, backup_filter):
+    return manage_host_filter(hostname, path, backup_filter, 'add')
+
+def rm_filter_from_path(hostname, path, backup_filter):
+    return manage_host_filter(hostname, path, backup_filter, 'remove')
 
 
 def rm_folder(hostname, folder):
@@ -286,7 +306,6 @@ def listHosts():
                 word = line.split()
                 host_list.append(word[0])
     return host_list
-
 
 def find_matching_shares(host, share_path):
     folders = []
@@ -469,6 +488,20 @@ def edit_conf_var(hostname, var, new_data):
     if not conf_data[var]: 
         conf_data.pop(var)
     return write_dict_to_conf(conf_data, hostname)
+
+
+def change_fullperiod(hostname, new_data, var="FullPeriod"):
+    return edit_conf_var(hostname, var, new_data)
+
+def change_fullmax(hostname, new_data, var="FullKeepCnt"):
+    return edit_conf_var(hostname, var, new_data)
+
+def change_incrperiod(hostname, new_data, var="IncrPeriod"):
+    return edit_conf_var(hostname, var, new_data)
+
+def change_incrmax(hostname, new_data, var="IncrKeepCnt"):
+    return edit_conf_var(hostname, var, new_data)
+
 
 
 def backupTotals(hostname):
