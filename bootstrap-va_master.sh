@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e 
 
-if ! (  command lsb_release );then
+if ! (  command lsb_release);then
         apt-get update
         apt-get -y install lsb-release wget gnupg
 fi
@@ -9,7 +9,7 @@ fi
 
 version=$(lsb_release -cs)
 
-if [ $version != "stretch" ] && [ $version != "xenial" ]; then
+if [ $version != "stretch" ] && [ $version != "xenial" ] && [ $version != "jessie" ]; then
         echo "OS not supported"
         false
 fi
