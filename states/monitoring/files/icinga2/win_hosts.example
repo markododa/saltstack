@@ -14,10 +14,10 @@ object Host "Server 2" {
 
 #Additional checks
 
-# vars.host.vars.printserver="True"
-# vars.host.vars.mssql_server="True"
-# vars.host.vars.iis_server="True"
-# vars.host.vars.domain_controller="True"
+# vars.printserver="True"
+# vars.mssql_server="True"
+# vars.iis_server="True"
+# vars.domain_controller="True"
 
 }
 
