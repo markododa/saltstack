@@ -16,11 +16,18 @@
 {% set folders = ['/root/.va/backup'] %}
 {% endif %}
 
+add_host_to_backup:
+  local.backuppc.add_host:
+    - tgt: 'role:backup'
+    - expr_form: grain
+    - arg:
+      - {{ data['fqdn'] }}
+ 
 add_folders_to_backup:
   local.backuppc.add_folder_list:
     - tgt: 'role:backup'
     - expr_form: grain
     - arg:
-      - {{ data['fqdn'] }} 
-      - {{ folders }}
-      - {{ data['script_pre'] }}
+      - hostname={{ data['fqdn'] }} 
+      - folders={{ folders }}
+      - script_pre = {{ data['script_pre'] }}
