@@ -130,7 +130,7 @@ def add_smb_host(hostname, address, username, password):
     backup_arguments = {
         'SmbShareUserName' : username, 
         'SmbSharePasswd' : password, 
-        'FullKeepCnt' : [30, 0, 0, 1, 1, 4],
+        'FullKeepCnt' : [30, 0, 0, 1, 1, 4, 3],
         'FullPeriod' : 0.97,
         'IncrPeriod' : 300, 
         'PingCmd' : '/bin/nc -z $host 445', 
@@ -229,6 +229,32 @@ def add_folder(hostname, folder, backup_filter = ""):
 def add_folder_list(hostname, folder_list,address,scriptpre="None",scriptpost="None",include=""):
     for folder in folder_list:
         add_folder(hostname=hostname,folder=folder,address=address,scriptpre=scriptpre,scriptpost=scriptpost,include=include)
+
+def calculate_backup_periods(full_period, counters):
+    if type(counters) != list: 
+        counters = [counters]
+    counters = [int(x) for x in counters]
+    full_period = float(full_period)
+    full_period = (int(full_period * 24.0) + 1 )/ 24.0
+    periods = [0.0]
+    for i in range(len(counters)):
+        ctr = counters[i]
+        period = 2 ** i * full_period
+        for j in range(counters[i]):
+            new_val = periods[-1] + period
+            periods.append(new_val)
+
+    periods = [round(x, 2) for x in periods[1:]]
+    return periods
+
+
+def pretty_backup_periods(full_period, counters):
+    periods = calculate_backup_periods(full_period, counters)
+    periods = ', '.join([str(x) for x in periods]) + ', '
+    periods = periods.replace('.00', '')
+    periods = periods.replace('.0, ', ', ')
+    return periods
+
 
 def get_filters_for_host(hostname, path):
     host_conf = conf_file_to_dict(hostname)
@@ -392,13 +418,21 @@ def panel_statistics():
 def panel_default_config():
     cmd = 'cat /etc/backuppc/config.pl'
     text =  __salt__['cmd.run'](cmd)
-    def_config = [{'key' : 'Full Backups period', 'value': get_global_config('FullPeriod')},
-                  {'key' : 'Full Backups to keep (max)', 'value': get_global_config('FullKeepCnt')},
+    full_period = get_global_config('FullPeriod')
+    full_cnt = get_global_config('FullKeepCnt')
+    incr_period = get_global_config('IncrPeriod')
+    incr_cnt = get_global_config('IncrKeepCnt')
+
+    def_config = [{'key' : 'Full Backups period', 'value': full_period},
+                  {'key' : 'Full Backups to keep (max)', 'value': full_cnt},
                   {'key' : 'Full Backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
+                  {'key' : 'Full Backups sequence', 'value': pretty_backup_periods(full_period, full_cnt)},
                   {'key' : 'Remove Full Backups older then', 'value': get_global_config('FullAgeMax')},
                   {'key' : 'Incremental Backups period', 'value': get_global_config('IncrPeriod')},
-                  {'key' : 'Incremental Backups to keep (max)', 'value': get_global_config('IncrKeepCnt')},
-                  {'key' : 'Incremental Backups to keep (min)', 'value': get_global_config('IncrKeepCntMin')},
+                  {'key' : 'Incremental Backups to keep (max)', 'value': incr_period},
+                  {'key' : 'Incremental Backups to keep (min)', 'value': incr_cnt},
+                  {'key' : 'Incremental Backups sequence', 'value': pretty_backup_periods(incr_period, incr_cnt)},
+
                   {'key' : 'Remove incremental Backups older then', 'value': get_global_config('IncrAgeMax')}]
     return def_config
 
