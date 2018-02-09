@@ -117,71 +117,70 @@ def add_default_paths(hosts = []):
 def get_ip(hostname):
     hostname = hostname.lower()
     address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
-    return address[address.keys()[0]][0]
+    try:
+        address = address[address.keys()[0]][0]
+    except: #TODO proper handling and / or get it from dns
+        address = hostname
+
+    return address
 
 #Temporary functions
 #TODO: remove all add_*_host wrappers and just use the original add_host() function. 
 def add_smb_host(hostname, address, username, password):
     backup_arguments = {
         'SmbShareUserName' : username, 
-        'SmbSharePasswd' : password
+        'SmbSharePasswd' : password, 
+        'FullKeepCnt' : [30, 0, 0, 1, 1, 4],
+        'FullPeriod' : 0.97,
+        'IncrPeriod' : 300, 
+        'PingCmd' : '/bin/nc -z $host 445', 
+        'XferMethod' : 'smb',
+        'SmbShareName' : []
     }
     return add_host(hostname, address, 'smb', backup_arguments)
 
-def add_rsync_host(hostname, address, password):
+def add_rsync_host(hostname, address = None, password = None):
+    backup_arguments = {
+        'XferMethod' :'rsync',
+        'RsyncShareName': []
+    }
+    if password: 
+        putkey_windows(hostname, password)
 
-    putkey_windows(hostname, password)
-    return add_host(hostname, address, 'rsync')
+    add_host(hostname, address, 'rsync', backup_arguments)
+
+    __salt__['event.send']('backuppc/copykey', fqdn=hostname)
+    __salt__['cmd.retcode'](cmd=rm_key+get_ip(hostname), runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+    __salt__['cmd.retcode'](cmd=sshcmd+get_ip(hostname)+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+
+
+def add_archive_host(hostname):
+    backup_arguments = {
+        'XferMethod': 'archive'
+    }
+    return add_host(hostname, method = 'archive', backup_arguments = backup_arguments)
 
 #backup_arguments is a list of whatever other arugments we want, for instance {"SmbSharePasswd" : "pass", "SmbShareUserName" : "backuppc", "DumpPreUserCmd" : "arg", "DumpPostUserCmd" : "arg"}}
 def add_host(hostname, address=None, method='rsync', backup_arguments = {}):
 
-    #Holds initial file_data for all methods. 
-    file_data_methods = {
-        'rsync': {
-            'XferMethod' :'rsync',
-            'RsyncShareName': []
-        },
-        'archive' : {'XferMethod': 'archive'},
-        'smb' : {
-            'XferMethod' : 'smb',
-            'SmbShareName' : []
-        }
-    }
-
     hostname = hostname.lower()
-
     if not address:
-        try:
-            address = get_ip(hostname)
-        except: 
-            #TODO proper error handling
-            pass
+        address = get_ip(hostname) or hostname
 
     if not __salt__['file.file_exists'](host_file(hostname)):
         #If the file doesn't exist, we create the full file_data dict.
-        file_data = file_data_methods[method]
-        if address:
-            file_data['ClientNameAlias'] = address 
+        file_data = backup_arguments
 
-        #Various arguments, like SmbSharePasswd and SmbShareUserName for smb shares and DumpPreUserCmd and DumpPostUserCmd for rsync. 
-        file_data.update(backup_arguments)
+        file_data['ClientNameAlias'] = address 
 
         #Update backuppc folders
         __salt__['file.chown'](host_file(hostname), 'backuppc', 'www-data')
         __salt__['file.append'](backuppc_hosts, hostname+'       0       backuppc')
 
-        if method == 'rsync':
-            __salt__['event.send']('backuppc/copykey', fqdn=hostname)
-            __salt__['cmd.retcode'](cmd=rm_key+get_ip(hostname), runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-            __salt__['cmd.retcode'](cmd=sshcmd+get_ip(hostname)+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-
-        elif method == 'smb':
-            file_data['PingCmd'] = '/bin/nc -z $host 445'
-
         #Finally, we convert the dict to a config file. 
         write_dict_to_conf(file_data, hostname)
     else:
+        #TODO why is this even here? Looks like it should be in an edit_host function. 
         edit_conf_var(hostname, 'ClientNameAlias', str(address))
     
     __salt__['service.reload']('backuppc')
@@ -201,7 +200,7 @@ def rm_host(hostname):
     __salt__['service.reload']('backuppc')
     return retcode
 
-def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None",include=""):
+def add_folder(hostname, folder, backup_filter = ""):
     host_conf = conf_file_to_dict(hostname)
     hostname = hostname.lower()
 
@@ -215,11 +214,15 @@ def add_folder(hostname, folder,address=False,scriptpre="None",scriptpost="None"
     method = get_host_protocol(hostname)
     new_folders = host_conf[method] + [folder]
     edit_conf_var(hostname, method, new_folders)
+
     if method == 'rsync':
         if __salt__['cmd.retcode'](cmd=sshcmd+get_ip(hostname)+' test ! -d '+folder, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc'):
             return True
         else:
             return False
+
+    if backup_filter: 
+        add_filter_to_path(hostname, folder, backup_filter)
 
     __salt__['service.reload']('backuppc')
 
@@ -302,6 +305,7 @@ def listHosts():
     host_list = []
     with open(backuppc_hosts, "r") as h:
         for line in h:
+            
             if '#' not in line and line != '\n':
                 word = line.split()
                 host_list.append(word[0])
@@ -482,27 +486,44 @@ def write_dict_to_conf(data, hostname):
         f.write(data)
 
 
-def edit_conf_var(hostname, var, new_data):
+def edit_conf_var(hostname, var, new_data, data_type = None):
     conf_data = conf_file_to_dict(hostname)
-    conf_data[var] = new_data
-    if not conf_data[var]: 
-        conf_data.pop(var)
+
+    if not new_data:
+        if var in conf_data.keys():
+            conf_data.pop(var)
+
+    else:
+        if data_type:
+            try:
+                if data_type == list: 
+                    new_data = [x.strip() for x in new_data.split(',')]
+                else:
+                    new_data = data_type(new_data)
+            except Exception as e:
+                raise Exception("Error converting conf var " + str(new_data) + " to data_type " + str(data_type) + ": " + e.message)
+
+        conf_data[var] = new_data
     return write_dict_to_conf(conf_data, hostname)
 
 
 def change_fullperiod(hostname, new_data, var="FullPeriod"):
-    return edit_conf_var(hostname, var, new_data)
+    return edit_conf_var(hostname, var, new_data, data_type = int)
 
 def change_fullmax(hostname, new_data, var="FullKeepCnt"):
-    return edit_conf_var(hostname, var, new_data)
+    return edit_conf_var(hostname, var, new_data, data_type = list)
 
 def change_incrperiod(hostname, new_data, var="IncrPeriod"):
-    return edit_conf_var(hostname, var, new_data)
+    return edit_conf_var(hostname, var, new_data, data_type = int)
 
 def change_incrmax(hostname, new_data, var="IncrKeepCnt"):
-    return edit_conf_var(hostname, var, new_data)
+    return edit_conf_var(hostname, var, new_data, data_type = list)
 
-
+def reset_schedule(hostname):
+    change_fullperiod(hostname, None)
+    change_fullmax(hostname, None)
+    change_incrperiod(hostname, None)
+    change_incrmax(hostname, None)
 
 def backupTotals(hostname):
     totalb = len(backupNumbers(hostname)) 
@@ -514,7 +535,8 @@ def get_host_protocol(hostname = 'config'):
     method = host_conf.get('XferMethod') or get_global_config('XferMethod')
     method_vars = {
         'rsync' : 'RsyncShareName',
-        'smb' : 'SmbShareName'
+        'smb' : 'SmbShareName',
+        'archive' : 'Archive',
     }
     protocol = method_vars[method]
 
@@ -565,9 +587,13 @@ def start_backup(hostname, tip='Full'):
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
     return __salt__['cmd.run'](cmd, runas='backuppc')
 
-def start_archive(hostname):
-#NINO
-    return "Creating archive started..."
+def create_archive(hostname):
+    protocol = get_host_protocol(hostname)
+    if protocol == 'Archive' : 
+        return "Cannot create archive on host %s: Protocol for the host is archive. " % (hostname)
+    cmd = '/usr/share/backuppc/bin/BackupPC_archiveStart archive backuppc %s' % (hostname)
+    result = __salt__['cmd.run'](cmd, runas = 'backuppc')
+    return result
 
 def putkey_windows(hostname, password, username='root', port=22):
     hostname = hostname.lower()
