@@ -38,6 +38,7 @@ def get_panel(panel_name, server_name = '', backupNum = -1):
         return ppanel
     elif panel_name == "backup.schedule":
         ppanel['tbl_source']['table'] = panel_list_schedule()
+        ppanel['tbl_source']['table2'] = panel_list_sequences()
         return ppanel
 
     elif panel_name == "backup.manage":
@@ -130,9 +131,10 @@ def add_smb_host(hostname, address, username, password):
     backup_arguments = {
         'SmbShareUserName' : username, 
         'SmbSharePasswd' : password, 
-        'FullKeepCnt' : [30, 0, 0, 1, 1, 4, 3],
+        'FullKeepCnt' : [15, 0, 2, 1, 2, 5, 2],
         'FullPeriod' : 0.97,
-        'IncrPeriod' : 300, 
+        'IncrPeriod' : 10, 
+        'IncrKeepCnt' : 0, 
         'PingCmd' : '/bin/nc -z $host 445', 
         'XferMethod' : 'smb',
         'SmbShareName' : []
@@ -235,7 +237,7 @@ def calculate_backup_periods(full_period, counters):
         counters = [counters]
     counters = [int(x) for x in counters]
     full_period = float(full_period)
-    full_period = (int(full_period * 24.0) + 1 )/ 24.0
+    full_period = (int((full_period - 0.001) * 24.0) + 1 )/ 24.0
     periods = [0.0]
     for i in range(len(counters)):
         ctr = counters[i]
@@ -253,6 +255,8 @@ def pretty_backup_periods(full_period, counters):
     periods = ', '.join([str(x) for x in periods]) + ', '
     periods = periods.replace('.00', '')
     periods = periods.replace('.0, ', ', ')
+    periods = periods.rstrip(' ')
+    periods = periods.rstrip(',')
     return periods
 
 
@@ -331,8 +335,8 @@ def listHosts():
     host_list = []
     with open(backuppc_hosts, "r") as h:
         for line in h:
-            
-            if '#' not in line and line != '\n':
+            # NINO should test for method and skip archives... quick fix by name
+            if '#' not in line and 'archive' not in line and line != '\n':
                 word = line.split()
                 host_list.append(word[0])
     return host_list
@@ -355,6 +359,26 @@ def panel_list_schedule():
     host_schedule = listHosts()
     host_schedule = [{'host' : x, 'fullperiod': get_full_period(x), 'fullmax': get_full_max(x),'incrperiod': get_incr_period(x),'incrmax': get_incr_max(x)} for x in host_schedule]
     return host_schedule
+
+
+def panel_list_sequences():
+    host_seq = listHosts()
+    host_seq = [{'host' : x, 'fullseq': calc_full_seq(x), 'incrseq': calc_incr_seq(x)} for x in host_seq]
+    return host_seq
+
+
+def calc_full_seq(hostname):
+    full_period = conf_file_to_dict(hostname).get('FullPeriod') or get_global_config('FullPeriod')
+    full_cnt = conf_file_to_dict(hostname).get('FullKeepCnt') or get_global_config('FullKeepCnt')
+    sequence = pretty_backup_periods(full_period, full_cnt)
+    return sequence
+
+def calc_incr_seq(hostname):
+    incr_period = conf_file_to_dict(hostname).get('IncrPeriod') or get_global_config('IncrPeriod')
+    incr_cnt = conf_file_to_dict(hostname).get('IncrKeepCnt') or get_global_config('IncrKeepCnt')
+    sequence = pretty_backup_periods(incr_period, incr_cnt) 
+    return sequence
+
 
 def get_full_period(hostname):
     p = conf_file_to_dict(hostname).get('FullPeriod') or pretty_global_config('FullPeriod') + ' *'
@@ -426,15 +450,16 @@ def panel_default_config():
     def_config = [{'key' : 'Full Backups period', 'value': full_period},
                   {'key' : 'Full Backups to keep (max)', 'value': full_cnt},
                   {'key' : 'Full Backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
-                  {'key' : 'Full Backups sequence', 'value': pretty_backup_periods(full_period, full_cnt)},
+                  {'key' : 'Full Backups sequence (days)', 'value': pretty_backup_periods(full_period, full_cnt)},
                   {'key' : 'Remove Full Backups older then', 'value': get_global_config('FullAgeMax')},
                   {'key' : 'Incremental Backups period', 'value': get_global_config('IncrPeriod')},
                   {'key' : 'Incremental Backups to keep (max)', 'value': incr_period},
                   {'key' : 'Incremental Backups to keep (min)', 'value': incr_cnt},
-                  {'key' : 'Incremental Backups sequence', 'value': pretty_backup_periods(incr_period, incr_cnt)},
+                  {'key' : 'Incremental Backups sequence (days)', 'value': pretty_backup_periods(incr_period, incr_cnt)},
 
                   {'key' : 'Remove incremental Backups older then', 'value': get_global_config('IncrAgeMax')}]
     return def_config
+
 
 
 
@@ -511,6 +536,10 @@ def conf_file_to_dict(hostname):
         conf = f.read()
 
     conf = conf_to_json(conf)
+
+    #Some values are 0s which makes it annoying to deal with type checking
+    #So we convert all integer 0s to strings. 
+    conf = {x : conf[x] if conf[x]!= 0 else '0' for x in conf}
     return conf
 
 def write_dict_to_conf(data, hostname):
@@ -519,16 +548,15 @@ def write_dict_to_conf(data, hostname):
     with open(conf_file, 'w') as f: 
         f.write(data)
 
-
 def edit_conf_var(hostname, var, new_data, data_type = None):
     conf_data = conf_file_to_dict(hostname)
 
-    if not new_data:
+    if new_data is None:
         if var in conf_data.keys():
             conf_data.pop(var)
 
     else:
-        if data_type:
+        if data_type and type(var) != data_type:
             try:
                 if data_type == list: 
                     new_data = [x.strip() for x in new_data.split(',')]
@@ -542,22 +570,35 @@ def edit_conf_var(hostname, var, new_data, data_type = None):
 
 
 def change_fullperiod(hostname, new_data, var="FullPeriod"):
-    return edit_conf_var(hostname, var, new_data, data_type = int)
+    return edit_conf_var(hostname, var, new_data, data_type = float)
 
 def change_fullmax(hostname, new_data, var="FullKeepCnt"):
     return edit_conf_var(hostname, var, new_data, data_type = list)
 
+
+#edit_conf_var hostname "FullKeepCnt" ['15', '0', '2', '1', '2', '5', '2'] data_type = list
+
 def change_incrperiod(hostname, new_data, var="IncrPeriod"):
-    return edit_conf_var(hostname, var, new_data, data_type = int)
+    return edit_conf_var(hostname, var, new_data, data_type = float)
 
 def change_incrmax(hostname, new_data, var="IncrKeepCnt"):
-    return edit_conf_var(hostname, var, new_data, data_type = list)
+    return edit_conf_var(hostname, var, new_data, data_type = int)
 
 def reset_schedule(hostname):
-    change_fullperiod(hostname, None)
-    change_fullmax(hostname, None)
-    change_incrperiod(hostname, None)
-    change_incrmax(hostname, None)
+    protocol = get_host_protocol(hostname)
+    default_values = (None, ) * 4
+    if protocol == 'SmbShareName': 
+        default_values = (0.97, '15, 0, 2, 1, 2, 5, 2', 10, '0')
+    if protocol == 'RsyncShareName': 
+        pass
+ #       default_values = (1, ['15', '0', '2', '1', '2', '5', '2'], 10, '0')  #Redosled e: (FullPeriod, FullMax, IncrPeriod, IncrMax)
+
+    change_fullperiod(hostname, default_values[0]) 
+    change_fullmax(hostname, default_values[1])
+    change_incrperiod(hostname, default_values[2]) 
+    change_incrmax(hostname, default_values[3])
+    return "Schedule is set to recommended values for specified protocol"
+
 
 def backupTotals(hostname):
     totalb = len(backupNumbers(hostname)) 
