@@ -30,5 +30,5 @@
     }
     ],
     "path": "-",
-    "panels": {"admin": [{"key": "backup.hosts", "name": "Manage sources"},{"key": "backup.manage", "name": "Manage paths"}, {"key": "backup.browse", "name": "Browse backups"}, {"key": "backup.overview", "name": "Overview"}], "user": []}
+    "panels": {"admin": [{"key": "backup.hosts", "name": "Sources and backups"},{"key": "backup.manage", "name": "Paths and filters"},{"key": "backup.schedule", "name": "Schedule"}, {"key": "backup.overview", "name": "Overview"}], "user": []}
 }
