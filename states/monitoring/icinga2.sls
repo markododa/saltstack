@@ -124,6 +124,14 @@ check_functionality_monitoring:
     - group: root
     - mode: 755
 
+restart_functionality_monitoring:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/restart_functionality.sh
+    - source: salt://monitoring/files/restart_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+
 icinga2:
   service.running: []
   
