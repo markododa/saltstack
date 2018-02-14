@@ -3,9 +3,10 @@
 {% if salt['cmd.retcode']("which mysqld") == 0 or grains['host'] in ['va-owncloud','va-monitoring'] %}
 {% set script_pre = "/root/.va/db-backup.sh" %}
 
-/root/.va/backup:
-  file.directory:
+/root/.va/backup/readme:
+  file.append:
     - makedirs: True
+    - text: Backup folder for database dumps
 
 /root/.va/db-backup.sh:
   file.managed:
