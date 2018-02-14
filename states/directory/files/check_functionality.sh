@@ -5,29 +5,36 @@
 exitstate=0
 text=""
 
-OUT=`sudo pdbedit -Lv | grep 'administratively locked out' | wc -l`
+OUT=`timeout 10 bash -c "sudo pdbedit -Lv | grep 'administratively locked out' | wc -l"`
+if [ "$?" -eq 0 ];then
 if [ $OUT -eq 0 ];then
    text=$text"No locked users"
 else
     text=$text"Locked accounts: $OUT!"
    exitstate=1
 fi
+fi
 
-OUT=`wbinfo -u | wc -l`
+OUT=`timeout 10 bash -c "wbinfo -u | wc -l"`
+if [ "$?" -eq 0 ];then
 if [ $OUT -eq 0 ];then
     text=$text', '"No users!"
    exitstate=2
 else
     text=$text', '"Users: $OUT"
 fi
+fi
 
-OUT=`sudo samba-tool group list | wc -l`
+OUT=`timeout 10 bash -c "sudo samba-tool group list | wc -l"`
+if [ "$?" -eq 0 ];then
 if [ $OUT -eq 0 ];then
     text=$text', '"No groups!"
    exitstate=2
 else
     text=$text', '"Groups: $OUT"
 fi
+fi
+
 #OUT=`cat /etc/passwd | wc -l`
 #if [ $OUT -eq 0 ];then
 #    text=$text', '"No local users!"
@@ -46,48 +53,58 @@ fi
 #fi
 
 
-sudo samba-tool dbcheck -d 0  > /dev/null
-OUT=$?
-if [ $OUT -eq 0 ];then
-    text=$text #', '"Database OK"
-else
-    text=$text', '"Database corrupted!"
-   exitstate=2
-fi
+#timeout 10 bash -c "sudo samba-tool dbcheck -d 0  > /dev/null"
+#OUT=$?
+#if [ "$OUT" -ne 124 ];then
+#if [ "$OUT" -eq 0 ];then
+#    text=$text #', '"Database OK"
+#else
+#    text=$text', '"Database corrupted!"
+#   exitstate=2
+#fi
+#fi
 
-sudo samba-tool drs kcc -d 0 > /dev/null
-OUT=$?
-if [ $OUT -eq 0 ];then
-    text=$text', '"Consistency OK"
-else
-    text=$text', '"Consistency problem!"
-   exitstate=2
-fi
+#timeout 10 bash -c "sudo samba-tool drs kcc -d 0 > /dev/null"
+#OUT=$?
+#if [ "$OUT" -ne 124 ];then
+#if [ "$OUT" -eq 0 ];then
+#    text=$text', '"Consistency OK"
+#else
+#    text=$text', '"Consistency problem!"
+#   exitstate=2
+#fi
+#fi
 
-OUT=`sudo samba-tool drs showrepl | grep 'Last attempt @' | grep 'failed, result' | wc -l`
-if [ $OUT -eq 0 ];then
-    text=$text', '"Replication OK"
-else
-    text=$text', '$OUT "Replication problem(s)!"
-   exitstate=2
-fi
+#OUT=`timeout 10 bash -c "sudo samba-tool drs showrepl | grep 'Last attempt @' | grep 'failed, result' | wc -l"`
+#if [ "$?" -ne 124 ];then
+#if [ $OUT -eq 0 ];then
+#    text=$text', '"Replication OK"
+#else
+#    text=$text', '$OUT "Replication problem(s)!"
+#   exitstate=2
+#fi
+#fi
 
-smbclient -L $(hostname) -N -d 0 > /dev/null
+timeout 10 bash -c "smbclient -L $(hostname) -N -d 0 > /dev/null"
 OUT=$?
-if [ $OUT -eq 0 ];then
+if [ "$OUT" -ne 124 ];then
+if [ "$OUT" -eq 0 ];then
     text=$text', '"Shares OK"
 else
     text=$text', '"Shares problem!"
    exitstate=2
 fi
+fi
 
-smbstatus -d 0 > /dev/null
+timeout 10 bash -c "smbstatus -d 0 > /dev/null"
 OUT=$?
-if [ $OUT -eq 0 ];then
+if [ "$OUT" -ne 124 ];then
+if [ "$OUT" -eq 0 ];then
     text=$text', '"Samba status OK"
 else
     text=$text', '"Samba status problem!"
    exitstate=2
+fi
 fi
 
 DNS1=`nslookup $(hostname) | grep 'Address: ' | md5sum | awk -F " " '{print $1}'`
