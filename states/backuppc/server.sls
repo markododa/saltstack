@@ -145,6 +145,13 @@ chmod +x /usr/bin/backuppc_servermsg:
   file.append:
     - text: "nagios ALL = (backuppc) NOPASSWD: /usr/share/backuppc/bin/BackupPC_serverMesg"
 
+/etc/backuppc/archive.pl:
+  file.append:
+    - text: "$Conf{XferMethod} = 'archive';"
+    - user: backuppc
+    - group: backuppc
+    - mode: 0755
+
 backuppc-restart:
   service.running:
     - name: backuppc
