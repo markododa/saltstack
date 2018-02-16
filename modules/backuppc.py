@@ -82,11 +82,13 @@ def dir_structure1(host, *args):
     result = []
     for key,val in data.items():
         type = 'folder' if val is not None else 'file'
-        size = time = '/'
+        time = '/'
+        size = '...'
         if key in attrib:
             a = attrib[key]
             size, time = (a['size'], a['time'])
-        if size != '/' and time != '/': 
+#        if not (siz///': 
+        if type == 'folder' or size != '...': 
             result.append({'dir': key, 'type': type, 'size': size, 'time': time});
     if check:
         return {'val': backupNum, 'list': result}
@@ -401,6 +403,7 @@ def append_host_status(host_list):
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status hosts'
     text =  __salt__['cmd.run'](cmd, runas='backuppc')
     text = hashtodict(text)
+    #NINO nekogash paga na ovoj split podolu.. ako ne uspee neka izleze kulturno inaku panelot voopsto ne se prikazuva
     text = text.split('=')[1]
     text = text.replace(' undef' ,' \"undef\"')
     text = text.replace('Reason_' ,'')
@@ -412,6 +415,7 @@ def append_host_status(host_list):
         x['status'] = x['status'].replace('_', ' ').capitalize()
 
         x['error'] = text[x['host']].get('error', "-").replace('_', ' ').capitalize()
+        x['address'] = conf_file_to_dict(x['host']).get('ClientNameAlias')
     return host_list
 
 def panel_statistics():
@@ -447,17 +451,16 @@ def panel_default_config():
     incr_period = get_global_config('IncrPeriod')
     incr_cnt = get_global_config('IncrKeepCnt')
 
-    def_config = [{'key' : 'Full Backups period', 'value': full_period},
-                  {'key' : 'Full Backups to keep (max)', 'value': full_cnt},
-                  {'key' : 'Full Backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
-                  {'key' : 'Full Backups sequence (days)', 'value': pretty_backup_periods(full_period, full_cnt)},
-                  {'key' : 'Remove Full Backups older then', 'value': get_global_config('FullAgeMax')},
-                  {'key' : 'Incremental Backups period', 'value': get_global_config('IncrPeriod')},
-                  {'key' : 'Incremental Backups to keep (max)', 'value': incr_period},
-                  {'key' : 'Incremental Backups to keep (min)', 'value': incr_cnt},
-                  {'key' : 'Incremental Backups sequence (days)', 'value': pretty_backup_periods(incr_period, incr_cnt)},
-
-                  {'key' : 'Remove incremental Backups older then', 'value': get_global_config('IncrAgeMax')}]
+    def_config = [{'key' : 'Full backups interval (days)', 'value': full_period},
+                  {'key' : 'Full backups to keep (max)', 'value': full_cnt},
+                  {'key' : 'Full backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
+                  {'key' : 'Full backups sequence (days)', 'value': pretty_backup_periods(full_period, full_cnt)},
+                  {'key' : 'Remove full backups older then', 'value': get_global_config('FullAgeMax')},
+                  {'key' : 'Incremental backups interval (days)', 'value': get_global_config('IncrPeriod')},
+                  {'key' : 'Incremental backups to keep (max)', 'value': incr_period},
+                  {'key' : 'Incremental backups to keep (min)', 'value': incr_cnt},
+                  {'key' : 'Incremental backups sequence (days)', 'value': pretty_backup_periods(incr_period, incr_cnt)},
+                  {'key' : 'Remove incremental backups older then', 'value': get_global_config('IncrAgeMax')}]
     return def_config
 
 
@@ -567,6 +570,14 @@ def edit_conf_var(hostname, var, new_data, data_type = None):
 
         conf_data[var] = new_data
     return write_dict_to_conf(conf_data, hostname)
+
+
+def change_address(hostname, new_data, var="ClientNameAlias"):
+    return edit_conf_var(hostname, var, new_data, data_type = str)
+
+def change_password(hostname, new_data, var="SmbSharePasswd"):
+    return edit_conf_var(hostname, var, new_data, data_type = str)
+
 
 
 def change_fullperiod(hostname, new_data, var="FullPeriod"):
@@ -822,9 +833,21 @@ def download_zip(hostname, backupnumber = -1, share = '', path = '.', range_from
 def restore_backup(hostname, backupnumber = -1, share = '',  path = '.', restore_host=''):
     if restore_host == '':
         restore_host=hostname
+    protocol = get_host_protocol(hostname)
     tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate'
-    args = ' -h '+hostname+' -n '+str(backupnumber)+' -s '+share+' '+path+' | ssh root@'+restore_host+' tar xf - -C '+share
-    return __salt__['cmd.run'](tar_create_cmd+args,runas='backuppc', cwd = '/usr/lib/backuppc/',python_shell=True)
+
+    if protocol == 'SmbShareName':
+        address = conf_file_to_dict(restore_host).get('ClientNameAlias') or hostname
+        user = conf_file_to_dict(hostname).get('SmbShareUserName')
+        winpass = conf_file_to_dict(hostname).get('SmbSharePasswd')
+        args = ' -h '+hostname+' -n '+str(backupnumber)+' -s \''+share+'\' \''+path+'\' | /usr/bin/smbclient \'\\\\' +address+'\\'+share+'\' -U '+user+'%'+winpass+'  -E -d 5 -c tarmode\ full -Tx -'
+        #args = ' -h '+hostname+' -n '+str(backupnumber)+' -s '+share+' '+path+' | /usr/bin/smbclient \'\\' +restore_host+share'  -E -d 6 -c tarmode\ full -Tx -'
+        __salt__['cmd.run'](tar_create_cmd+args,runas='backuppc', cwd = '/usr/lib/backuppc/',python_shell=True)
+        return "Restoring..."
+
+    elif protocol == 'RsynchareName':
+        args = ' -h '+hostname+' -n '+str(backupnumber)+' -s '+share+' '+path+' | ssh root@'+restore_host+' tar xf - -C '+share
+        return __salt__['cmd.run'](tar_create_cmd+args,runas='backuppc', cwd = '/usr/lib/backuppc/',python_shell=True)
 
 #This is a temporary 'hack', until we figure out what we really want to do. 
 restore = restore_backup

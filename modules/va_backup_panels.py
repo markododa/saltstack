@@ -472,7 +472,7 @@ panel = {
 			}, {
 				"type": "Table",
 				"name": "table",
-				"reducers": ["table", "panel", "alert"],
+				"reducers": ["table", "panel", "modal", "alert"],
 				"subpanels": {
 					"link": "backup.info"
 				},
@@ -483,8 +483,11 @@ panel = {
 						"colClass": "link"
 					}, {
 						"key": "total_backups",
-						"label": "Total backups",
-					}, {
+						"label": "Backups",
+					},{
+                                                "key": "address",
+                                                "label": "Address",
+                                        },{
 						"key": "protocol",
 						"label": "Protocol"
 					}, {
@@ -500,19 +503,107 @@ panel = {
 				],
 				"actions": [{
 						"action": "start_backup",
-						"name": "Backup Now",
+						"name": "Backup now",
 					}, {
-						"action": "create_archive",
-						"name": "Create Archive",
-						"class": "danger"
+                                                "action": "create_archive",
+                                                "name": "Create archive",
+                                                "class": "danger"
 
+                                        }, {
+                                                "action": "change_address",
+                                                "name": "Edit address"
+
+                                        }, {
+						"action": "change_password",
+						"name": "Update password"
 					}, {
 						"action": "rm_host",
-						"name": "Remove Source",
+						"name": "Remove source",
 						"class": "danger"
 					}
 				],
-				"id": ["host"]
+				"id": ["host"],
+"modals": {
+
+	"change_address": {
+		"title": "Edit address for the host",
+		"buttons": [{
+				"type": "Button",
+				"name": "Cancel",
+				"action": "cancel"
+			}, {
+				"type": "Button",
+				"name": "Change",
+				"class": "primary",
+				"action": "change_address"
+			}
+		],
+		"content": [{
+				"type": "Form",
+				"name": "form",
+				"class": "left",
+				"elements": [{
+						"type": "text",
+						"name": "value",
+						"value": "",
+						"label": "New value"
+					}
+				]
+			}, {
+				"type": "Div",
+				"name": "div",
+				"class": "right",
+				"elements": [{
+						"type": "Heading",
+						"name": "Fill the form to change the value"
+					}, {
+						"type": "Paragraph",
+						"name": "Enter IP address or hostname. Make sure the DNS used can resolve the hostname"
+					}
+				]
+			}
+		]
+	},
+	"change_password": {
+		"title": "Update Windows password",
+		"buttons": [{
+				"type": "Button",
+				"name": "Cancel",
+				"action": "cancel"
+			}, {
+				"type": "Button",
+				"name": "Change",
+				"class": "primary",
+				"action": "change_password"
+			}
+		],
+		"content": [{
+				"type": "Form",
+				"name": "form",
+				"class": "left",
+				"elements": [{
+						"type": "text",
+						"name": "value",
+						"value": "",
+						"label": "New value"
+					}
+				]
+			}, {
+				"type": "Div",
+				"name": "div",
+				"class": "right",
+				"elements": [{
+						"type": "Heading",
+						"name": "Fill the form to change the value"
+					}, {
+						"type": "Paragraph",
+						"name": "Enter the new password if it is cahnged on the Windows source"
+					}
+				]
+			}
+		]
+	}
+}
 			}
 		]
 	},
@@ -621,16 +712,16 @@ panel = {
 						"label": "Source",
 					}, {
 						"key": "fullperiod",
-						"label": "Days between Full backups",
+						"label": "Days between full backups",
 					}, {
 						"key": "fullmax",
 						"label": "Full backups count",
 					}, {
 						"key": "incrperiod",
-						"label": "Days between Incr backups",
+						"label": "Days between incr. backups",
 					}, {
 						"key": "incrmax",
-						"label": "Incr Backups count",
+						"label": "Incr. backups count",
 					}, {
 						"key": "action",
 						"label": "Actions"
@@ -638,16 +729,16 @@ panel = {
 				],
 				"actions": [{
 						"action": "change_fullperiod",
-						"name": "Change Full Period",
+						"name": "Change full interval",
 					}, {
 						"action": "change_fullmax",
-						"name": "Change Full Count"
+						"name": "Change full count"
 					}, {
 						"action": "change_incrperiod",
-						"name": "Change Incr Period"
+						"name": "Change incr. interval"
 					}, {
 						"action": "change_incrmax",
-						"name": "Change Incr Count"
+						"name": "Change incr. count"
 					}, {
 						"action": "reset_schedule",
 						"name": "Use recommended values",
@@ -659,7 +750,7 @@ panel = {
 				"id": ["host"],
 				"modals": {
 					"change_fullperiod": {
-						"title": "Period between Full backups",
+						"title": "Time between Full backups",
 						"buttons": [{
 								"type": "Button",
 								"name": "Cancel",
@@ -699,7 +790,7 @@ panel = {
 					},
 
 					"change_fullmax": {
-						"title": "Maximum number of Full backups",
+						"title": "Maximum number of full backups",
 						"buttons": [{
 								"type": "Button",
 								"name": "Cancel",
@@ -739,7 +830,7 @@ panel = {
 					},
 
 					"change_incrperiod": {
-						"title": "Period between Incremental backups",
+						"title": "Interval between incremental backups",
 						"buttons": [{
 								"type": "Button",
 								"name": "Cancel",
@@ -779,7 +870,7 @@ panel = {
 					},
 
 					"change_incrmax": {
-						"title": "Maximum number of Incremental backups",
+						"title": "Maximum number of incremental backups",
 						"buttons": [{
 								"type": "Button",
 								"name": "Cancel",
@@ -830,11 +921,11 @@ panel = {
 
 					}, {
 						"key": "fullseq",
-						"label": "Full Backups Sequence (days)",
+						"label": "Full backups sequence (days)",
 
 					}, {
 						"key": "incrseq",
-						"label": "Incr Backup Sequence (days)",
+						"label": "Incr. backups Sequence (days)",
                                                 "width": "25%"
 
 					}
