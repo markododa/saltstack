@@ -11,17 +11,35 @@ def check_functionality():
     bash_cmd = '/usr/lib/nagios/plugins/check_functionality.sh'
     try:
         out = subprocess.check_output([bash_cmd])
+        out = out.split('|')[0]
         returncode = [{"status":"OK", "output":out}]
     except subprocess.CalledProcessError as e:
         out = ''
         if e.returncode == 1:
-            returncode = [{"status":"WARNING", "output":e.output}]
+            returncode = [{"status":"WARNING", "output":e.output.split('|')[0]}]
         else:
-            returncode = [{"status":"CRITICAL", "output":e.output}]
+            returncode = [{"status":"CRITICAL", "output":e.output.split('|')[0]}]
 
     return returncode
 
 panel_check_functionality = check_functionality
+
+
+def restart_functionality(status):
+    bash_cmd = '/usr/lib/nagios/plugins/restart_functionality.sh'
+    try:
+        out = subprocess.check_output([bash_cmd])
+        out = out.split('|')[0]
+        returncode = "Restarting services was OK"
+    except subprocess.CalledProcessError as e:
+        out = ''
+        if e.returncode == 1:
+            returncode = "Problem with service configuration, aborting restart"
+        else:
+            returncode = "Restarting services was NOT successful"
+
+    return returncode
+
 
 def get_time_zone():
     result = __salt__['timezone.get_zone']()
@@ -77,10 +95,10 @@ def get_panel(module_name, panel_name, *args, **kwargs):
     kwargs = {x : kwargs[x] for x in kwargs if x[0] != '_'}
     if module_name + '.get_panel' in __salt__:
 
-        try:
+#        try:
             panel =  __salt__[module_name + '.get_panel'](panel_name, *args, **kwargs)
-        except: 
-            panel = None
+#        except: 
+#            panel = None
     if panel: 
         return panel
 
