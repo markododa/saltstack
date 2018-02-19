@@ -6,10 +6,10 @@ exitstate=0
 text=""
 
 
-#OUT=`sudo -u www-data /mnt/va-owncloud/owncloud/occ --version`
+#OUT=`sudo -u www-data /var/www/owncloud/occ --version`
 #text=$OUT":"
 
-OUT=`sudo -u www-data /mnt/va-owncloud/owncloud/occ ldap:show-remnants | wc -l`
+OUT=`sudo -u www-data /var/www/owncloud/occ ldap:show-remnants | wc -l`
 OUT=$(($OUT-3))
 if [ $OUT -eq 0 ];then
     text="No ghost profiles"
@@ -41,10 +41,10 @@ else
 	#', '"Groups: $OUT"
 fi
 
-DIS=`sudo -u www-data /mnt/va-owncloud/owncloud/occ app:list | grep '^Disabled:$' -A 1000 | wc -l`
+DIS=`sudo -u www-data /var/www/owncloud/occ app:list | grep '^Disabled:$' -A 1000 | wc -l`
 DIS=$(($DIS-1))
 
-OUT=`sudo -u www-data /mnt/va-owncloud/owncloud/occ app:list | wc -l`
+OUT=`sudo -u www-data /var/www/owncloud/occ app:list | wc -l`
 OUT=$(($OUT-2))
 ENA=$(($OUT-$DIS))
 text=$text', '"Active apps: "$ENA'/'$OUT
