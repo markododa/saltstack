@@ -98,3 +98,9 @@ check_functionality_va_master:
     - user: root
     - group: root
     - mode: 755
+
+/etc/logrotate.d/rsyslog:
+  file.line:
+    - content: /var/log/vapourapps/va-master.log
+    - after: /var/log/messages 
+    - mode: ensure
