@@ -1,7 +1,7 @@
 import va_utils, salt, os.path, os, json, datetime, time, re, subprocess, fnmatch
 
 from va_utils import check_functionality as panel_check_functionality
-from va_backup_panels import panel
+from va_backup_panels import panels
 
 backuppc_dir = '/etc/backuppc/'
 backuppc_pc_dir = '/etc/backuppc/'
@@ -11,7 +11,7 @@ rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
 #Used when converting hash to json - replaces all instances of the first char with the second one. 
 #Backslashes are a nightmare; json likes to have double backslashes. So we take any already double backslashes and reduce them by half, and then double all backslashes. 
-hash_to_json_characters_map = [('\\\\', '\\'), ('\\', '\\\\'), ('\n', ''), ('=>', ':'), ('\'', '"'), (';', ','), ('=', ':')]
+hash_to_json_characters_map = [('undef', 'null'),('(', '{'), (')', '}'), ('\\\\', '\\'), ('\\', '\\\\'), ('\n', ''), ('=>', ':'), ('\'', '"'), (';', ','), ('=', ':')]
 json_to_hash_characters_map = [(':', '=>'), (':','='), ('"', '\'')]
 
 
@@ -31,23 +31,9 @@ def host_file(hostname):
 #def get_panel(panel_name, host = '', backupNum = -1):
 def get_panel(panel_name, server_name = '', backupNum = -1):
     host = server_name
-    ppanel = panel[panel_name]
+    ppanel = panels[panel_name]
     hostnames = listHosts()
-    if panel_name == "backup.hosts":
-        ppanel['tbl_source']['table'] = panel_list_hosts()
-        return ppanel
-    elif panel_name == "backup.schedule":
-        ppanel['tbl_source']['table'] = panel_list_schedule()
-        ppanel['tbl_source']['table2'] = panel_list_sequences()
-        return ppanel
-
-    elif panel_name == "backup.manage":
-        data  = panel_list_folders(hostnames)
-#        data = [ {'app': key, 'path': v} for key,val in data.items() for v in val ]
-        ppanel['tbl_source']['table'] = data
-        return ppanel
-
-    elif panel_name == "backup.browse":
+    if panel_name == "backup.browse":
         host = hostnames[0] if host == '' else host
         if backupNum == -1:
             backupNum = last_backup(host)
@@ -58,7 +44,6 @@ def get_panel(panel_name, server_name = '', backupNum = -1):
         ppanel['tbl_source']['table'] = data
         ppanel['tbl_source']['path'] = [host, backupNum]
         return ppanel
-
     elif panel_name == "backup.info":
         data = backup_info(host)
         ppanel['tbl_source']['table'] = data
@@ -230,9 +215,9 @@ def add_folder(hostname, folder, backup_filter = ""):
 
     __salt__['service.reload']('backuppc')
 
-def add_folder_list(hostname, folder_list,address,scriptpre="None",scriptpost="None",include=""):
+def add_folder_list(hostname, folder_list):
     for folder in folder_list:
-        add_folder(hostname=hostname,folder=folder,address=address,scriptpre=scriptpre,scriptpost=scriptpost,include=include)
+        add_folder(hostname=hostname,folder=folder)
 
 def calculate_backup_periods(full_period, counters):
     if type(counters) != list: 
@@ -328,7 +313,8 @@ def list_folders(hostnames):
         folders_list[hostname] = folders
     return folders_list
 
-def panel_list_folders(hostnames):
+def panel_list_folders():
+    hostnames = listHosts()
     data  = list_folders(hostnames)
     data = [ {'app': key, 'path': v, 'include' : find_matching_shares(key, v)} for key in data for v in data[key] ]
     return data
@@ -353,7 +339,8 @@ def find_matching_shares(host, share_path):
 
 def panel_list_hosts():
     host_list = listHosts()
-    host_list = [{'host' : x, 'total_backups': backupTotals(x), 'protocol' : get_host_protocol(x).replace('ShareName', '')} for x in host_list]
+    host_list = [{'host' : x, 'total_backups': backupTotals(x), 'protocol' : get_host_protocol(x).replace('ShareName', '').lower(), 'address' : conf_file_to_dict(x).get('ClientNameAlias')} for x in host_list]
+    
     host_list = append_host_status(host_list)
     return host_list
 
@@ -402,20 +389,14 @@ def get_incr_max(hostname):
 def append_host_status(host_list):
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status hosts'
     text =  __salt__['cmd.run'](cmd, runas='backuppc')
-    text = hashtodict(text)
-    #NINO nekogash paga na ovoj split podolu.. ako ne uspee neka izleze kulturno inaku panelot voopsto ne se prikazuva
-    text = text.split('=')[1]
-    text = text.replace(' undef' ,' \"undef\"')
-    text = text.replace('Reason_' ,'')
-    text = text.replace('\\', '\\\\')
-    text = json.loads(text)
+    text = text.split('Got reply: ')[1]
+    text = hashtodict(text)['%Status']
 
     for x in host_list:
-        x['status'] = text[x['host']].get('reason', '-')
-        x['status'] = x['status'].replace('_', ' ').capitalize()
+        x['status'] = text[x['host']].get('reason', '-').capitalize()
+        x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
+        x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
 
-        x['error'] = text[x['host']].get('error', "-").replace('_', ' ').capitalize()
-        x['address'] = conf_file_to_dict(x['host']).get('ClientNameAlias')
     return host_list
 
 def panel_statistics():
@@ -528,14 +509,16 @@ def conf_to_json(conf):
 
     return conf
 
+hashtodict = conf_to_json
+
 def dict_to_conf(json_data):
     json_data = '\n'.join(["$Conf{%s} = %s;" % (x, json.dumps(json_data[x])) for x in json_data])
     json_data = handle_characters(json_data, char_map = json_to_hash_characters_map)
     return json_data
 
-def conf_file_to_dict(hostname):
-    conf_file = host_file(hostname)
-    with open(conf_file) as f:
+
+def file_to_dict(file_path):
+    with open(file_path) as f:
         conf = f.read()
 
     conf = conf_to_json(conf)
@@ -544,6 +527,10 @@ def conf_file_to_dict(hostname):
     #So we convert all integer 0s to strings. 
     conf = {x : conf[x] if conf[x]!= 0 else '0' for x in conf}
     return conf
+
+def conf_file_to_dict(hostname):
+    conf_file = host_file(hostname)
+    return file_to_dict(conf_file)
 
 def write_dict_to_conf(data, hostname):
     data = dict_to_conf(data)
@@ -735,16 +722,17 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     
     return dr
 
-def hashtodict(contents):
-    contents = contents.replace('=>', ':')
-    contents = contents.replace('%','')
-    contents = contents.replace('\'','\"')
-    contents = contents.replace('(','{')
-    contents = contents.replace(')','}')
-    contents = contents.replace(';','')
-    contents = contents.replace('backupInfo = ','')
-    contents = contents.replace('\"fillFromNum\" : undef,','')
-    return contents
+#def hashtodict(contents):
+#    contents = contents.replace('=>', ':')
+#    contents = contents.replace('%','')
+#    contents = contents.replace('\'','\"')
+#    contents = contents.replace('(','{')
+#    contents = contents.replace(')','}')
+#    contents = contents.replace(';','')
+#    contents = contents.replace('backupInfo = ','')
+#    contents = contents.replace('\"fillFromNum\" : undef,','')
+#    contents = contents.replace(' : undef',' : \"undef\"')
+#    return contents
 
 def write_backupinfo_json(hostname, backup):
     hostname = hostname.lower()
@@ -762,30 +750,32 @@ def backup_info(hostname):
     content = []
     for backup in backup_list:
         info = {}
-        write_backupinfo_json(hostname, str(backup))
-        json_path = get_path_from_backup_number(hostname, backup)
+#        write_backupinfo_json(hostname, str(backup))
+        json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
+    
+        json_data = file_to_dict(json_path)['%backupInfo']
 
-        f = json.loads(open(json_path + '/backupInfo.json').read())
-        for key in f:
-            if key == "startTime":
-                info.update({"startTime" : str(datetime.datetime.fromtimestamp(int(f["startTime"])).strftime('%Y-%m-%d %H:%M:%S')) })
-            elif key == "endTime":
-                info.update({"endTime" : str(datetime.datetime.fromtimestamp(int(f["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))})
-            elif key == "type":
-                info.update({"type" : f["type"]})
-            info.update({"duration" : str(datetime.timedelta(seconds = (int(f["endTime"]) - int(f["startTime"]))))})
-            a = int(time.time()) - int(f["endTime"])
-            m, s = divmod(a, 60)
-            h, m = divmod(m, 60)
-            d, h = divmod(h, 24)
-            info.update({
-                "age" : str("%d day(s) %d:%02d:%02d") % (d, h, m, s),
-                "backup" : str(backup),
-                "absolute_age" : str(a)
-            })
-        #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
+        #TODO proper handling of these cases. 
+        if 'startTime' in json_data:        
+            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+        if 'endTime' in json_data: 
+            info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+        if 'startTime' in json_data and 'endTime' in json_data:
+            info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
+
+        info["type"] = json_data["type"]
+
+        a = int(time.time()) - int(json_data["endTime"])
+        m, s = divmod(a, 60)
+        h, m = divmod(m, 60)
+        d, h = divmod(h, 24)
+        info.update({
+            "age" : str("%d day(s) %d:%02d:%02d") % (d, h, m, s),
+            "backup" : str(backup),
+            "absolute_age" : str(a)
+        })
+        #NOPE #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
         content.append(info)
-        os.remove(json_path + '/backupInfo.json')
     content = sorted(content, key = lambda x: x['startTime'], reverse = True)
     return content
 
@@ -796,7 +786,7 @@ def tar_create(arguments, location='/usr/share', backupname='test_backup', backu
 
 #Example url
 #http://10.0.10.45/index.cgi?action=RestoreFile&host=serversql&num=47&share=/cygdrive/c/db-dump&dir=/TEST_backup_2017_09_13_161329_0384659.fbak
-#
+
 def get_backuppc_url(hostname, backupnumber, share, path, action = 'RestoreFile', username = 'admin', password = '', instance_url = ''):
     kwargs = {
         'hostname' : hostname, 

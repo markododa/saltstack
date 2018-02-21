@@ -5,6 +5,7 @@ from va_samba_api import *
 import va_samba_api
 import json
 from va_utils import check_functionality as panel_check_functionality
+from va_directory_panels import panels
 
 
 #import samba_parser
@@ -17,22 +18,27 @@ def panel_ou_members(ou_name):
     ou_source = [{'member' : x[0],"type":', '.join(x[1])} for x in ou_members]
     return ou_source
 
-def format_dns_arguments(entry_data):
+def format_dns_arguments(entry_type, entry_data):
     if entry_type in ['A', 'AAAA']:
-        entry_data = {'address' : entry_data[0]}
+        entry_data = {'address' : entry_data}
     elif entry_type == 'MX':
-        entry_data = {'hostname' : entry_data[0], 'priority' : entry_data[1]}
+        if " " in entry_data: 
+            #must strip () from priority when removing the record
+            entry_data = {'hostname' : entry_data.split(' ')[0], 'priority' : entry_data.split(' ')[1].replace('(','').replace(')','')}
+        else:
+            #default pririty 10 if not entered
+            entry_data = {'hostname' : entry_data.split(' ')[0], 'priority' : '10'} 
     elif entry_type in ['NS', 'CNAME']:
-        entry_data = {'hostname' : entry_data[0]}
+        entry_data = {'hostname' : entry_data}
 
     return entry_data
 
-def action_add_dns(entry_name, entry_type, *entry_data):
-    entry_data = format_dns_arguments(entry_data)
+def action_add_dns(entry_type, entry_name, entry_data):
+    entry_data = format_dns_arguments(entry_type,entry_data)
     return add_dns(entry_name, entry_type, entry_data) 
 
-def action_rm_dns(entry_name, entry_type, *entry_data):
-    entry_data = format_dns_arguments(entry_data)
+def action_rm_dns(entry_name, entry_type, entry_data):
+    entry_data = format_dns_arguments(entry_type,entry_data)
     return delete_dns(entry_name, entry_type, entry_data)
 
 def panel_manage_groups(user_name):

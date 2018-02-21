@@ -1,13 +1,12 @@
 import subprocess, requests, json, re
 from va_utils import check_functionality as panel_check_functionality
-from va_monitoring_panels import panel
+from va_utils import restart_functionality as restart_functionality
+from va_monitoring_panels import panels
 from monitoring_stats import parse
-
-#panel = {"monitoring.icinga":{"title":"Icinga proxy","content":[{"type":"Frame","name":"frame","src":"/proxy/"}]},"monitoring.chart":{"title":"","content":[{"type":"Chart","name":"chart","reducers": ["panel"]}]},"monitoring.status":{"title":"Status","tbl_source":{},"content":[{"type":"Form","name":"form","class":"pull-right margina form-inline","elements":[{"type":"Filter","name":"Filter","reducers":["filter"]}]},{"type":"MultiTable","name":"div","reducers":["table"],"elements":[{"type":"Heading","dc":"monitoring :num: services"},{"type":"Table", "pagination": False, "reducers":["table","panel","alert","filter"],"columns":[{"key":"name","label":"Name"},{"key":"output","label":"Output","width":"80%"},{"key":"state","label":"State"},{"key":"action","label":"Actions"}],"panels":{"view_graph":"monitoring.graph"},"rowStyleCol":"state","actions":[{"name":"View graphs","action":"chart"}],"id":"name"}]}]}}
 
 
 def get_panel(panel_name, provider='', service=''):
-    users_panel = panel[panel_name]
+    users_panel = panels[panel_name]
     if panel_name == 'monitoring.chart':
         if not provider or not service: 
             raise Exception('Provider and/or service not provided. Provider:%s service:%s' % (provider, service))
@@ -89,7 +88,7 @@ def panel_overview():
 
     sender_dict = {
         'key' : "Email password",
-        'value': "Password is unconfigured/empty" if ssmtp_data.get('AuthPass', '')=='mailPASS' else "Password is configured/non-empty",
+        'value': "Password is unconfigured/empty" if ssmtp_data.get('AuthPass', '')=='empty' else "Password is configured/non-empty",
     }
     lines.append(sender_dict)
 
