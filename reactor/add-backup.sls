@@ -17,17 +17,17 @@
 {% endif %}
 
 add_host_to_backup:
-  local.backuppc.add_host:
+  local.backuppc.add_rsync_host:
     - tgt: 'role:backup'
     - expr_form: grain
-    - arg:
-      - {{ data['fqdn'] }}
- 
+    - args:
+      - hostname: {{ data['fqdn'] }}
+      - address: {{ data['ip'] }}
+
 add_folders_to_backup:
   local.backuppc.add_folder_list:
     - tgt: 'role:backup'
     - expr_form: grain
-    - arg:
-      - hostname={{ data['fqdn'] }} 
-      - folders={{ folders }}
-      - script_pre = {{ data['script_pre'] }}
+    - args:
+      - hostname: {{ data['fqdn'] }}
+      - folder_list: {{ folders }}
