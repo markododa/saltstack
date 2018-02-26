@@ -110,7 +110,8 @@ panels = {
                 "label": "Status"
             }, {
                 "key": "action",
-                "label": "Actions"
+                "label": "Actions",
+                "width": "5%"
             }
             ],
             "id": "username",
@@ -244,7 +245,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "unit",
-                            "name": "unit",
+                            "name": "ou_name",
                             "value": "",
                             "label": "Organizational unit",
                             "required": True
@@ -284,10 +285,16 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "password",
-                            "name": "Password",
+                            "name": "password",
                             "value": "",
                             "label": "Password",
                             "required": True
+                        }, {
+                            "type": "checkbox",
+                            "name": "again_at_login",
+                            "value": False,
+                            "label": "Change password at next login",
+                            "required": False
                         }
                         ]
                     }, {
@@ -305,87 +312,91 @@ panels = {
                     }
                     ]
                 },
-                "manage_groupsxx": {
-                    "title": "Manage groups",
-                    "buttons": [{
-                        "type": "Button",
-                        "name": "Cancel",
-                        "action": "cancel"
-                    }, {
-                        "type": "Button",
-                        "name": "Submit",
-                        "class": "primary",
-                        "action": "manage_groups"
-                    }
-                    ],
-                    "content": [{
-                        "type": "Form",
-                        "name": "form",
-                        "class": "left",
-                        "elements": [{
-                            "type": "label",
-                            "name": "Add user to these groups"
-                        }, {
-                            "type": "multi_checkbox",
-                            "name": "info",
-                            "value": False,
-                            "label": "Info",
-                            "required": False
-                        }, {
-                            "type": "multi_checkbox",
-                            "name": "domain_admins",
-                            "value": False,
-                            "label": "Domain Admins",
-                            "required": False
-                        }, {
-                            "type": "multi_checkbox",
-                            "name": "support",
-                            "value": False,
-                            "label": "Support",
-                            "required": False
-                        }, {
-                            "type": "multi_checkbox",
-                            "name": "sales",
-                            "value": False,
-                            "label": "Sales",
-                            "required": False
-                        }, {
-                            "type": "multi_checkbox",
-                            "name": "dev",
-                            "value": False,
-                            "label": "Dev",
-                            "required": False
-                        }, {
-                            "type": "multi_checkbox",
-                            "name": "remote",
-                            "value": False,
-                            "label": "Remote Desktop Users",
-                            "required": False
-                        }, {
-                            "type": "label",
-                            "name": "Remove user from these groups"
-                        }
-                        ]
-                    }, {
-                        "type": "Div",
-                        "name": "div",
-                        "class": "right",
-                        "elements": [{
-                            "type": "Heading",
-                            "name": "Manage groups for user : "
-                        }
-                        ]
-                    }
-                    ]
-                }
+                # "manage_groupsxx": {
+                #     "title": "Manage groups",
+                #     "buttons": [{
+                #         "type": "Button",
+                #         "name": "Cancel",
+                #         "action": "cancel"
+                #     }, {
+                #         "type": "Button",
+                #         "name": "Submit",
+                #         "class": "primary",
+                #         "action": "manage_groups"
+                #     }
+                #     ],
+                #     "content": [{
+                #         "type": "Form",
+                #         "name": "form",
+                #         "class": "left",
+                #         "elements": [{
+                #             "type": "label",
+                #             "name": "Add user to these groups"
+                #         }, {
+                #             "type": "multi_checkbox",
+                #             "name": "info",
+                #             "value": False,
+                #             "label": "Info",
+                #             "required": False
+                #         }, {
+                #             "type": "multi_checkbox",
+                #             "name": "domain_admins",
+                #             "value": False,
+                #             "label": "Domain Admins",
+                #             "required": False
+                #         }, {
+                #             "type": "multi_checkbox",
+                #             "name": "support",
+                #             "value": False,
+                #             "label": "Support",
+                #             "required": False
+                #         }, {
+                #             "type": "multi_checkbox",
+                #             "name": "sales",
+                #             "value": False,
+                #             "label": "Sales",
+                #             "required": False
+                #         }, {
+                #             "type": "multi_checkbox",
+                #             "name": "dev",
+                #             "value": False,
+                #             "label": "Dev",
+                #             "required": False
+                #         }, {
+                #             "type": "multi_checkbox",
+                #             "name": "remote",
+                #             "value": False,
+                #             "label": "Remote Desktop Users",
+                #             "required": False
+                #         }, {
+                #             "type": "label",
+                #             "name": "Remove user from these groups"
+                #         }
+                #         ]
+                #     }, {
+                #         "type": "Div",
+                #         "name": "div",
+                #         "class": "right",
+                #         "elements": [{
+                #             "type": "Heading",
+                #             "name": "Manage groups for user : "
+                #         }
+                #         ]
+                #     }
+                #     ]
+                # }
             },
             "panels": {
                 "list_logins": "directory.list_logins",
-                "manage_user_membership": "directory.manage_user_membership"
+                "manage_user_membership": "directory.manage_user_membership",
+                "edit_user_details": "directory.edit_user_details"
             },
             "actions": [{
-                        "name": "Edit user",
-                        "action": "edit_user"
+                        # "name": "Edit user",
+                        # "action": "edit_user"
+                        # }, {
+                        "name": "Edit details",
+                        "action": "edit_user_details"
                         }, {
                         "name": "Change password",
                         "action": "change_password"
@@ -403,10 +414,11 @@ panels = {
                         }, {
                         "name": "Unlock user",
                         "action": "unlock_user"
+                        # }, {
+                        # "name": "List logins",
+                        # "action": "list_logins"
+                        #
                         }, {
-                        #		"name": "List logins",
-                        #		"action": "list_logins"
-                        #	}, {
                         "name": "Manage groups",
                         "action": "manage_user_membership"
                         }, {
@@ -421,10 +433,10 @@ panels = {
         "title": "All groups",
         "tbl_source": {
             "table": {
-                "source": "panel_get_groups"
+                "source": "panel_get_groups_handmade"
             },
             "table2": {
-                "source": "panel_get_groups"
+                "source": "panel_get_groups_builtin"
             }
         },
         "content": [{
@@ -438,8 +450,8 @@ panels = {
                 "action": "modal",
                 "reducers": ["modal"],
                 "modal": {
-                    "refresh_action": "panel_get_groups",
-                    "title": "Add a new group",
+                    "refresh_action": "panel_get_groups_handmade",
+                    "title": "Add new group",
                     "buttons": [{
                         "type": "Button",
                         "name": "Cancel",
@@ -448,7 +460,7 @@ panels = {
                         "type": "Button",
                         "name": "Add group",
                         "class": "primary",
-                        "action": "add_group"
+                        "action": "action_add_group"
                     }
                     ],
                     "content": [{
@@ -457,9 +469,21 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "Groupname",
+                            "name": "name",
                             "value": "",
                             "label": "Group name",
+                            "required": True
+                        }, {
+                            "type": "text",
+                            "name": "description",
+                            "value": "",
+                            "label": "Description",
+                            "required": True
+                        }, {
+                            "type": "text",
+                            "name": "mail",
+                            "value": "",
+                            "label": "Email",
                             "required": True
                         }
                         ]
@@ -470,6 +494,9 @@ panels = {
                         "elements": [{
                             "type": "Heading",
                             "name": "Fill the form to add a new group"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "Groups can have e-mail. All members of the group should get a copy of the mail sent to this address."
                         }
                         ]
                     }
@@ -493,14 +520,15 @@ panels = {
                 "width": "15%"
             }, {
                 "key": "action",
-                "label": "Actions"
+                "label": "Actions",
+                "width": "5%"
             }
             ],
             "panels": {
                 "list_group_members": "directory.list_group_members"
             },
             "actions": [{
-                        "name": "Edit members",
+                        "name": "List members",
                         "action": "list_group_members"
                         }, {
                         "name": "Edit e-mail",
@@ -515,7 +543,100 @@ panels = {
                         }
                         ],
             "id": "groupname",
-            "source": "panel_get_groups"
+            "modals": {
+                "edit_group_description": {
+                    "title": "Change description",
+                    "kwargs": {
+                        "attr": "description",
+                        "object_type": "group"
+                    },
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Change",
+                        "class": "primary",
+                        "action": "change_attr"
+                    }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "test",
+                            "name": "new_value",
+                            "value": "",
+                            "label": "New value",
+                            "required": True
+
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form to change data"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "The changed data for user will be automatically synchronized."
+                        }
+                        ]
+                    }
+                    ]
+                },
+
+                "edit_group_mail": {
+                    "title": "Change mail",
+                    "kwargs": {
+                        "attr": "mail",
+                        "object_type": "group"
+                    },
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Change",
+                        "class": "primary",
+                        "action": "change_attr"
+                    }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "test",
+                            "name": "new_value",
+                            "value": "",
+                            "label": "New value",
+                            "required": True
+
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form to change data"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "The changed data for user will be automatically synchronized."
+                        }
+                        ]
+                    }
+                    ]
+                },
+            },
+            "source": "panel_get_groups_handmade"
         }, {
             "type": "Button",
             "name": "View more",
@@ -528,64 +649,12 @@ panels = {
             "class": "hidden",
             "reducers": ["div"],
             "elements": [{
-                "type": "Form",
-                "name": "form2",
-                "class": "tbl-ctrl",
-                "elements": [{
-                    "type": "Button",
-                    "name": "Add group",
-                    "glyph": "plus",
-                    "action": "modal",
-                    "reducers": ["modal"],
-                    "modal": {
-                        "title": "Add a new group",
-                        "buttons": [{
-                            "type": "Button",
-                            "name": "Cancel",
-                            "action": "cancel"
-                        }, {
-                            "type": "Button",
-                            "name": "Add group",
-                            "class": "primary",
-                            "action": "add_group"
-                        }
-                        ],
-                        "content": [{
-                            "type": "Form",
-                            "name": "form",
-                            "class": "left",
-                            "elements": [{
-                                "type": "text",
-                                "name": "Groupname",
-                                "value": "",
-                                "label": "Group name",
-                                "required": True
-                            }
-                            ]
-                        }, {
-                            "type": "Div",
-                            "name": "div",
-                            "class": "right",
-                            "elements": [{
-                                "type": "Heading",
-                                "name": "Fill the form to add a new group"
-                            }, {
-                                "type": "Paragraph",
-                                "name": "Add some users later in the new group."
-                            }
-                            ]
-                        }
-                        ]
-                    }
-                }
-                ]
-            }, {
                 "type": "Table",
                 "name": "table2",
                 "reducers": ["table", "filter", "panel", "alert"],
                 "columns": [{
                     "key": "groupname",
-                    "label": "Name"
+                    "label": "Group Name"
                 }, {
                     "key": "description",
                     "label": "Description"
@@ -595,20 +664,20 @@ panels = {
                     "width": "10%"
                 }, {
                     "key": "action",
-                    "label": "Actions"
+                    "label": "Actions",
+                    "width": "5%"
                 }
                 ],
                 "actions": [{
                     "name": "List Members",
                     "action": "list_group_members"
                 }, {
-                    "name": "Delete group",
-                    "class": "danger",
-                    "action": "delete_group"
-                }
+                    "name": "Edit e-mail",
+                    "action": "edit_group_mail"
+                },
                 ],
                 "id": "groupname",
-                "source": "panel_get_groups"
+                "source": "panel_get_groups_builtin"
             }
             ]
         }
@@ -652,7 +721,7 @@ panels = {
                             "type": "text",
                             "name": "entry_name",
                             "value": "",
-                            "label": "Record name",
+                            "label": "Hostname",
                             "required": False
                         }, {
                             "type": "dropdown",
@@ -691,7 +760,9 @@ panels = {
                 "reducers": ["modal", "alert"],
                 "modal": {
                     "title": "Add Alias (CNAME)",
-                    "kwargs": {"entry_type": "CNAME"},
+                    "kwargs": {
+                        "entry_type": "CNAME"
+                    },
                     "buttons": [{
                         "type": "Button",
                         "name": "Cancel",
@@ -717,7 +788,7 @@ panels = {
                             "type": "text",
                             "name": "entry_data",
                             "value": "",
-                            "label": "Hostname",
+                            "label": "Existing Hostname",
                             "required": True
                         }
                         ]
@@ -744,7 +815,10 @@ panels = {
                 "reducers": ["modal", "alert"],
                 "modal": {
                     "title": "Add MX record",
-                    "kwargs": {"entry_type": "MX"},
+                    "kwargs": {
+                        "entry_type": "MX"
+
+                    },
                     "buttons": [{
                         "type": "Button",
                         "name": "Cancel",
@@ -764,13 +838,13 @@ panels = {
                             "type": "text",
                             "name": "entry_name",
                             "value": "",
-                            "label": "Record name",
+                            "label": "Record name or empty",
                             "required": True
                         }, {
                             "type": "text",
                             "name": "entry_data",
                             "value": "",
-                            "label": "Hostname and Priority",
+                            "label": "Mailserver and Priority",
                             "required": True
                         }
                         ]
@@ -808,7 +882,10 @@ panels = {
                         "action": "action_add_dns"
                     }
                     ],
-                    "kwargs": {"entry_name": "","entry_type": "NS"},
+                    "kwargs": {
+                        "entry_name": "",
+                        "entry_type": "NS"
+                    },
                     "content": [{
                         "type": "Form",
                         "name": "form",
@@ -817,7 +894,7 @@ panels = {
                             "type": "text",
                             "name": "entry_data",
                             "value": "",
-                            "label": "Record name",
+                            "label": "Hostname",
                             "required": False
                         }
                         ]
@@ -854,45 +931,32 @@ panels = {
             }, {
                 "key": "action",
                 "label": "Actions",
-                "width": "10%"
+                "width": "5%"
             }
             ],
             "modals": {
-                "edit_entry": {
-                    "title": "Edit DNS record",
+                "edit_dns_record": {
+                    "title": "Change DNS value",
                     "buttons": [{
                         "type": "Button",
                         "name": "Cancel",
                         "action": "cancel"
                     }, {
                         "type": "Button",
-                        "name": "Update record",
+                        "name": "Change",
                         "class": "primary",
-                        "action": "dns_update"
+                        "action": "action_edit_dns"
                     }
                     ],
                     "content": [{
                         "type": "Form",
                         "name": "form",
                         "class": "left",
-                        "reducers": ["form"],
                         "elements": [{
-                            "type": "readonly_text",
-                            "name": "Entryname",
-                            "value": "",
-                            "label": "Entry name",
-                            "required": False
-                        }, {
-                            "type": "readonly_text",
-                            "name": "Type",
-                            "value": "",
-                            "label": "Type",
-                            "required": False
-                        }, {
                             "type": "text",
-                            "name": "Address",
+                            "name": "new_data",
                             "value": "",
-                            "label": "Address",
+                            "label": "New value",
                             "required": False
                         }
                         ]
@@ -912,13 +976,13 @@ panels = {
                     ]
                 }
             },
-            "readonly": {
-                "group_name": "Entryname",
-                "type": "Type"
-            },
+            # "readonly": {
+            #     "group_name": "Entryname",
+            #     "type": "Type"
+            # },
             "actions": [{
                         "name": "Edit record",
-                        "action": "update_dns_entry"
+                        "action": "edit_dns_record"
                         }, {
                         "name": "Delete record",
                         "class": "danger",
@@ -966,7 +1030,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "unit",
+                            "name": "name",
                             "value": "",
                             "label": "Name",
                             "required": True
@@ -1011,7 +1075,8 @@ panels = {
                         "width": "60%"
                         }, {
                         "key": "action",
-                        "label": "Actions"
+                        "label": "Actions",
+                        "width": "5%"
                         }
                         ],
             "actions": [{
@@ -1248,7 +1313,7 @@ panels = {
                         "type": "Button",
                         "name": "Add",
                         "class": "primary",
-                        "action": "add_user_to_group"
+                        "action": "add_user_to_group2"
                     }
                     ],
                     "content": [{
@@ -1290,12 +1355,12 @@ panels = {
             }, {
                 "key": "action",
                 "label": "Actions",
-                "width": "20%"
+                "width": "5%"
             }
             ],
             "source": "panel_list_group_members",
             "actions": [{
-                "action": "remove_from_group",
+                "action": "rm_user_from_group2",
                 "name": "Remove from group",
                 "class": "danger"
             }
@@ -1307,83 +1372,111 @@ panels = {
     "directory.manage_user_membership": {
         "title": "Group membership",
         "tbl_source": {
-            "table": {
-                "source": "panel_manage_groups"
+            "member": {
+                "source": "panel_list_user_groups"
+            },
+            "notmember": {
+                "source": "panel_list_user_groups_notmember"
             }
         },
-        "content": [{
-            "type": "Form",
-            "name": "form",
-            "class": "tbl-ctrl",
-            "elements": [{
-                "type": "Button",
-                "name": "Add Group",
-                "glyph": "plus",
-                "action": "modal",
-                "reducers": ["modal", "alert"],
-                "modal": {
-                    "title": "Add this user to Group",
-                    "buttons": [{
-                        "type": "Button",
-                        "name": "Cancel",
-                        "action": "cancel"
-                    }, {
-                        "type": "Button",
-                        "name": "username",
-                        "class": "primary",
-                        "action": "add_user_to_group"
-                    }
-                    ],
-                    "content": [{
-                        "type": "Form",
-                        "name": "form",
-                        "class": "left",
-                        "elements": [{
-                            "type": "text",
-                            "name": "group",
-                            "value": "",
-                            "label": "Group name",
-                            "required": True
-                        }
-                        ]
-                    }, {
-                        "type": "Div",
-                        "name": "div",
-                        "class": "right",
-                        "elements": [{
-                            "type": "Heading",
-                            "name": "Enter a group to add user to"
-                        }, {
-                            "type": "Paragraph",
-                            "name": "Users can be members in multiple groups."
-                        }
-                        ]
-                    }
-                    ]
+        "content": [
+            #     {
+            #     "type": "Form",
+            #     "name": "form",
+            #     "class": "tbl-ctrl",
+            #     "elements": [{
+            #         "type": "Button",
+            #         "name": "Add Group",
+            #         "glyph": "plus",
+            #         "action": "modal",
+            #         "reducers": ["modal", "alert"],
+            #         "modal": {
+            #             "title": "Add this user to Group",
+            #           #  "kwargs": {
+            #          #       "entry_type": "username"
+            #         #    },
+            #             "buttons": [{
+            #                 "type": "Button",
+            #                 "name": "Cancel",
+            #                 "action": "cancel"
+            #             }, {
+            #                 "type": "Button",
+            #                 "name": "Add",
+            #                 "class": "primary",
+            #                 "action": "add_user_to_group"
+            #             }
+            #             ],
+            #             "content": [{
+            #                 "type": "Form",
+            #                 "name": "form",
+            #                 "class": "left",
+            #                 "elements": [{
+            #                     "type": "text",
+            #                     "name": "group",
+            #                     "value": "",
+            #                     "label": "Group name",
+            #                     "required": True
+            #                 }
+            #                 ]
+            #             }, {
+            #                 "type": "Div",
+            #                 "name": "div",
+            #                 "class": "right",
+            #                 "elements": [{
+            #                     "type": "Heading",
+            #                     "name": "Enter a group to add user to"
+            #                 }, {
+            #                     "type": "Paragraph",
+            #                     "name": "Users can be members in multiple groups."
+            #                 }
+            #                 ]
+            #             }
+            #             ]
+            #         }
+            #     }
+            #     ]
+            # },
+            {
+                "type": "Table",
+                "name": "member",
+                "reducers": ["table", "panel", "alert"],
+                "columns": [{
+                    "key": "groupname",
+                    "label": "Member in group"
+                }, {
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
                 }
-            }
-            ]
-        }, {
-            "type": "Table",
-            "name": "table",
-            "reducers": ["table", "panel", "alert"],
-            "columns": [{
-                "key": "groupname",
-                "label": "Group"
+                ],
+                "actions": [{
+                    "action": "rm_user_from_group",
+                    "name": "Remove from group"
+                }
+                ],
+                "source": "panel_list_user_groups",
+                "id": ["groupname"]
             }, {
-                "key": "action",
-                "label": "Actions",
-                "width": "20%"
+                "type": "Table",
+                "name": "notmember",
+                "reducers": ["table", "panel", "alert"],
+                "columns": [{
+                    "key": "groupname",
+                    "label": "Not a member in group"
+                }, {
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }
+                ],
+                "actions": [{
+                    "action": "add_user_to_group",
+                    "name": "Add to this group"
+                }
+                ],
+                "source": "panel_list_user_groups_notmember",
+                "id": ["groupname"]
             }
-            ],
-            "actions": [{
-                        "action": "xxxxx_rm_user_from_group",
-                        "name": "Remove from group"
-                        }
-                        ],
-            "source": "panel_manage_groups",
-            "id": "username"
-        }
         ]
     },
     "directory.ou_members": {
@@ -1408,5 +1501,85 @@ panels = {
             "source": "panel_ou_members"
         }
         ]
+    },
+    "directory.edit_user_details": {
+        "title": "User details",
+        "tbl_source": {
+            "table": {
+                "source": "panel_user_details"
+            }
+        },
+        "content": [{
+                    "type": "Table",
+                    "name": "table",
+                    "pagination": False,
+                    "reducers": ["table", "panel", "modal", "alert"],
+                    "columns": [{
+                        "key": "item",
+                        "label": "Item",
+                        "width": "20%"
+                    }, {
+                        "key": "value",
+                        "label": "Value"
+                    }, {
+                        "key": "action",
+                        "label": "Actions",
+                        "width": "5%"
+                    }
+                    ],
+                    "actions": [{
+                        "action": "edit_attribute",
+                        "name": "Change"
+                    }
+                    ],
+                    "source": "panel_user_details",
+                    "id": ["item"],
+                    "modals": {
+                        "edit_attribute": {
+                            "title": "Edit value",
+                            "buttons": [{
+                                "type": "Button",
+                                "name": "Cancel",
+                                "action": "cancel"
+                            }, {
+                                "type": "Button",
+                                "name": "Change",
+                                "class": "primary",
+                                "action": "change_user_detail"
+                            }
+                            ],
+                            "content": [{
+                                "type": "Form",
+                                "name": "form",
+                                "class": "left",
+                                "elements": [{
+                                    "type": "text",
+                                    "name": "new_value",
+                                    "value": "",
+                                    "label": "New value",
+                                    "required": True
+
+                                }
+                                ]
+                            }, {
+                                "type": "Div",
+                                "name": "div",
+                                "class": "right",
+                                "elements": [{
+                                    "type": "Heading",
+                                    "name": "Fill the form to change data"
+                                }, {
+                                    "type": "Paragraph",
+                                    "name": "The changed data for user will be automatically synchronized."
+                                }
+                                ]
+                            }
+                            ]
+                        }
+
+                    },
+                    }
+                    ],
+
     }
 }

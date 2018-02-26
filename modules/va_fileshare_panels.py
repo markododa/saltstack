@@ -96,6 +96,31 @@ panels = {
             ],
             "id": ["path"],
             "source": "panel_all_fileshares"
+        },
+                {
+                "type": "CustomChart",
+                "chartType": "pie",
+                "name": "subfolder",
+                "xCol": "subfolder",
+               
+                 "height": "500",
+                 
+               # "xCol": "startTimeStamp",
+               # "xColType": "date",
+                "reducers": ["table"],
+                "datasets": [{
+                    "column": "size",
+                    # "label": "Size (MB)",
+                    "name": "subfolder",
+                    # "backgroundColor": "#337ab7",
+                    "backgroundColor": "#fff",
+                     "borderColor": "#2e6da4",
+                     "hoverBackgroundColor": "#337ab7",
+                     "title": "startTime",
+                    "data":[]
+                }
+                ],
+                 "target": "table_shares"
         }
         ]
     }

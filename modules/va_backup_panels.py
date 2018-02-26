@@ -126,13 +126,13 @@ panels = {
                             "required": True
                         }, {
                             "type": "text",
-                            "name": "backup_path",
+                            "name": "folder",
                             "value": "",
                             "label": "Backup Path/Share",
                             "required": True
                         }, {
                             "type": "text",
-                            "name": "include_filter",
+                            "name": "backup_filter",
                             "value": "",
                             "label": "Include Filter",
                             "required": False
@@ -147,7 +147,7 @@ panels = {
                             "name": "Fill the form to add a new backup"
                         }, {
                             "type": "Paragraph",
-                            "name": "Enter the full absolute path to the backup. For Windows, you can use system shares like D$. With include filter backup fill be limited: *.pdf or db_backup/"
+                            "name": "Enter the full absolute path or for Windows you can use system shares like D$. With filter backup fill be limited: *.pdf or db_backup"
                         }
                         ]
                     }
@@ -176,7 +176,8 @@ panels = {
                         "width": "30%"
                         }, {
                         "key": "action",
-                        "label": "Actions"
+                        "label": "Actions",
+                        "width": "5%"
                         }
                         ],
             "actions": [{
@@ -213,7 +214,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "value",
+                            "name": "backup_filter",
                             "value": "",
                             "label": "Filter string"
                         }
@@ -252,7 +253,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "value",
+                            "name": "backup_filter",
                             "value": "",
                             "label": "Filter string"
                         }
@@ -428,13 +429,13 @@ panels = {
                             "required": False
                         }, {
                             "type": "text",
-                            "name": "SmbShareUserName",
+                            "name": "username",
                             "value": "",
                             "label": "Username",
                             "required": False
                         }, {
                             "type": "text",
-                            "name": "SmbSharePasswd",
+                            "name": "password",
                             "value": "",
                             "label": "Password",
                             "required": False
@@ -449,7 +450,7 @@ panels = {
                             "name": "Fill the form to define access to the source"
                         }, {
                             "type": "Paragraph",
-                            "name": "Enter IP adress if the Source is not listed in the DNS. User should have read permissions to do backup and write permissions if you want to do restore. It is recommnded to make full backups only (keep Incremental period higher)"
+                            "name": "Enter IP address or hostname. User should have read/write permissions."
                         }
                         ]
                     }
@@ -486,7 +487,8 @@ panels = {
                         "label": "Error"
                         }, {
                         "key": "action",
-                        "label": "Actions"
+                        "label": "Actions",
+                        "width": "5%"
                         }
                         ],
             "actions": [{
@@ -529,7 +531,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                                 "type": "text",
-                                "name": "value",
+                                "name": "new_data",
                                 "value": "",
                                 "label": "New value"
                         }
@@ -568,7 +570,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                                 "type": "text",
-                                "name": "value",
+                                "name": "new_data",
                                 "value": "",
                                 "label": "New value"
                         }
@@ -621,8 +623,8 @@ panels = {
                 "label": "Time"
             }, {
                 "key": "action",
-                "width": "15%",
-                "label": "Actions"
+                "label": "Actions",
+                "width": "5%"
             }
             ],
             "actions": [{
@@ -646,7 +648,12 @@ panels = {
     "backup.info": {
         "title": "Backup info",
         "tbl_source": {
-            "table": {}
+            "table": {
+                "source": "backup_info"
+            },
+                        "table_graph": {
+                "source": "backup_info_graph"
+            }
         },
         "content": [{
             "type": "Table",
@@ -674,11 +681,38 @@ panels = {
                 "key": "endTime",
                 "label": "End time"
             }, {
+                "key": "sizeNew",
+                "label": "New data"
+            }, {
+                "key": "size",
+                "label": "Size"
+            }, {
                 "key": "type",
                 "label": "Type"
             }
             ],
             "id": ["link"]
+            },
+                {
+                "type": "CustomChart",
+                "chartType": "line",
+                "name": "graph1",
+                "xCol": "startTime",
+                 "height": "300",
+               # "xCol": "startTimeStamp",
+               # "xColType": "date",
+                "reducers": ["table"],
+                "datasets": [{
+                    "column": "sizeGraph",
+                    "label": "Size (MB)",
+                    "backgroundColor": "#337ab7",
+                    #"backgroundColor": "#fff",
+                    "borderColor": "#2e6da4",
+                    
+                    "data":[]
+                }
+                ],
+                 "target": "table_graph"
         }
         ]
     },
@@ -713,7 +747,8 @@ panels = {
                 "label": "Incr. backups count",
             }, {
                 "key": "action",
-                "label": "Actions"
+                "label": "Actions",
+                "width": "5%"
             }
             ],
             "actions": [{
@@ -755,7 +790,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "value",
+                            "name": "new_data",
                             "value": "",
                             "label": "New value"
                         }
@@ -794,7 +829,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "value",
+                            "name": "new_data",
                             "value": "",
                             "label": "New value"
                         }
@@ -833,7 +868,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "value",
+                            "name": "new_data",
                             "value": "",
                             "label": "New value"
                         }
@@ -872,7 +907,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "value",
+                            "name": "new_data",
                             "value": "",
                             "label": "New value"
                         }
@@ -903,10 +938,10 @@ panels = {
                 "width": "20%"
             }, {
                 "key": "fullseq",
-                "label": "Full backups sequence (days)",
+                "label": "Expected Full backups history (days)",
             }, {
                 "key": "incrseq",
-                "label": "Incr. backups Sequence (days)",
+                "label": "Incr. backups history (days)",
                 "width": "25%"
             }
             ],

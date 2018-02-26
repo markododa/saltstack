@@ -11,6 +11,9 @@ panels = {
             "table_net": {
                 "source": "panel_networking",
                 "module": "va_utils"
+            },
+            "table_statistics": {
+                "source": "panel_statistics"
             }
         },
         "content": [{
@@ -44,6 +47,22 @@ panels = {
             ],
             "id": ["status"],
             "source": "panel_plugins"
+        }, {
+            "type": "Table",
+            "name": "table_statistics",
+            "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "key",
+                "label": "Storage",
+                "width": "30%"
+            }, {
+                "key": "value",
+                "label": "Value"
+            }
+            ],
+            "id": ["key"],
+            "source": "panel_statistics"
         }, {
             "type": "Table",
             "name": "table_net",

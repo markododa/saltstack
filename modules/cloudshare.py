@@ -15,7 +15,7 @@ def bytes_to_readable(num, suffix='B'):
     """Converts bytes integer to human readable"""
 
     num = int(num)
-    for unit in ['','Ki','Mi','Gi','Ti','Pi','Ei','Zi']:
+    for unit in ['','K','M','G','T','P','E','Z']:
         if abs(num) < 1024.0:
             return "%3.1f%s%s" % (num, unit, suffix)
         num /= 1024.0
@@ -121,3 +121,9 @@ def panel_plugins():
 
 
 
+def panel_statistics():
+    diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/www/owncloud/ -o TARGET').split()[1]]
+    statistics = [{'key' : 'Storage partition used size (MB)', 'value': int(diskusage['used'])/1024},
+                  {'key' : 'Storage partition free space (MB)', 'value': int(diskusage['available'])/1024},
+                  {'key' : 'Storage partition mount point', 'value': diskusage['filesystem']}]
+    return statistics

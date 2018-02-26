@@ -15,9 +15,20 @@ hash_to_json_characters_map = [('undef', 'null'),('(', '{'), (')', '}'), ('\\\\'
 json_to_hash_characters_map = [(':', '=>'), (':','='), ('"', '\'')]
 
 
+#duplicate from cloudshare
+def bytes_to_readable(num, suffix='B'):
+    """Converts bytes integer to human readable"""
+
+    num = int(num)
+    for unit in ['','K','M','G','T','P','E','Z']:
+        if abs(num) < 1024.0:
+            return "%3.1f%s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f%s%s" % (num, 'Yi', suffix)
+
 default_paths = {
     'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'],
-    'va-directory' : ['/root/.va/backup', '/etc/openvpn'],
+    'va-directory' : ['/root/.va/backup', '/etc/openvpn', '/etc/samba', '/var/lib/samba/'],
     'va-backup' : ['/etc/backuppc'],
     'va-fileshare' : ['/home', '/etc/samba'],
     'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/'],
@@ -44,10 +55,10 @@ def get_panel(panel_name, server_name = '', backupNum = -1):
         ppanel['tbl_source']['table'] = data
         ppanel['tbl_source']['path'] = [host, backupNum]
         return ppanel
-    elif panel_name == "backup.info":
-        data = backup_info(host)
-        ppanel['tbl_source']['table'] = data
-        return ppanel
+#    elif panel_name == "backup.info":
+#        data = backup_info(host)
+#        ppanel['tbl_source']['table'] = data
+#        return ppanel
 
 def dir_structure1(host, *args):
     check = False
@@ -219,7 +230,7 @@ def add_folder_list(hostname, folder_list):
     for folder in folder_list:
         add_folder(hostname=hostname,folder=folder)
 
-def calculate_backup_periods(full_period, counters):
+def calculate_backup_periods(full_period, counters, limit):
     if type(counters) != list: 
         counters = [counters]
     counters = [int(x) for x in counters]
@@ -231,19 +242,22 @@ def calculate_backup_periods(full_period, counters):
         period = 2 ** i * full_period
         for j in range(counters[i]):
             new_val = periods[-1] + period
-            periods.append(new_val)
+            if new_val <= limit:
+                periods.append(new_val)
 
     periods = [round(x, 2) for x in periods[1:]]
     return periods
 
 
-def pretty_backup_periods(full_period, counters):
-    periods = calculate_backup_periods(full_period, counters)
+def pretty_backup_periods(full_period, counters, limit=999):
+    periods = calculate_backup_periods(full_period, counters, limit)
+    pcount = len(periods)
     periods = ', '.join([str(x) for x in periods]) + ', '
     periods = periods.replace('.00', '')
     periods = periods.replace('.0, ', ', ')
     periods = periods.rstrip(' ')
     periods = periods.rstrip(',')
+    periods = periods + " [" + str(pcount)+"]"
     return periods
 
 
@@ -323,10 +337,10 @@ def listHosts():
     host_list = []
     with open(backuppc_hosts, "r") as h:
         for line in h:
-            # NINO should test for method and skip archives... quick fix by name
-            if '#' not in line and 'archive' not in line and line != '\n':
+            if '#' not in line and line != '\n':
                 word = line.split()
                 host_list.append(word[0])
+    host_list = [x for x in host_list if get_host_protocol(x) != 'Archive']
     return host_list
 
 def find_matching_shares(host, share_path):
@@ -359,13 +373,15 @@ def panel_list_sequences():
 def calc_full_seq(hostname):
     full_period = conf_file_to_dict(hostname).get('FullPeriod') or get_global_config('FullPeriod')
     full_cnt = conf_file_to_dict(hostname).get('FullKeepCnt') or get_global_config('FullKeepCnt')
-    sequence = pretty_backup_periods(full_period, full_cnt)
+    full_age = conf_file_to_dict(hostname).get('FullAgeMax') or get_global_config('FullAgeMax')
+    sequence = pretty_backup_periods(full_period, full_cnt,int(full_age))
     return sequence
 
 def calc_incr_seq(hostname):
     incr_period = conf_file_to_dict(hostname).get('IncrPeriod') or get_global_config('IncrPeriod')
     incr_cnt = conf_file_to_dict(hostname).get('IncrKeepCnt') or get_global_config('IncrKeepCnt')
-    sequence = pretty_backup_periods(incr_period, incr_cnt) 
+    incr_age = conf_file_to_dict(hostname).get('IncrAgeMax') or get_global_config('IncrAgeMax')
+    sequence = pretty_backup_periods(incr_period, incr_cnt,int(incr_age))
     return sequence
 
 
@@ -403,14 +419,14 @@ def panel_statistics():
     cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status info'
     text =  __salt__['cmd.run'](cmd, runas='backuppc')
     text = hashtodict(text)
-    text1 = hashtodict(text)
-    text = text.split('=')[1]
-    text = json.loads(text)
-    i_version = text['Version']
-    i_todaypool = text['DUDailyMax']
-    i_yesterdaypool = text['DUDailyMaxPrev']
-    i_folders = text['cpoolDirCnt']
-    i_duplicates = text['cpoolFileCntRep']
+#    text1 = hashtodict(text)
+#    text = text.split('=')[1]
+#    text = json.loads(text)
+    # i_version = text['Version']
+    # i_todaypool = text['DUDailyMax']
+    # i_yesterdaypool = text['DUDailyMaxPrev']
+    # i_folders = text['cpoolDirCnt']
+    # i_duplicates = text['cpoolFileCntRep']
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
     statistics = [{'key' : 'Version', 'value': text['Version']},
                   {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
@@ -435,12 +451,12 @@ def panel_default_config():
     def_config = [{'key' : 'Full backups interval (days)', 'value': full_period},
                   {'key' : 'Full backups to keep (max)', 'value': full_cnt},
                   {'key' : 'Full backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
-                  {'key' : 'Full backups sequence (days)', 'value': pretty_backup_periods(full_period, full_cnt)},
+                  {'key' : 'Expected Full backups history (days)', 'value': pretty_backup_periods(full_period, full_cnt,int(get_global_config('FullAgeMax')))},
                   {'key' : 'Remove full backups older then', 'value': get_global_config('FullAgeMax')},
                   {'key' : 'Incremental backups interval (days)', 'value': get_global_config('IncrPeriod')},
                   {'key' : 'Incremental backups to keep (max)', 'value': incr_period},
                   {'key' : 'Incremental backups to keep (min)', 'value': incr_cnt},
-                  {'key' : 'Incremental backups sequence (days)', 'value': pretty_backup_periods(incr_period, incr_cnt)},
+                  {'key' : 'Expected Incremental backups history (days)', 'value': pretty_backup_periods(incr_period, incr_cnt,int(get_global_config('IncrAgeMax')))},
                   {'key' : 'Remove incremental backups older then', 'value': get_global_config('IncrAgeMax')}]
     return def_config
 
@@ -505,6 +521,9 @@ def conf_to_json(conf):
 
     conf = '{%s}' % (conf[:-1]) #[-1] to remove the final comma left after replacing ';' with ','
     conf = json.loads(conf)
+    if any(['Got reply' in x for x in conf.keys()]): #Some outputs have the form: `Got reply: %Info : ...` which we want to filter out and just return a nice dictionary
+        conf_key = conf.keys()[0]
+        conf = conf[conf_key]
     conf = {re.sub('\$Conf\{(.*)\}', '\g<1>', x) : conf[x] for x in conf} #Replace '$Conf{var}' with 'var' to make it more readable
 
     return conf
@@ -757,12 +776,17 @@ def backup_info(hostname):
 
         #TODO proper handling of these cases. 
         if 'startTime' in json_data:        
-            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
+            # info["startTimeStamp"] = int(json_data["startTime"])
         if 'endTime' in json_data: 
-            info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+            info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M'))
         if 'startTime' in json_data and 'endTime' in json_data:
             info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
-
+        if 'sizeNew' in json_data:
+            info["sizeNew"] = bytes_to_readable(int(json_data["sizeNew"]))
+        if 'size' in json_data:
+            info["size"] = bytes_to_readable(int(json_data["size"]))
+            # info["sizeGraph"] = int(json_data["size"])/1024/1024
         info["type"] = json_data["type"]
 
         a = int(time.time()) - int(json_data["endTime"])
@@ -770,13 +794,53 @@ def backup_info(hostname):
         h, m = divmod(m, 60)
         d, h = divmod(h, 24)
         info.update({
-            "age" : str("%d day(s) %d:%02d:%02d") % (d, h, m, s),
+            "age" : str("%d day(s) %d:%02d") % (d, h, m),
             "backup" : str(backup),
-            "absolute_age" : str(a)
+            # "absolute_age" : a
         })
         #NOPE #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
         content.append(info)
     content = sorted(content, key = lambda x: x['startTime'], reverse = True)
+    return content
+
+def backup_info_graph(hostname):
+    hostname = hostname.lower()
+    backup_list = backupNumbers(hostname)
+    content = []
+    for backup in backup_list:
+        info = {}
+#        write_backupinfo_json(hostname, str(backup))
+        json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
+    
+        json_data = file_to_dict(json_path)['%backupInfo']
+
+        #TODO proper handling of these cases. 
+        if 'startTime' in json_data:        
+            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
+            info["startTimeStamp"] = int(json_data["startTime"])
+        # if 'endTime' in json_data: 
+        #     info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))
+        # if 'startTime' in json_data and 'endTime' in json_data:
+        #     info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
+        # if 'sizeNew' in json_data:
+        #     info["sizeNew"] = bytes_to_readable(int(json_data["sizeNew"]))
+        if 'size' in json_data:
+            # info["size"] = bytes_to_readable(int(json_data["size"]))
+            info["sizeGraph"] = int(json_data["size"])/1024/1024
+        # info["type"] = json_data["type"]
+
+        # a = int(time.time()) - int(json_data["endTime"])
+        # m, s = divmod(a, 60)
+        # h, m = divmod(m, 60)
+        # d, h = divmod(h, 24)
+        # info.update({
+        #     "age" : str("%d day(s) %d:%02d:%02d") % (d, h, m, s),
+        #     "backup" : str(backup),
+        #     "absolute_age" : a
+        # })
+        #NOPE #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
+        content.append(info)
+    content = sorted(content, key = lambda x: x['startTime'], reverse = False)
     return content
 
 def tar_create(arguments, location='/usr/share', backupname='test_backup', backupnumber=-1):

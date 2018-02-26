@@ -151,9 +151,9 @@ def list_users(email_domain=''):
     return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
     if email_domain == '':
         email_domain = email_domains()[0]
-    users = get_ldap_users(return_field=return_field)
+    users = get_ldap_users(return_field=return_field) #NINO treba da gi vraka i grupite vo slucaj koga return_field e userPrincipalName
     result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get(return_field, '')] 
-    return result 
+    return result
 
 def get_wblist(ruleset, direction='inbound', account='@.'):
     array = __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --list --'+ruleset).split("\n")
@@ -211,6 +211,35 @@ def panel_get_dns_config():
        domains.append({"dns":email_domains()[0],"type":'TXT',"value":"v=spf1 a mx ip4:"+public_ip+" ~all"})
        domains.append({"dns":"_dmarc."+email_domains()[0],"type":'TXT',"value":"v=DMARC1; p=none"})
    return domains
+
+def panel_server_config():
+    confi = []
+
+    email_field = __salt__['pillar.get']('return_field',default='username')
+    if email_field =='username':
+        email_field = "Email address is combination of username and domain name '"+email_domains()[0]+"'"
+    else:
+        email_field = "Email address is read from 'mail' field in Active Directory"        
+    confi.append({"key":"Email adresses","value":email_field})
+    confi.append({"key":"Default quota","value":"1GB"}) #NINO quota rule in /etc/dovecot/dovecot.conf
+
+    return confi
+
+
+
+def panel_statistics():
+    diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/vmail/ -o TARGET').split()[1]]
+    statistics = [{'key' : 'Mail storage partition used size (MB)', 'value': int(diskusage['used'])/1024},
+                  {'key' : 'Mail storage partition free space (MB)', 'value': int(diskusage['available'])/1024},
+                  {'key' : 'Mail storage partition mount point', 'value': diskusage['filesystem']}]
+    return statistics
+
+def panel_statisticsXXX():
+   
+    statistics = [{'key' : 1, 'value': 100},
+                  {'key' : 2, 'value': 200},
+                  {'key' : 3, 'value': 300}]
+    return statistics    
 
 def get_dns_config():
    domains = []

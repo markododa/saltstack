@@ -10,12 +10,14 @@ from va_directory_panels import panels
 
 #import samba_parser
 
-
+builtin_groups = ['Domain Controllers','Domain Guests', 'Guests', 'Domain Computers', 'Account Operators', 'Group Policy Creator Owners', '' 'DnsAdmins','Enterprise Admins','Backup Operators','Allowed RODC Password Replication Group','Cert Publishers','Certificate Service DCOM Access','Cryptographic Operators','Denied RODC Password Replication Group','Distributed COM Users','DnsUpdateProxy','Enterprise Read-Only Domain Controllers','Event Log Readers', 'IIS_IUSRS', 'Incoming Forest Trust Builders','Network Configuration Operators','Performance Log Users', 'Performance Monitor Users','Pre-Windows 2000 Compatible Access','Print Operators','RAS and IAS Servers','Read-Only Domain Controllers','Replicator','Schema Admins', 'Server Operators', 'Terminal Server License Servers', 'Windows Authorization Access Group']
 panel_list_dns = list_dns
 
 def panel_ou_members(ou_name):
     ou_members = get_ou_members(ou_name)
-    ou_source = [{'member' : x[0],"type":', '.join(x[1])} for x in ou_members]
+    ou_source = [{'member' : x,"type":' - '} for x in ou_members]
+    #ou_source = [{'member' : x[0],"type":', '.join(x[1])} for x in ou_members]
+    #NINO ne go vraka tipot, samo first name?
     return ou_source
 
 def format_dns_arguments(entry_type, entry_data):
@@ -32,6 +34,14 @@ def format_dns_arguments(entry_type, entry_data):
         entry_data = {'hostname' : entry_data}
 
     return entry_data
+
+def action_edit_dns(entry_name, entry_type, old_data, new_data = {}):
+    old_data = format_dns_arguments(entry_type, old_data)
+
+    new_data = format_dns_arguments(entry_type, new_data)
+    if (entry_name==''):
+        entry_name=get_cur_domain()
+    return update_dns_entry(entry_name, entry_type, old_data, new_data)
 
 def action_add_dns(entry_type, entry_name, entry_data):
     entry_data = format_dns_arguments(entry_type,entry_data)
@@ -54,10 +64,31 @@ def panel_list_group_members(group_name):
 def panel_list_users():
     return list_users()['users']
 
+def action_add_group(name, description, mail):
+    attrs = {'description':description, 'mail': mail}
+    result = add_group(name, attrs)
+    return result
+
 def panel_get_groups():
     groups = get_groups()
     groups = [{"groupname" : x[0], "description" : x[2], "email" : x[1]} for x in groups]
     return groups
+
+def panel_get_groups_builtin():
+    groups = get_groups()
+    filtered_groups=[]
+    for group in groups:
+        if group[0] in builtin_groups:
+            filtered_groups.append({"groupname" : group[0], "description" : group[2], "email" : group[1]})
+    return filtered_groups
+
+def panel_get_groups_handmade():
+    groups = get_groups()
+    filtered_groups=[]
+    for group in groups:
+        if group[0] not in builtin_groups:
+            filtered_groups.append({"groupname" : group[0], "description" : group[2], "email" : group[1]})
+    return filtered_groups
 
 def panel_list_organizational_units():
     org_units = list_organizational_units()
@@ -130,3 +161,80 @@ def users_last_logins():
 
 def users_log():
     return samba_parser.open_and_parse_log('/var/log/user.log')
+
+def add_user_to_group(username,group):
+    return manage_user_groups(username, [group], action = 'addmembers')
+
+
+def add_user_to_group2(group,username):
+    return manage_user_groups(username, [group], action = 'addmembers')
+
+
+def rm_user_from_group(username, group):
+    #groups = 
+    return manage_user_groups(username, [group], action = 'removemembers')
+
+def rm_user_from_group2(group,username):
+    #groups = 
+    return manage_user_groups(username, [group], action = 'removemembers')
+
+
+def panel_list_user_groups(username):
+    user_groups=[]
+    groups = get_groups()
+    for group in groups:
+        group_members = list_group_members(group[0])
+        if username in group_members:
+#            user_groups.append({"groupname" : group[0], "description" : group[2], "email" : group[1], "username" : username})
+            user_groups.append({"groupname" : group[0], "username" : username})
+    return user_groups
+
+
+def panel_list_user_groups_notmember(username):
+    user_groups=[]
+    groups = get_groups()
+    for group in groups:
+        group_members = list_group_members(group[0])
+        if username not in group_members:
+#            user_groups.append({"groupname" : group[0], "description" : group[2], "email" : group[1], "username" : username})
+            user_groups.append({"groupname" : group[0], "username" : username})
+    return user_groups
+
+def panel_user_details(username):
+    user_details=[]
+    data=get_user_data(username)
+    
+    user_details.append({"username": username, "item" : "First name", "value" : data["first_name"]})
+    user_details.append({"username": username, "item" : "Last name", "value" : data["last_name"]})
+    user_details.append({"username": username, "item" : "Display name", "value" : data["display_name"]})
+    user_details.append({"username": username, "item" : "Description", "value" : data["description"]})
+    user_details.append({"username": username, "item" : "Office name", "value" : data["physical_delivery_office_name"]})
+    user_details.append({"username": username, "item" : "E-mail", "value" : data["email"]})
+    user_details.append({"username": username, "item" : "Phone number", "value" : data["phone"]})
+    user_details.append({"username": username, "item" : "Mobile Phone", "value" : data["mobile"]})
+    user_details.append({"username": username, "item" : "Home Phone", "value" : data["home_phone"]})
+    user_details.append({"username": username, "item" : "Company", "value" : data["company"]})
+    user_details.append({"username": username, "item" : "Roaming profile path", "value" : data["profile_path"]})
+    user_details.append({"username": username, "item" : "Script path", "value" : data["script_path"]})
+    return user_details
+
+def change_user_detail(username, item, new_value):
+    attr_map = {
+        "First name" : "first_name", 
+        "Last name" : "last_name", 
+        "Display name" : "display_name", 
+        "Description" : "description", 
+        "Office name" : "physical_delivery_office_name", 
+        "E-mail" : "email", 
+        "Phone number" : "phone", 
+        "Mobile Phone" : "mobile", 
+        "Home Phone" : "home_phone", 
+        "Company" : "company", 
+        "Roaming profile path" : "profile_path", 
+        "Script path" : "script_path", 
+   
+        
+    }
+    attr = attr_map[item]
+    result = edit_user(username, {attr : new_value})
+    return 

@@ -137,7 +137,8 @@ panels = {
                 "label": "Size (b)"
             }, {
                 "key": "action",
-                "label": "Actions"
+                "label": "Actions",
+                "width": "5%"
             }
             ],
             "source": "mail_queue",
@@ -199,7 +200,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "Filter",
+                            "name": "filter",
                             "value": "",
                             "label": "Allow sender",
                             "required": True
@@ -251,7 +252,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "Filter",
+                            "name": "filter",
                             "value": "",
                             "label": "Block sender",
                             "required": True
@@ -288,7 +289,7 @@ panels = {
             }, {
                 "key": "action",
                 "label": "Actions",
-                "width": "20%"
+                "width": "5%"
             }
             ],
             "source": "get_whitelist",
@@ -315,7 +316,7 @@ panels = {
             }, {
                 "key": "action",
                 "label": "Actions",
-                "width": "20%"
+                "width": "5%"
             }
             ],
             "source": "get_blacklist",
@@ -337,6 +338,12 @@ panels = {
             },
             "table_dns": {
                 "source": "panel_get_dns_config"
+            },
+            "table_config": {
+                "source": "panel_server_config"
+            },
+            "table_statistics": {
+                "source": "panel_statistics"
             },
             "table_net": {
                 "source": "panel_networking",
@@ -366,7 +373,8 @@ panels = {
             "reducers": ["table", "panel", "alert"],
             "columns": [{
                 "key": "dns",
-                "label": "DNS record"
+                "label": "Needed DNS records",
+                       "width": "30%"
             }, {
                 "key": "type",
                 "label": "Type"
@@ -375,9 +383,62 @@ panels = {
                 "label": "Value"
             }
             ],
-            "id": ["key"],
+            "id": ["dns"],
             "source": "panel_get_dns_config"
         }, {
+            "type": "Table",
+            "name": "table_config",
+            "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "key",
+                "label": "Item",
+                "width": "30%"
+            }, {
+                "key": "value",
+                "label": "Value"
+            }
+            ],
+            "id": ["key"],
+            "source": "panel_server_config"
+        }, {
+            "type": "Table",
+            "name": "table_statistics",
+            "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "key",
+                "label": "Storage",
+                "width": "30%"
+            }, {
+                "key": "value",
+                "label": "Value"
+            }
+            ],
+            "id": ["key"],
+            "source": "panel_statistics"
+            },
+            
+            
+        #     {
+        #     "type": "CustomChart",
+        #     "chartType": "line",
+        #     "name": "graph1",
+        #     "xCol": "key",
+        #     "reducers": ["table"],
+        #     "datasets": [{
+        #         "column": "value",
+        #         "label": "Value",
+        #         "color": "#11eeee",
+        #         "backgroundColor": "#ee11ee",
+        #         "borderColor": "#eeee11",
+        #         "data":[]
+        #     }
+        #     ],
+        #      "target": "table_statistics"
+        # },
+            
+             {
             "type": "Table",
             "name": "table_net",
             "pagination": False,
@@ -512,7 +573,8 @@ panels = {
                 "label": "Rule"
             }, {
                 "key": "action",
-                "label": "Actions"
+                "label": "Actions",
+                "width": "5%"
             }
             ],
             "source": "get_user_rules",
