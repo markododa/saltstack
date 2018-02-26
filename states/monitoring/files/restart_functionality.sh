@@ -12,6 +12,8 @@ fi
 
 
 service icinga2 stop
+service npcd stop
 sleep 10
 service icinga2 start
+service npcd start 
 service icinga2 status
