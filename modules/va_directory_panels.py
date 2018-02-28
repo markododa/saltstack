@@ -89,6 +89,14 @@ panels = {
                     }
                     ]
                 }
+            }, {
+                "type": "Button",
+                "name": "Generate Password",
+                "glyph": "cog",
+                "action": "va_utils.generate_password",
+                #"action": "modal",
+                "reducers": ["alert"]
+
             }
             ]
         }, {

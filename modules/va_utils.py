@@ -1,4 +1,4 @@
-import salt, subprocess, json, importlib, sys, os
+import salt, subprocess, json, importlib, sys, os, random, string
 from va_pdf_utils import get_pdf
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -40,6 +40,15 @@ def restart_functionality(status):
 
     return returncode
 
+
+def generate_password():
+    result = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits + str(".#^-_")) for _ in range(7))
+    mustCaps = ''.join(random.SystemRandom().choice(string.ascii_uppercase) for _ in range(1))
+    mustNum = ''.join(random.SystemRandom().choice(string.digits) for _ in range(1))
+    mustChar = ''.join(random.SystemRandom().choice(str(".#^-_")) for _ in range(1))
+    together = result+mustCaps+mustNum+mustChar
+    mixed = ''.join(random.sample(together,len(together)))
+    return mixed
 
 def get_time_zone():
     result = __salt__['timezone.get_zone']()

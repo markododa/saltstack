@@ -803,13 +803,15 @@ def backup_info(hostname):
     content = sorted(content, key = lambda x: x['startTime'], reverse = True)
     return content
 
-def backup_info_graph(hostname):
+def backup_info_graph_old(hostname):
+    #try to calculate size for incr backups
     hostname = hostname.lower()
     backup_list = backupNumbers(hostname)
     content = []
+    last_full_size = 0
+    backup_list = sorted(backup_list) #, key = lambda x: x['startTime'], reverse = False)
     for backup in backup_list:
         info = {}
-#        write_backupinfo_json(hostname, str(backup))
         json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
     
         json_data = file_to_dict(json_path)['%backupInfo']
@@ -818,30 +820,40 @@ def backup_info_graph(hostname):
         if 'startTime' in json_data:        
             info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
             info["startTimeStamp"] = int(json_data["startTime"])
-        # if 'endTime' in json_data: 
-        #     info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M:%S'))
-        # if 'startTime' in json_data and 'endTime' in json_data:
-        #     info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
-        # if 'sizeNew' in json_data:
-        #     info["sizeNew"] = bytes_to_readable(int(json_data["sizeNew"]))
-        if 'size' in json_data:
-            # info["size"] = bytes_to_readable(int(json_data["size"]))
-            info["sizeGraph"] = int(json_data["size"])/1024/1024
-        # info["type"] = json_data["type"]
-
-        # a = int(time.time()) - int(json_data["endTime"])
-        # m, s = divmod(a, 60)
-        # h, m = divmod(m, 60)
-        # d, h = divmod(h, 24)
-        # info.update({
-        #     "age" : str("%d day(s) %d:%02d:%02d") % (d, h, m, s),
-        #     "backup" : str(backup),
-        #     "absolute_age" : a
-        # })
-        #NOPE #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
+        if json_data["type"]=="full":
+            last_full_size=int(json_data["size"])
+            info["sizeGraph"] = last_full_size/1024/1024
+        else:
+            last_full_size = last_full_size+int(json_data["sizeNew"])
+            info["sizeGraph"] = (last_full_size)/1024/1024
         content.append(info)
+    #content = sorted(content, key = lambda x: x['startTime'], reverse = False)
+    return content
+
+
+def backup_info_graph(hostname):
+    #make graphs from full backups only
+    hostname = hostname.lower()
+    backup_list = backupNumbers(hostname)
+    content = []
+    #last_full_size = 0
+    #backup_list = sorted(backup_list) #, key = lambda x: x['startTime'], reverse = False)
+    for backup in backup_list:
+        info = {}
+        json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
+    
+        json_data = file_to_dict(json_path)['%backupInfo']
+
+        #TODO proper handling of these cases. 
+        if 'startTime' in json_data:        
+            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
+            info["startTimeStamp"] = int(json_data["startTime"])
+            info["sizeGraph"] = (int(json_data["size"]))/1024/1024
+        if json_data["type"]=="full":
+            content.append(info)
     content = sorted(content, key = lambda x: x['startTime'], reverse = False)
     return content
+
 
 def tar_create(arguments, location='/usr/share', backupname='test_backup', backupnumber=-1):
     tar_create_cmd = '/usr/share/backuppc/bin/BackupPC_tarCreate -h '+arguments[0]+' -s '+arguments[1]+' -n '+str(backupnumber)+' '+arguments[2]+' > '+location+'/'+backupname+'.tar'
