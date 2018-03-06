@@ -42,11 +42,17 @@ def get_status():
 def list_user_logins(user):
         return vpn_parser.get_logins_for_user(user)
 
+def subnet():
+    return type(str(re.split("[.]0 ", str(__salt__['pillar.get']('openvpon:server:srvr:server','missing')))[0]))
+
 def create_ccd(user):
     if not os.path.isfile('/etc/openvpn/ccd/'+user):
     	broj = int(open('/etc/openvpn/nextip','r').read())
     	open('/etc/openvpn/nextip', 'w').write(str(broj+4))
-    	subnet = str(re.split("[.]0 ", str(__salt__['pillar.get']('openvpn:server:srvr:server')))[0])+'.'
+    	subnet = __salt__['pillar.get']('openvpn:server:srvr:server')
+        if subnet == '':
+            return 'Subnet not set'
+        subnet = str(re.split("[.]0 ", str(subnet))[0])+'.'
     	open('/etc/openvpn/ccd/'+user, 'w+').write(str('ifconfig-push ' + subnet+str(broj) + ' '  + subnet+str(broj-1)+'\n'))
 	return True
     else:
