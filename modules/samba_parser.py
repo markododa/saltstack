@@ -1,7 +1,7 @@
 import sys, re
 
 def parse_data(data):
-    data = re.sub('\s\s+', ' ', data)
+    data = re.sub(r'\s\s+', ' ', data)
     data = [x.split(' ') for x in data.split('\n') if 'va-directory' in x]
     data = [{'date' : ' '.join(x[0:3]), 'instance' : x[3], 'service' : x[4], 'info' : x[5].split('|')} for x in data if len(x)>=5]
     for x in data:

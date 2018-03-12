@@ -94,7 +94,7 @@ panels = {
                 "name": "Generate Password",
                 "glyph": "cog",
                 "action": "va_utils.generate_password",
-                #"action": "modal",
+                "data": {"server_name":"va-master","module":"va_utils","action":"generate_password"},
                 "reducers": ["alert"]
 
             }

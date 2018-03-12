@@ -76,11 +76,9 @@ def get_pdf(panel, pdf_file = '/tmp/table.pdf', range_from = 0, filter_field = '
 
 
     elements = contents_to_elements(pdf_contents, pdf_file, filter_field = filter_field)
- 
     doc = SimpleDocTemplate(pdf_file, pagesize=letter)
-
     doc.build(elements)
-  
+
 
 def row_contains(row, filter_field):
     return any([filter_field in row[x] for x in row])

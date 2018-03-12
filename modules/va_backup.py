@@ -27,12 +27,14 @@ def bytes_to_readable(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 default_paths = {
-    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/var/lib/pnp4nagios/perfdata/'],
-    'va-directory' : ['/root/.va/backup', '/etc/openvpn', '/etc/samba', '/var/lib/samba/'],
-    'va-backup' : ['/etc/backuppc'],
-    'va-fileshare' : ['/home', '/etc/samba'],
-    'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/'],
-    'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud'],
+    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/etc/ssmtp', '/usr/lib/nagios/plugins',  '/var/lib/pnp4nagios/perfdata/', '/etc/nagios/nrpe.d/'],
+    'va-directory' : ['/root/.va/backup', '/etc/openvpn', '/etc/samba', '/var/lib/samba/', '/etc/nagios/nrpe.d/'],
+    'va-backup' : ['/etc/backuppc', '/etc/nagios/nrpe.d/'],
+    'va-fileshare' : ['/home', '/etc/samba', '/etc/nagios/nrpe.d/'],
+    'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/', '/etc/nagios/nrpe.d/'],
+    'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud', '/etc/nagios/nrpe.d/'],
+    'va-cloudshare' : ['/root/.va/backup', '/var/www/owncloud', '/etc/nagios/nrpe.d/'],
+    'va-proxy' : ['/root/.va/backup', '/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'],    
 }
 
 def host_file(hostname):
@@ -49,16 +51,13 @@ def get_panel(panel_name, server_name = '', backupNum = -1):
         if backupNum == -1:
             backupNum = last_backup(host)
         data = dir_structure1(host, backupNum)
-        ppanel['form_source'] = {"dropdown": {}};
+        ppanel['form_source'] = {"dropdown": {}}
         ppanel["form_source"]["dropdown"]["values"] = hostnames
         ppanel["form_source"]["dropdown"]["select"] = host
         ppanel['tbl_source']['table'] = data
         ppanel['tbl_source']['path'] = [host, backupNum]
         return ppanel
-#    elif panel_name == "backup.info":
-#        data = backup_info(host)
-#        ppanel['tbl_source']['table'] = data
-#        return ppanel
+
 
 def dir_structure1(host, *args):
     check = False
@@ -85,10 +84,15 @@ def dir_structure1(host, *args):
             size, time = (a['size'], a['time'])
 #        if not (siz///': 
         if type == 'folder' or size != '...': 
-            result.append({'dir': key, 'type': type, 'size': size, 'time': time});
+            if type == 'folder':
+                sortkey = 'a'
+            else:
+                sortkey = 'z' 
+            result.append({'dir': key, 'type': type, 'size': size, 'time': time, 'sortkey': sortkey});
     if check:
         return {'val': backupNum, 'list': result}
     [d.update({'size' : ''}) for d in result if d['type'] == 'folder']
+    result = sorted(result, key = lambda x: (x['sortkey'],x['dir'].lower()), reverse = False)
     return result
 
 def get_path_from_backup_number(hostname, backupnumber):
@@ -316,7 +320,6 @@ def get_folders_from_config(hostname):
     folders = host_config.get(host_protocol, [])
 
     return folders
-   
 
 def list_folders(hostnames):
     folders_list = dict()
@@ -398,7 +401,6 @@ def get_full_max(hostname):
     return p
 
 def get_incr_max(hostname):
- #   protocol = get_global_config('IncrKeepCnt', hostname) or "Global"
     p = conf_file_to_dict(hostname).get('IncrKeepCnt') or pretty_global_config('IncrKeepCnt')+" *"
     return p
 
@@ -483,12 +485,12 @@ def pretty_global_config(item, hostname = 'config'):
 def get_item_from_conf(item, hostname = 'config'):
     host_conf = host_file(hostname)
     with open(host_conf) as f:
-       config = f.read()
+        config = f.read()
 
     #you can probably do some more regexing to get perl values but this seems to work
-    item_regex_comment_group = '(#.*)?'
-    item_regex_var_definition = "\$Conf{%s}\s*=\s*" % item
-    item_regex_value_characters = '([a-zA-Z\/0-9\.\,]*)'
+    item_regex_comment_group = r'(#.*)?'
+    item_regex_var_definition = r"\$Conf{%s}\s*=\s*" % item
+    item_regex_value_characters = r'([a-zA-Z\/0-9\.\,]*)'
     item_regex_value = "'?%s'?;" % item_regex_value_characters
 
     item_regex = item_regex_comment_group + item_regex_var_definition + item_regex_value
@@ -524,7 +526,7 @@ def conf_to_json(conf):
     if any(['Got reply' in x for x in conf.keys()]): #Some outputs have the form: `Got reply: %Info : ...` which we want to filter out and just return a nice dictionary
         conf_key = conf.keys()[0]
         conf = conf[conf_key]
-    conf = {re.sub('\$Conf\{(.*)\}', '\g<1>', x) : conf[x] for x in conf} #Replace '$Conf{var}' with 'var' to make it more readable
+    conf = {re.sub(r'\$Conf\{(.*)\}', r'\g<1>', x) : conf[x] for x in conf} #Replace '$Conf{var}' with 'var' to make it more readable
 
     return conf
 
@@ -608,7 +610,7 @@ def reset_schedule(hostname):
         default_values = (0.97, '15, 0, 2, 1, 2, 5, 2', 10, '0')
     if protocol == 'RsyncShareName': 
         pass
- #       default_values = (1, ['15', '0', '2', '1', '2', '5', '2'], 10, '0')  #Redosled e: (FullPeriod, FullMax, IncrPeriod, IncrMax)
+#       default_values = (1, ['15', '0', '2', '1', '2', '5', '2'], 10, '0')  #Redosled e: (FullPeriod, FullMax, IncrPeriod, IncrMax)
 
     change_fullperiod(hostname, default_values[0]) 
     change_fullmax(hostname, default_values[1])
@@ -715,11 +717,11 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     struktura = os.walk(rootdir)
 
     def filter_f(name):
-       BLACKLIST = ('attrib', 'backupInfo', 'backupInfo.json')
-       if len(name) > 0 and name[0] == 'f' and name not in BLACKLIST: 
-           return name[1:]
-       else:
-           return name
+        BLACKLIST = ('attrib', 'backupInfo', 'backupInfo.json')
+        if len(name) > 0 and name[0] == 'f' and name not in BLACKLIST: 
+            return name[1:]
+        else:
+            return name
 
     for path, dirs, files in struktura:
         new_path = [filter_f(part) for part in path.split(os.sep)]
@@ -927,7 +929,7 @@ restore = restore_backup
 def infodict(path):
     contents = ''
     cmd = 'sudo -u backuppc /usr/share/backuppc/bin/BackupPC_attribPrint \'%s/attrib\' > \'%s/attrib0\'' % (path, path)
-   # cmd = ['sudo -u ', 'backuppc', '/usr/share/backuppc/bin/BackupPC_attribPrint '+path+'/attrib', '>', path+'/attrib0'
+    # cmd = ['sudo -u ', 'backuppc', '/usr/share/backuppc/bin/BackupPC_attribPrint '+path+'/attrib', '>', path+'/attrib0'
     subprocess.call(cmd, shell = True)
     with open(path +'/attrib0','r+') as f:
         contents = f.read()
@@ -957,11 +959,12 @@ def backup_attrib(hostname, number, *args):
         share = args[0]
         share = 'f' + share.replace('/','%2f')
         path = ''
-    elif len(args) == 2:
+    elif len(args) >= 2:
         share = args[0]
         share = 'f' + share.replace('/','%2f')
-        path = '/' + args[1]
+        path = '/' + '/'.join(args[1:])
         path = path.replace('/', '/f')
+#    return "Calling " + start+hostname+'/'+str(number)+'/'+share+path
     infodict(start+hostname+'/'+str(number)+'/'+share+path)
     content = {}
 

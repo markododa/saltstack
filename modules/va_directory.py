@@ -118,7 +118,6 @@ def panel_get_dcs():
 def panel_get_dc_info():
     res = netcmd_get_domain_infos_via_cldap(lp, None, '127.0.0.1')
     res = {'forest' : res.forest, 'domain' : res.dns_domain, 'domain_name': res.domain_name, 'pdc_dns_name' : res.pdc_dns_name, 'pdc_name' : res.pdc_name, 'server_site' : res.server_site, 'client_site' : res.client_site}
-   
     #pass_settings = output_to_dict(samba_tool(['domain', 'passwordsettings', 'show']).split('\n')[1:])
     res = [{'key' : x.replace('_',' ').title(), 'value'  : res[x]} for x in res]
     return res
@@ -137,9 +136,7 @@ def panel_fsmo_show():
 
 def panel_fsmo_show_old():
     domain_dn = sam_ldb.domain_dn()
-
     fsmo_args = { 'infrastructure_dn' : "CN=Infrastructure," + domain_dn, 'naming_dn' : "CN=Partitions,%s" % sam_ldb.get_config_basedn(), 'schema_dn' : sam_ldb.get_schema_basedn(), 'rid_dn' : "CN=RID Manager$,CN=System," + domain_dn}
-
     res = {}
 
     for attr in fsmo_args:
@@ -185,7 +182,6 @@ def panel_list_user_groups(username):
     for group in groups:
         group_members = list_group_members(group[0])
         if username in group_members:
-#            user_groups.append({"groupname" : group[0], "description" : group[2], "email" : group[1], "username" : username})
             user_groups.append({"groupname" : group[0], "username" : username})
     return user_groups
 
@@ -196,7 +192,6 @@ def panel_list_user_groups_notmember(username):
     for group in groups:
         group_members = list_group_members(group[0])
         if username not in group_members:
-#            user_groups.append({"groupname" : group[0], "description" : group[2], "email" : group[1], "username" : username})
             user_groups.append({"groupname" : group[0], "username" : username})
     return user_groups
 
@@ -232,8 +227,6 @@ def change_user_detail(username, item, new_value):
         "Company" : "company", 
         "Roaming profile path" : "profile_path", 
         "Script path" : "script_path", 
-   
-        
     }
     attr = attr_map[item]
     result = edit_user(username, {attr : new_value})
