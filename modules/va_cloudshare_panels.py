@@ -1,5 +1,5 @@
 panels = {
-    "owncloud.overview": {
+    "cloudshare.overview": {
         "title": "Overview",
         "tbl_source": {
             "table_chkf": {
@@ -43,9 +43,19 @@ panels = {
             }, {
                 "key": "status",
                 "label": "Status"
+            }, {
+                "key": "action",
+                "label": "Actions",
+                "width": "5%"
             }
             ],
-            "id": ["status"],
+            "id": ["plugin", "status"],
+            "actions": [{
+                "action": "action_toggle_app",
+                "name": "Toggle"
+            }
+            ],
+            
             "source": "panel_plugins"
         }, {
             "type": "Table",
@@ -82,7 +92,7 @@ panels = {
         }
         ]
     },
-    "owncloud.users": {
+    "cloudshare.users": {
         "title": "Users",
         "tbl_source": {
             "table_users": {
@@ -98,7 +108,7 @@ panels = {
                 "label": "Username"
             }, {
                 "key": "name",
-                "label": "Name",
+                "label": "Display Name",
             }, {
                 "key": "lastlogin",
                 "label": "Last Login"
@@ -109,7 +119,7 @@ panels = {
         }
         ]
     },
-    "owncloud.quotas": {
+    "cloudshare.quotas": {
         "title": "Quotas",
         "tbl_source": {
             "table_quota": {
@@ -119,10 +129,13 @@ panels = {
         "content": [{
             "type": "Table",
             "name": "table_quota",
-            "reducers": ["table", "panel", "alert"],
+            "reducers": ["table", "panel", "modal", "alert"],
             "columns": [{
+                "key": "username",
+                "label": "Username",
+            }, {
                 "key": "displayname",
-                "label": "Name",
+                "label": "Display Name",
             }, {
                 "key": "enabled",
                 "label": "Enabled"
@@ -131,15 +144,67 @@ panels = {
                 "label": "Used space"
             }, {
                 "key": "total",
-                "label": "Quota"
+                "label": "Limit"
+
+            }, {
+                "key": "action",
+                "label": "Actions",
+                "width": "5%"
             }
             ],
-            "id": ["displayname"],
-            "source": "panel_quota"
+            "actions": [{
+                "action": "setquota",
+                "name": "Set Quota"
+            }
+            ],
+            "id": ["username"],
+            "source": "panel_quota",
+            "modals": {
+                "setquota": {
+                    "title": "Set Quota",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Remove",
+                        "class": "primary",
+                        "action": "action_setquota"
+                    }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "text",
+                            "name": "storage_quota",
+                            "value": "",
+                            "label": "Size"
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form to set quota"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "Enter value in format: 100MB, 5GB etc."
+                        }
+                        ]
+                    }
+                    ]
+                },
+
+            }
         }
         ]
     },
-    "owncloud.shares": {
+    "cloudshare.shares": {
         "title": "Shares by Admin",
         "tbl_source": {
             "table_shares": {

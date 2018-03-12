@@ -2,6 +2,10 @@ import subprocess, requests, json, re, netaddr
 from va_utils import check_functionality as panel_check_functionality
 from va_email_panels import panels
 
+
+def dovecot_quota():
+    return __salt__['cmd.run']('/usr/bin/doveconf plugin/quota_rule -h').split('=')[1:]
+
 def get_panel(panel_name, user = ''):
     ppanel = panels[panel_name]
     if panel_name == "email.rules":
@@ -61,7 +65,7 @@ def rm_recipient_line(user, recipient):
 
 def add_email_user_restriction(user):
     user_file_path = '/etc/postfix/' + user.replace('@', '.')
-    print 'Touching : ', user_file_path
+    # print 'Touching : ', user_file_path
     touch_file(user_file_path)
     postmap_user(user)
     change_postfix_restriction(user, action = 'add')
@@ -173,10 +177,10 @@ def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
 # --add --blacklist baduser@example.com
     array = address.split(' ')
     for i in range(len(array)):
-       if netaddr.valid_ipv4(array[i]) or netaddr.valid_ipv6(array[i]):
-           True
-       elif '@' not in array[i]:
-           array[i] = '@'+array[i]
+        if netaddr.valid_ipv4(array[i]) or netaddr.valid_ipv6(array[i]):
+            True
+        elif '@' not in array[i]:
+            array[i] = '@'+array[i]
     address = ' '.join(array)
     return __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --'+action+' --'+ruleset+' '+address)
 
@@ -194,23 +198,23 @@ def delete_filter_blacklist(filter=''):
     return wbmanage('delete','blacklist',filter)
 
 def panel_get_dns_config():
-   domains = []
-   keys = __salt__['cmd.run']('amavisd-new showkeys').split('; key#')[1:]
-   for domain in keys:
-       url = ''.join(domain.replace(' '*2,'').split("\n")[1].split('3600')[0])
-       dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
+    domains = []
+    keys = __salt__['cmd.run']('amavisd-new showkeys').split('; key#')[1:]
+    for domain in keys:
+        url = ''.join(domain.replace(' '*2,'').split("\n")[1].split('3600')[0])
+        dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
 
-       result = requests.get('http://ifconfig.co/json')
-       public_ip = json.loads(result.text)['ip']
-       domains.append({"dns":"va-email."+email_domains()[0],"type":'A',"value":public_ip})
-       domains.append({"dns":"va-email."+email_domains()[0],"type":'MX',"value":public_ip})
-       domains.append({"dns":"imap.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
-       domains.append({"dns":"pop3.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
-       domains.append({"dns":"smtp.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
-       domains.append({"dns":url[0:-1],"type":'TXT',"value":dkim})
-       domains.append({"dns":email_domains()[0],"type":'TXT',"value":"v=spf1 a mx ip4:"+public_ip+" ~all"})
-       domains.append({"dns":"_dmarc."+email_domains()[0],"type":'TXT',"value":"v=DMARC1; p=none"})
-   return domains
+        result = requests.get('http://ifconfig.co/json')
+        public_ip = json.loads(result.text)['ip']
+        domains.append({"dns":"va-email."+email_domains()[0],"type":'A',"value":public_ip})
+        domains.append({"dns":"va-email."+email_domains()[0],"type":'MX',"value":public_ip})
+        domains.append({"dns":"imap.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
+        domains.append({"dns":"pop3.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
+        domains.append({"dns":"smtp.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
+        domains.append({"dns":url[0:-1],"type":'TXT',"value":dkim})
+        domains.append({"dns":email_domains()[0],"type":'TXT',"value":"v=spf1 a mx ip4:"+public_ip+" ~all"})
+        domains.append({"dns":"_dmarc."+email_domains()[0],"type":'TXT',"value":"v=DMARC1; p=none"})
+    return domains
 
 def panel_server_config():
     confi = []
@@ -221,7 +225,7 @@ def panel_server_config():
     else:
         email_field = "Email address is read from 'mail' field in Active Directory"        
     confi.append({"key":"Email adresses","value":email_field})
-    confi.append({"key":"Default quota","value":"1GB"}) #NINO quota rule in /etc/dovecot/dovecot.conf
+    confi.append({"key":"Default quota","value":dovecot_quota()})
 
     return confi
 
@@ -230,34 +234,25 @@ def panel_server_config():
 def panel_statistics():
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/vmail/ -o TARGET').split()[1]]
     statistics = [{'key' : 'Mail storage partition used size (MB)', 'value': int(diskusage['used'])/1024},
-                  {'key' : 'Mail storage partition free space (MB)', 'value': int(diskusage['available'])/1024},
-                  {'key' : 'Mail storage partition mount point', 'value': diskusage['filesystem']}]
+                {'key' : 'Mail storage partition free space (MB)', 'value': int(diskusage['available'])/1024},
+                {'key' : 'Mail storage partition mount point', 'value': diskusage['filesystem']}]
     return statistics
 
-def panel_statisticsXXX():
-   
-    statistics = [{'key' : 1, 'value': 100},
-                  {'key' : 2, 'value': 200},
-                  {'key' : 3, 'value': 300}]
-    return statistics    
-
 def get_dns_config():
-   domains = []
-   keys = __salt__['cmd.run']('amavisd-new showkeys').split('; key#')[1:]
-   for domain in keys:
-       url = ''.join(domain.replace(' '*2,'').split("\n")[1].split('3600')[0])
-       dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
-       domains.append(url[0:-1],' TXT ',dkim)
-   return domains
+    domains = []
+    keys = __salt__['cmd.run']('amavisd-new showkeys').split('; key#')[1:]
+    for domain in keys:
+        url = ''.join(domain.replace(' '*2,'').split("\n")[1].split('3600')[0])
+        dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
+        domains.append(url[0:-1],' TXT ',dkim)
+    return domains
 
 def email_domains():
     return open('/etc/postfix/transport', 'r').read().lower().split(' dovecot\n')
 
-def dovecot_quota():
-    return __salt__['cmd.run']('/usr/bin/doveadm -f flow quota get -A')
 
 def str_is_error(s):
-    return re.search('^\(.*\)$', s) is not None
+    return re.search(r'^\(.*\)$', s) is not None
 
 def mail_queue():
     output =  __salt__['cmd.run']('mailq')
@@ -340,7 +335,6 @@ def delete_mail_queue_id(message_id):
     else :
         return_message = "Removing message with ID "+str(message_id)
         is_sucess = True
- 
     return {"data" : {}, "success" : is_success, "message" : return_message}
 
 def view_mail_queue_id(message_id):

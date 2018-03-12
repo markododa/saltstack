@@ -6,7 +6,7 @@ from va_fileshare_panels import panels
 def get_fileshares(path, share_type, extra_commands = []):
     command = ['du', path, '-d1', '-b', '-m'] + extra_commands
     result = subprocess.check_output(command).split('\n')
-    result = [re.sub('\s+', ' ', x).split(' ') for x in result if x]
+    result = [re.sub(r'\s+', ' ', x).split(' ') for x in result if x]
     result = [{'share' : share_type, 'path': path+x[1].split('/')[-1], 'size' : int(x[0]), 'subfolder' : x[1].split('/')[-1]} for x in result]
     result = sorted(result, key = lambda x: x['size'], reverse = False)
 #content = sorted(content, key = lambda x: x['startTime'], reverse = True)   
@@ -27,6 +27,6 @@ def panel_all_fileshares():
 def panel_statistics():
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /home/ -o TARGET').split()[1]]
     statistics = [{'key' : 'Shares partition used size (MB)', 'value': int(diskusage['used'])/1024},
-                  {'key' : 'Shares partition free space (MB)', 'value': int(diskusage['available'])/1024},
-                  {'key' : 'Shares partition mount point', 'value': diskusage['filesystem']}]
+                {'key' : 'Shares partition free space (MB)', 'value': int(diskusage['available'])/1024},
+                {'key' : 'Shares partition mount point', 'value': diskusage['filesystem']}]
     return statistics

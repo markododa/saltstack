@@ -74,6 +74,7 @@ panels = {
         },
         "content": [{
             "type": "Table",
+            "pagination": False,
             "name": "table_shares",
             "reducers": ["table", "panel", "alert"],
             "columns": [{
@@ -96,31 +97,32 @@ panels = {
             ],
             "id": ["path"],
             "source": "panel_all_fileshares"
-        },
-                {
-                "type": "CustomChart",
-                "chartType": "pie",
-                "name": "subfolder",
-                "xCol": "subfolder",
-               
-                 "height": "500",
+        # },
+        #     {
+        #     "type": "CustomChart",
+        #         "chartType": "pie",
+        #         "name": "subfolder",
+        #         "xCol": "subfolder",
+        #     "options" :{"height": "200","legend": {"position": "left"}},
+        #     "height": "200",
+
+
+        #     "legend": [{"position": "left"}],
+
+        #         "reducers": ["table"],
+        #         "datasets": [{
+        #             "column": "size",
+        #            "height": "200",
+        #             "name": "subfolder",
                  
-               # "xCol": "startTimeStamp",
-               # "xColType": "date",
-                "reducers": ["table"],
-                "datasets": [{
-                    "column": "size",
-                    # "label": "Size (MB)",
-                    "name": "subfolder",
-                    # "backgroundColor": "#337ab7",
-                    "backgroundColor": "#fff",
-                     "borderColor": "#2e6da4",
-                     "hoverBackgroundColor": "#337ab7",
-                     "title": "startTime",
-                    "data":[]
-                }
-                ],
-                 "target": "table_shares"
+        #             "backgroundColor": "#fff",
+        #             "borderColor": "#2e6da4",
+        #             "hoverBackgroundColor": "#337ab7",
+        #             "title": "startTime",
+        #             "data": []
+        #         }
+        #     ],
+        #     "target": "table_shares"
         }
         ]
     }

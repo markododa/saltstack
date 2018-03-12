@@ -612,12 +612,13 @@ panels = {
             "columns": [{
                 "key": "dir",
                 "label": "Files/Folders",
-                "width": "20%",
+                "width": "30%",
                 "action": "folder:dir_structure1",
                 "colClass": "type"
             }, {
                 "key": "size",
-                "label": "Size"
+                "label": "Size",
+                "width": "10%",
             }, {
                 "key": "time",
                 "label": "Time"

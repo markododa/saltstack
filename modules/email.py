@@ -1,6 +1,7 @@
 import subprocess, re, netaddr
 from va_email_panels import panels
 
+
 def get_panel(panel_name, user = ''):
     ppanel = panels[panel_name]
     if panel_name == "email.user":
@@ -183,10 +184,10 @@ def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
 # --add --blacklist baduser@example.com
     array = address.split(' ')
     for i in range(len(array)):
-       if netaddr.valid_ipv4(array[i]) or netaddr.valid_ipv6(array[i]):
-           True
-       elif '@' not in array[i]:
-           array[i] = '@'+array[i]
+        if netaddr.valid_ipv4(array[i]) or netaddr.valid_ipv6(array[i]):
+            True
+        elif '@' not in array[i]:
+            array[i] = '@'+array[i]
     address = ' '.join(array)
     return __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --'+action+' --'+ruleset+' '+address)
 
@@ -206,19 +207,17 @@ def delete_filter_blacklist(filter=''):
 
 
 def get_dns_config():
-   domains = []
-   keys = __salt__['cmd.run']('amavisd-new showkeys').split('; key#')[1:]
-   for domain in keys:
-       url = ''.join(domain.replace(' '*2,'').split("\n")[1].split('3600')[0])
-       dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
-       domains.append(url[0:-1]+' TXT '+dkim)
-   return domains
+    domains = []
+    keys = __salt__['cmd.run']('amavisd-new showkeys').split('; key#')[1:]
+    for domain in keys:
+        url = ''.join(domain.replace(' '*2,'').split("\n")[1].split('3600')[0])
+        dkim = ''.join(domain.replace(' '*2,'').replace('\n','').split('"')[1:-1])
+        domains.append(url[0:-1]+' TXT '+dkim)
+    return domains
 
 def email_domains():
     return open('/etc/postfix/transport', 'r').read().lower().split(' dovecot\n')
 
-def dovecot_quota():
-    return __salt__['cmd.run']('/usr/bin/doveadm -f flow quota get -A')
 
 def str_is_error(s):
     return re.search('^\(.*\)$', s) is not None
@@ -304,7 +303,6 @@ def delete_mail_queue_id(message_id):
     else :
         return_message = "Removing message with ID "+str(message_id)
         is_sucess = True
- 
     return {"data" : {}, "success" : is_success, "message" : return_message}
 
 def view_mail_queue_id(message_id):

@@ -12,15 +12,12 @@ def get_groups():
         group_name = [x for x in c if 'groupname' in x and '#' not in x][0]
         group_name = group_name.split(' = ')[1]
         group_name = group_name.replace("'", '')
-
         groups.append(group_name)
-            
     return groups
 
 
 def get_config_file_path_for_group(group, conf_type):
     groups = get_groups()
- 
     configs = {
         'banned_site_list' : proxy_conf_dir + '/lists/bannedsitelist%s',
         'exception_site_list' : proxy_conf_dir + '/lists/exceptionsitelist%s',
@@ -28,9 +25,7 @@ def get_config_file_path_for_group(group, conf_type):
     }
     conf = configs.get(conf_type)
     conf = conf % (groups.index(group) + 1)
-
-    return conf   
-
+    return conf
 
 def get_config_file_for_group(group, conf_type):
     conf_path = get_config_file_path_for_group(group, conf_type)
@@ -72,7 +67,7 @@ def category_to_line(category) :
 def manage_site_bans(group, value, ban_type = 'bans', action = 'append'):
     l = get_banned_list(group)
 
-    print ('My l is : ', l, ' and adding : ', value)
+    # print ('My l is : ', l, ' and adding : ', value)
     getattr(l[ban_type], action)(value)
     l['included'] = [category_to_line(x) for x in l['included']]
 
@@ -82,7 +77,6 @@ def manage_site_bans(group, value, ban_type = 'bans', action = 'append'):
 
     with open(conf_file, 'w') as f: 
         f.write(conf_contents)
-   
 
 def add_banned_site(group, site):
     manage_site_bans(group, site, 'bans')

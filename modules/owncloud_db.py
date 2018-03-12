@@ -39,8 +39,8 @@ def add_multiple(user, namelist, maillist):
 	    cursor.execute(insertion)
 	    db.commit()
 	except:
-	    return "Couldn't add contact."
 	    db.rollback()
+	    return "Couldn't add contact."
 	c += 1
     db.close()
 
@@ -59,7 +59,8 @@ def add_contact_for_user(user, email, name = ""):
         theid = cursor.fetchone()
         maxid = theid[0]
     except:
-        print "No IDs."
+        pass
+        # print "No IDs."
     #Getting the address book for the user
     getid = "SELECT id FROM contacts_addressbooks WHERE userid=\""+user+"\";"
     try:
@@ -67,7 +68,8 @@ def add_contact_for_user(user, email, name = ""):
         address = cursor.fetchone()
 	addressbookid = address[0]
     except:
-        print "Couldn't get Address Book."
+        # print "Couldn't get Address Book."
+        pass
     maxid = maxid + 1
     i = datetime.datetime.now()
     uid = computeMD5hash(email) #The UID for every contact is their md5hash encoded e-mail
@@ -79,9 +81,9 @@ def add_contact_for_user(user, email, name = ""):
     try:
     	cursor.execute(insertion)
     	db.commit()
-    	print "Success."
+    	# print "Success."
     except:
-    	print "Couldn't add contact."
+    	# print "Couldn't add contact."
     	db.rollback()
     
     db.close()
