@@ -37,5 +37,21 @@
 
     }
     ],
+    "panels": {
+        "admin": [{
+            "key": "proxy.rules",
+            "name": "Rules"
+        }, {
+            "key": "proxy.usergroups",
+            "name": "Users/Groups"
+        }, {
+            "key": "proxy.advanced",
+            "name": "Advanced"
+        }, {
+            "key": "proxy.overview",
+            "name": "Overview"
+        }],
+        "user": []
+    },
     "path": "-"
 }
