@@ -1,57 +1,79 @@
 {
     "name": "email",
     "description": "E-mail server with web interface and support for all popular mail clients.",
-    "module" : "va_email", 
+    "module": "va_email",
     "version": "1.2",
     "icon": "fa-envelope",
     "dependency": "directory,monitoring",
-    "substates" : ["va_email"],
-    "fields": [
-            {"type": "text", "name": "mail_domain", "label": "Domain for emails"},
-            {"type": "text", "name": "username", "label": "Username"},
-            {"type": "password", "name": "password", "label": "Password"}
-        ],
-    "services": [
-    {
-        "name": "VAR_HOSTNAME",
-        "checks": [
+    "substates": ["va_email"],
+    "fields": [{
+            "type": "text",
+            "name": "mail_domain",
+            "label": "Domain for emails"
+        },
         {
+            "type": "text",
+            "name": "username",
+            "label": "Username"
+        },
+        {
+            "type": "password",
+            "name": "password",
+            "label": "Password"
+        }
+    ],
+    "services": [{
+        "name": "VAR_HOSTNAME",
+        "checks": [{
             "id": "ssh",
             "name": "SSH Interface",
             "tcp": "VAR_DNS:22",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "imap",
             "name": "IMAP Secure",
             "tcp": "VAR_DNS:993",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "pop",
             "name": "POP Secure",
             "tcp": "VAR_DNS:995",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "smtp",
             "name": "SMTP Secure",
             "tcp": "VAR_DNS:587",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "web",
             "name": "Web Interface",
             "http": "https://VAR_DNS:443",
             "tls_skip_verify": true,
-            "method" : "POST",
+            "method": "POST",
             "interval": "30s",
             "timeout": "5s"
-        }
-        ]
+        }]
 
-    }
-    ],
+    }],
     "path": "-",
-    "panels": {"admin":[{"key":"email.user","name":"Users"},{"key":"email.queue","name":"Queue"},{"key":"email.filterlists","name":"Filters"},{"key":"email.overview","name":"Overview"}],"user":[]}
+    "panels": {
+        "admin": [{
+            "key": "email.user",
+            "name": "Users"
+        }, {
+            "key": "email.queue",
+            "name": "Queue"
+        }, {
+            "key": "email.filterlists",
+            "name": "Filters"
+        }, {
+            "key": "email.overview",
+            "name": "Overview"
+        }],
+        "user": []
+    }
 }

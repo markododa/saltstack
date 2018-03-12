@@ -4,8 +4,17 @@
 	"version": "1.1",
 	"icon": "fa-heartbeat",
 	"dependency": "directory,vpn",
-    "substates": ["monitoring.icingaweb2", "salt-master.salt"], 
-	"module" : "va_monitoring",
+	"substates": ["monitoring.icingaweb2", "salt-master.salt"],
+	"module": "va_monitoring",
 	"path": "-",
-        "panels": {"admin": [{"key": "monitoring.status", "name": "Status"},{"key": "monitoring.overview", "name": "Overview"}], "user": []}
+	"panels": {
+		"admin": [{
+			"key": "monitoring.status",
+			"name": "Status"
+		}, {
+			"key": "monitoring.overview",
+			"name": "Overview"
+		}],
+		"user": []
+	}
 }

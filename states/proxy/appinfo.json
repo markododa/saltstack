@@ -5,6 +5,7 @@
     "icon": "fa-shield",
     "dependency": "directory,monitoring",
     "substates": ["proxy.proxy"], 
+    "module": "va_proxy",
     "services": [
     {
         "name": "VAR_HOSTNAME",

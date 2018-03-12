@@ -338,7 +338,6 @@ def delete_mail_queue_id(message_id):
     return {"data" : {}, "success" : is_success, "message" : return_message}
 
 def view_mail_queue_id(message_id):
-#postcat -vq 5642B4D8647
     __salt__['cmd.run']('postcat -vq '+messsage_id)
     return "OK"
 
