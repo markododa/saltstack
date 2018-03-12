@@ -5,46 +5,75 @@
     "icon": "fa-group",
     "dependency": "monitoring",
     "substates": ["directory.directory"],
-    "module" : "va_directory",
-    "fields": [
-            {"type": "text", "name": "domain", "label": "Domain name"},
-            {"type": "text", "name": "ip", "label": "IP address of exisitng DC"},
-            {"type": "text", "name": "username", "label": "Username"},
-            {"type": "password", "name": "password", "label": "Password"}
-        ],
-    "services": [
-    {
-        "name": "VAR_HOSTNAME",
-        "checks": [
+    "module": "va_directory",
+    "fields": [{
+            "type": "text",
+            "name": "domain",
+            "label": "Domain name"
+        },
         {
+            "type": "text",
+            "name": "ip",
+            "label": "IP address of exisitng DC"
+        },
+        {
+            "type": "text",
+            "name": "username",
+            "label": "Username"
+        },
+        {
+            "type": "password",
+            "name": "password",
+            "label": "Password"
+        }
+    ],
+    "services": [{
+        "name": "VAR_HOSTNAME",
+        "checks": [{
             "id": "ssh",
             "name": "SSH Interface",
             "tcp": "VAR_DNS:22",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "smb",
             "name": "SMB over TCP",
             "tcp": "VAR_DNS:445",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "smb",
             "name": "LDAP",
             "tcp": "VAR_DNS:389",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "smb",
             "name": "DNS",
             "udp": "VAR_DNS:53",
             "interval": "30s",
             "timeout": "5s"
-        }
-        ]
+        }]
 
+    }],
+    "path": "-",
+    "panels": {
+        "admin": [{
+            "key": "directory.users",
+            "name": "Users"
+        }, {
+            "key": "directory.groups",
+            "name": "Groups"
+        }, {
+            "key": "directory.org_units",
+            "name": "Organizational Units"
+        }, {
+            "key": "directory.dns",
+            "name": "DNS records"
+        }, {
+            "key": "directory.overview",
+            "name": "Overview"
+        }],
+        "user": []
     }
-    ],
-    "path": "-", 
-    "panels": {"admin": [{"key": "directory.users", "name": "Users"}, {"key": "directory.groups", "name": "Groups"}, {"key": "directory.dns", "name": "DNS entries"}, {"key": "directory.org_units", "name": "Organizational Units"}, {"key": "directory.overview", "name": "Overview"}], "user": []}
 }
