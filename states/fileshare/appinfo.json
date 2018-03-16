@@ -5,33 +5,49 @@
     "icon": "fa-folder-open",
     "dependency": "directory",
     "substates": ["fileshare.fileshare"],
-    "module" : "fileshare",
-    "fields": [
-            {"type": "text", "name": "ip", "label": "IP address of DC"},
-            {"type": "text", "name": "username", "label": "Username"},
-            {"type": "password", "name": "password", "label": "Password"}
-        ],
-    "services": [
-    {
-        "name": "VAR_HOSTNAME",
-        "checks": [
+    "module": "fileshare",
+    "fields": [{
+            "type": "text",
+            "name": "ip",
+            "label": "IP address of DC"
+        },
         {
+            "type": "text",
+            "name": "username",
+            "label": "Username"
+        },
+        {
+            "type": "password",
+            "name": "password",
+            "label": "Password"
+        }
+    ],
+    "services": [{
+        "name": "VAR_HOSTNAME",
+        "checks": [{
             "id": "ssh",
             "name": "SSH Interface",
             "tcp": "VAR_DNS:22",
             "interval": "30s",
             "timeout": "5s"
-        },{
+        }, {
             "id": "smb",
             "name": "SMB over TCP",
             "tcp": "VAR_DNS:445",
             "interval": "30s",
             "timeout": "5s"
-        }
-        ]
+        }]
 
-    }
-    ],
+    }],
     "path": "-",
-    "panels": {"admin": [{"key": "fileshare.fileshare", "name": "Fileshare"}], "user": []}
+    "panels": {
+        "admin": [{
+            "key": "fileshare.shares",
+            "name": "Fileshare"
+        }, {
+            "key": "fileshare.overview",
+            "name": "Overview"
+        }],
+        "user": []
+    }
 }

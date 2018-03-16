@@ -18,7 +18,7 @@ case $KRUG in
   ;;
 esac
 
-
+eval "$PRE"_custom"$POS"
 eval "$PRE"abortion"$POS"
 eval "$PRE"adult"$POS"
 eval "$PRE"aggressive"$POS"
