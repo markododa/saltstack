@@ -11,7 +11,10 @@
 		"admin": [{
 			"key": "monitoring.status",
 			"name": "Status"
-		}, {
+		},{
+                        "key": "monitoring.history",
+                        "name": "History"
+                },  {
 			"key": "monitoring.overview",
 			"name": "Overview"
 		}],

@@ -2,10 +2,16 @@ import subprocess
 import requests
 import json
 import re
+import time, datetime
+from requests.auth import HTTPBasicAuth
+
 from va_utils import check_functionality as panel_check_functionality
 from va_utils import restart_functionality as restart_functionality
 from va_monitoring_panels import panels
 from monitoring_stats import parse
+
+#Using this to convert from integer states to icinga states( 0 = OK, 1 = WARNING etc. )
+states = ['OK', 'Warning', 'Critical', 'Unknown']
 
 
 def get_panel(panel_name, provider='', service=''):
@@ -20,7 +26,15 @@ def get_panel(panel_name, provider='', service=''):
         return users_panel
     elif panel_name == 'monitoring.status':
         data = icinga2()
+        for host in data: 
+            for service in host['services']:
+                service['host_name'] = host['host_name']  #+'!'+service['name']
         data1 = {x['host_name']: x['services'] for x in data}
+        users_panel['tbl_source'] = data1
+        return users_panel
+    elif panel_name == 'monitoring.history':
+        data = icinga2()
+        data1 = {x['host_name']: panel_history_events(x['host_name'],'*','1month') for x in data}
         users_panel['tbl_source'] = data1
         return users_panel
 
@@ -103,6 +117,99 @@ def panel_overview():
 
     return lines
 
+
+
+def panel_history_summary_weekly(name,host_name):
+    res=panel_history_summary(host_name,name,'1week')
+    return res
+
+def panel_history_summary_monthly(name, host_name):
+    res=panel_history_summary(host_name,name,'1month')
+    return res
+
+def panel_history_summary(host_name='*', name='*', historyperiod='*'):
+    data = get_hosts_periods_data(host = host_name, service = name, duration = historyperiod) or {host_name : {}}
+    lines = []
+    summary_dict = {
+        'key': "Hostname",
+        'value': host_name
+    }
+    lines.append(summary_dict)
+
+    summary_dict = {
+        'key': "Service",
+        'value': name
+    }
+    lines.append(summary_dict)
+
+    summary_dict = {
+        'key': "Time in OK state",
+        'value': data[host_name].get('OK') or '-'
+    }
+    lines.append(summary_dict)
+
+    summary_dict = {
+        'key': "Time in WARNING state",
+        'value': data[host_name].get('Warning') or '-'
+    }
+    lines.append(summary_dict)
+
+    summary_dict = {
+        'key': "Time in CRITICAL state",
+        'value': data[host_name].get('Critical') or '-'
+    }
+    lines.append(summary_dict)
+
+    summary_dict = {
+        'key': "Time in UNKNOWN state",
+        'value': data[host_name].get('Uknown') or '-'
+    }
+    lines.append(summary_dict)
+
+    summary_dict = {
+        'key': "TOTAL TIME",
+        'value': data[host_name].get('total') or '-'
+    }
+    lines.append(summary_dict)
+
+    return lines
+
+def panel_history_events_weekly(name, host_name):
+    res=panel_history_events(host_name,name,'1week')
+    return res
+
+def panel_history_events_monthly(name, host_name):
+    res=panel_history_events(host_name,name,'1month')
+    return res
+
+
+def panel_history_events(host_name='*', name='*', historyperiod='*'):
+    host_data = get_history_data(duration = historyperiod, host_name = host_name, service_display_name = name)
+    #We add this element to the list for calculating lengths - we iterate to the (i-1)th element and subtract timestamps
+#    host_data.sort(key = lambda x: x['timestamp'], reverse = True)
+    host_data = [{'timestamp' : int(time.time())}] + host_data
+   
+    timestamp_to_date = lambda t: datetime.datetime.fromtimestamp(int(t)).strftime('%Y-%m-%d %H:%M:%S')
+    duration_to_pretty = lambda d: ' '.join(seconds_to_pretty(abs(int(d))).split(' ')[:2])
+
+    data = [
+        {
+            'index' : i,
+            'key' : timestamp_to_date(host_data[i]['timestamp']),
+            'value' : states[int(host_data[i]['state'])], 
+            'service' : host_data[i]['service_description'],
+            'host' : host_data[i]['host_name'],
+            'output' : host_data[i]['output'],
+            'type' : host_data[i]['type'].split('_')[0],
+            'state' : states[int(host_data[i]['state'])],
+            'name': timestamp_to_date(host_data[i]['timestamp']),
+            'duration' : duration_to_pretty(int(host_data[i]['timestamp']) - int(host_data[i-1]['timestamp'])),
+            #NINO Ova treba da pravi razlikamegu x[timestamp] i prethodniot , nesto pokompaktno ili samo saati ili samo minuti vkupno
+            # 'name': str(timestamp_to_date(x['timestamp']))+' ' +states[int(x['state'])]
+        }
+    for i in range(1, len(host_data))]
+
+    return data
 
 def ssmtp_to_dict(data):
     data = [x.strip() for x in data.split('\n') if x]
@@ -245,3 +352,105 @@ def icinga2():
         x['host_name']), reverse=False)
     return result
     # return formatted_hosts #result
+
+user = 'admin'
+password = 'test'
+ip = '10.120.155.213'
+
+def seconds_to_pretty(seconds):
+    periods = [
+        ('Months', 12 * 7 * 24 * 60 * 60), 
+        ('Weeks', 7 * 24 * 60 * 60),
+        ('Days', 24 * 60 * 60),
+        ('Hours', 60 * 60), 
+        ('Minutes', 60), 
+        ('Seconds', 1),
+    ]
+
+    result = ''
+    for period in periods: 
+        if seconds >= period[1]: 
+            number_period = int(seconds / period[1])
+            period_val = period[0] if number_period > 1 else period[0][:-1]
+            seconds -= number_period * period[1]
+
+            result += str(number_period) + ' ' + period_val + ' '
+
+    return result
+
+def get_hosts_in_history(history_data):
+    return list(set([x['host_name'] for x in history_data]))
+
+def remove_redundant_timestamps(history_data):
+    data_temp = history_data[:]
+    last_state = None
+    for element in history_data: 
+        if element['state'] == last_state: 
+            data_temp.remove(element)
+        else: 
+            last_state = element['state']
+
+    return data_temp
+
+
+def get_state_periods(history_data):
+    state_periods = [
+        {
+            'length' : int(history_data[i+1]['timestamp']) - int(history_data[i]['timestamp']), 
+            'state' : history_data[i]['state'], 
+            'host_name' : history_data[i]['host_name'],
+            'service_name' : history_data[i]['service_display_name']
+        } 
+    for i in range(len(history_data)-1)]
+
+    state_periods.append({'length' : time.time() - int(history_data[-1]['timestamp']), 'state' : history_data[-1]['state'], 'host_name' : history_data[-1]['host_name'], 'service_name' : history_data[-1]['service_display_name']})
+    return state_periods
+
+
+def get_total_times(history_data, host_name, service_name):
+    state_periods = get_state_periods(history_data)
+
+    total_times = { 
+        states[i] : seconds_to_pretty(sum([x['length'] for x in state_periods if int(x['state']) == i and x['host_name'] == host_name and x['service_name'] == service_name]))
+    for i in range(len(states))}
+
+    total_times['total'] = seconds_to_pretty(sum([x['length'] for x in state_periods]))
+
+    return total_times
+
+def get_history_for_host(history_data, host_name, service_name):
+    host_data = [x for x in history_data if x['host_display_name'] == host_name]
+    if not host_data: 
+        raise Exception('No data found for host ' + str(host_name))
+
+    host_data = sorted(host_data, key = lambda x: x['timestamp'])
+    host_data = remove_redundant_timestamps(host_data)
+
+    host_data = get_total_times(host_data, host_name, service_name)
+    host_data['service'] = service_name
+    host_data['host'] = host_name
+
+    return host_data
+
+def get_history_data(duration, host_name, service_display_name):
+    headers = {'Accept' : 'application/json'}
+    user_auth = auth=HTTPBasicAuth(user, password)
+
+    params = {'host_display_name': host_name, 'modifyFilter' : '1', 'format' : 'json', 'service_display_name' : service_display_name} #'type!' : 'notification',
+
+    url = 'http://%s/monitoring/list/eventhistory?type!=notify&timestamp>=-%s' % (ip, duration)
+
+    result = requests.get(url, headers = headers, auth = user_auth, params = params)
+    result = result.json()
+    result = [x for x in result if x.get('service_display_name')]
+
+    return result
+
+def get_hosts_periods_data(host, service, duration = '7days'):
+    history_data = get_history_data(duration, host, service)
+    hosts = get_hosts_in_history(history_data)
+
+    hosts_histories = {h : get_history_for_host(history_data, h, service) for h in hosts}
+    return hosts_histories
+
+
