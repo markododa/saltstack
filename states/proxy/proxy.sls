@@ -5,6 +5,7 @@ install_proxy:
       - lighttpd
       - libtommath0
 
+
 # CNAME record na DNS za host: wpad kon web server sto ke gi sodrzi wpad.dat i proxy.pac 
 # http://contentfilter.futuragts.com/wiki/doku.php?id=automatic_proxy_configuration    
 # treba samo da slusha na 8080 i eventualno 80 (squid portata 3128 mora da e nedostapna)
