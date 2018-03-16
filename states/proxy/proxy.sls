@@ -22,7 +22,7 @@ install_proxy:
 
 stop_squid:
   service.dead:
-    - name: squid
+    - name: squid3
 
 stop_lighttpd:
   service.dead:
@@ -38,19 +38,20 @@ cert_lhttps:
   
 squid_2_e2g_only:
  file.replace:
-    - name: /etc/squid/squid.conf
+    - name: /etc/squid3/squid.conf
     - pattern: http_port 3128
     - repl: http_port 127.0.0.1:3128
 
 enable_hdd_cache:
   file.uncomment:
-    - name: /etc/squid/squid.conf
+    - name: /etc/squid3/squid.conf
     - char: '#'
-    - regex: "cache_dir ufs /var.*"
+    # - regex: "cache_dir ufs /var.*"
+    - regex: "cache_dir ufs /var/spool/squid3 100 16 256"
 
 prevent_localhost_url:
   file.uncomment:
-    - name: /etc/squid/squid.conf
+    - name: /etc/squid3/squid.conf
     - char: '#'
     - regex: "http_access deny to_localhost.*"
 
