@@ -28,7 +28,8 @@ panels = {
                 "label": "Value"
             }, {
                 "key": "action",
-                "label": "Actions"
+                "label": "Actions",
+                "width": "5%"
             }],
             "actions": [{
                 "action": "restart_functionality",
