@@ -29,10 +29,11 @@ def owncloud_request(endpoint, data = {}, params = {}, method = 'get'):
     meta = result['ocs']['meta']
 
     if meta['status'] == 'failure': 
-        raise Exception("Owncloud response status is failure with status " + str(meta['statuscode']) + " and messages is : " + str(meta['message']))
+        msg = "Owncloud response status is failure with status " + str(meta['statuscode']) + " and messages is : " + str(meta['message'])
+        return {"success" : False, "message" : msg, "data" : {}}
 
 
-    return result['data']
+    return result['ocs']['data']
 
 def bytes_to_readable(num, suffix='B'):
     """Converts bytes integer to human readable"""

@@ -168,7 +168,7 @@ panels = {
                         "action": "cancel"
                     }, {
                         "type": "Button",
-                        "name": "Remove",
+                        "name": "Set",
                         "class": "primary",
                         "action": "action_setquota"
                     }
