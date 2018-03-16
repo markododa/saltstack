@@ -5,6 +5,7 @@ install_proxy:
       - lighttpd
       - libtommath0
 
+
 # CNAME record na DNS za host: wpad kon web server sto ke gi sodrzi wpad.dat i proxy.pac 
 # http://contentfilter.futuragts.com/wiki/doku.php?id=automatic_proxy_configuration    
 # treba samo da slusha na 8080 i eventualno 80 (squid portata 3128 mora da e nedostapna)
@@ -20,7 +21,7 @@ install_proxy:
     - group: root
     - mode: 755
 
-stop_squid:
+stop_squid3:
   service.dead:
     - name: squid3
 
@@ -46,8 +47,7 @@ enable_hdd_cache:
   file.uncomment:
     - name: /etc/squid3/squid.conf
     - char: '#'
-    # - regex: "cache_dir ufs /var.*"
-    - regex: "cache_dir ufs /var/spool/squid3 100 16 256"
+    - regex: "cache_dir ufs /var.*"
 
 prevent_localhost_url:
   file.uncomment:
@@ -275,7 +275,7 @@ readableresolve_proxy:
   cmd.run:
     - name: chattr +i /etc/resolv.conf 
  
-squid:
+squid3:
   service.running:
     - enable: True
 

@@ -652,7 +652,7 @@ panels = {
             "table": {
                 "source": "backup_info"
             },
-                        "table_graph": {
+            "table_graph": {
                 "source": "backup_info_graph"
             }
         },
@@ -693,15 +693,15 @@ panels = {
             }
             ],
             "id": ["link"]
-            },
-                {
-                "type": "CustomChart",
+        },
+            {
+            "type": "CustomChart",
                 "chartType": "line",
                 "name": "graph1",
                 "xCol": "startTime",
-                 "height": "300",
-               # "xCol": "startTimeStamp",
-               # "xColType": "date",
+            "height": "50",
+            # "xCol": "startTimeStamp",
+            # "xColType": "date",
                 "reducers": ["table"],
                 "datasets": [{
                     "column": "sizeGraph",
@@ -709,11 +709,11 @@ panels = {
                     "backgroundColor": "#337ab7",
                     #"backgroundColor": "#fff",
                     "borderColor": "#2e6da4",
-                    
-                    "data":[]
+
+                    "data": []
                 }
                 ],
-                 "target": "table_graph"
+            "target": "table_graph"
         }
         ]
     },

@@ -68,8 +68,7 @@ panels = {
         "title": "Shares and Disk usage",
         "tbl_source": {
             "table_shares": {
-                "source": "panel_all_fileshares",
-                "module": "fileshare"
+                "source": "panel_all_fileshares"
             }
         },
         "content": [{

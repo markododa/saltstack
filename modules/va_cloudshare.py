@@ -11,6 +11,30 @@ def get_admin_pass():
     return admin_pass
 
 
+def get_v1_url():
+    admin_pass = get_admin_pass()
+    url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php'
+    return url
+
+def owncloud_request(endpoint, data = {}, params = {}, method = 'get'):
+    url = get_v1_url() + endpoint
+    params['format'] = "json"
+
+    result = getattr(requests, method)(url, data = data, params = params)
+    result = result.json()
+
+    if not result: 
+        raise Exception("Response was empty - unknown Owncloud error. ")
+
+    meta = result['ocs']['meta']
+
+    if meta['status'] == 'failure': 
+        msg = "Owncloud response status is failure with status " + str(meta['statuscode']) + " and messages is : " + str(meta['message'])
+        return {"success" : False, "message" : msg, "data" : {}}
+
+
+    return result['ocs']['data']
+
 def bytes_to_readable(num, suffix='B'):
     """Converts bytes integer to human readable"""
 
@@ -24,7 +48,7 @@ def bytes_to_readable(num, suffix='B'):
 #For some reason, using /shares or /users only gives you some information. You have to manually iterate through users or shares to get data like quota. This is done through salt for efficiency.
 def panel_shares():
     #TODO testing, remove these
-        url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares'
+        url = get_v1_url() + '/apps/files_sharing/api/v1/shares'
         params = {"format" : "json"}
         files = requests.get(url, params = params, verify = False).text
         files = json.loads(files)['ocs']['data']
@@ -50,7 +74,7 @@ def panel_new():
     #TODO testing, remove these
 #        admin_user = 'vavo'
 #        get_admin_pass = lambda: 'Qwert~12'
-        url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares'
+        url = get_v1_url() + '/apps/files_sharing/api/v1/shares'
         params = {"format" : "json"}
         files = requests.get(url, params = params, verify = False).text
         files = json.loads(files)['ocs']['data']
@@ -163,8 +187,11 @@ def panel_list_users():
     return users
 
 def action_setquota(username,storage_quota):
-    # curl -X PUT http://admin:Qwert~123@localhost/ocs/v1.php/cloud/users/staci -d key="quota" -d value="100MB"
-    return "Function not implemented yet! "+username+"/"+storage_quota
+    endpoint = '/cloud/users/%s' % (username)
+    data = {'key' : 'quota', 'value' : storage_quota}
+
+    result = owncloud_request(endpoint, data = data, method = 'put')
+    return result
 
 def get_defaut_quota():
     default_quota = " "

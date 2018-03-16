@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 #
 # CHECK SCRIPT FOR VA-PROXY
 
@@ -9,11 +9,11 @@ DENIED=`grep '*DENIED*' /var/log/e2guardian/access.log | wc -l`
 CHILDREN=`tail -n 1 /var/log/e2guardian/dstats.log | awk -v N=2 '{print $N}'`
 MAXCHILDREN=`grep '^maxchildren' /etc/e2guardian/e2guardian.conf | sed -e 's/[^0-9]*\([0-9]*\)/\1/g'`
 PERCHIL=`awk -v m=$MAXCHILDREN -v c=$CHILDREN 'BEGIN { printf "%.1f", ( ( c / m ) * 100 ) }'`
-
+#CHILDREN="13"
 #CHILCRIT=`awk -v m=$PERCHIL 'BEGIN { print (m > 90) ? "1" : "0" }'`
 #exitstate=$CHILCRIT
 #echo $CHILCRIT
-service squid status > /dev/null
+service squid3 status > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
    text=$text"Squid Server is up"
@@ -32,7 +32,6 @@ else
 fi
 
 
-echo $text" | BlockedToday="$DENIED", E2Gchildren="$CHILDREN", E2Gused="$PERCHIL"%;80%;90%"
+echo $text", Blocked Today: "$DENIED" | BlockedToday="$DENIED".0;800;2000; Children="$CHILDREN".0;150;180; Used="$PERCHIL"%;80;%90%;"
 
 exit $exitstate
-
