@@ -39,12 +39,15 @@
     ],
     "panels": {
         "admin": [{
+            "key": "proxy.groups",
+            "name": "Groups"
+        },{
+            "key": "proxy.categories",
+            "name": "Categories"
+        },  {
             "key": "proxy.rules",
             "name": "Rules"
-        }, {
-            "key": "proxy.usergroups",
-            "name": "Users/Groups"
-        }, {
+        },  {
             "key": "proxy.advanced",
             "name": "Advanced"
         }, {
