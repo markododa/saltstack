@@ -300,3 +300,11 @@ check_functionality_proxy:
     - group: root
     - mode: 755
 
+
+restart_functionality_proxy:
+  file.managed:
+    - name: /usr/lib/nagios/plugins/restart_functionality.sh
+    - source: salt://proxy/files/restart_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
