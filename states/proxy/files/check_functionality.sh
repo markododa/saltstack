@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 #
 # CHECK SCRIPT FOR VA-PROXY
 
@@ -7,12 +7,14 @@ text=""
 
 DENIED=`grep '*DENIED*' /var/log/e2guardian/access.log | wc -l`
 CHILDREN=`tail -n 1 /var/log/e2guardian/dstats.log | awk -v N=2 '{print $N}'`
+
+if [ $CHILDREN == "childs" ];then
+CHILDREN=`tail -n 2 /var/log/e2guardian/dstats.log | head -n 1 | awk -v N=2 '{print $N}'`
+fi
+
+
 MAXCHILDREN=`grep '^maxchildren' /etc/e2guardian/e2guardian.conf | sed -e 's/[^0-9]*\([0-9]*\)/\1/g'`
-PERCHIL=`awk -v m=$MAXCHILDREN -v c=$CHILDREN 'BEGIN { printf "%.1f", ( ( c / m ) * 100 ) }'`
-#CHILDREN="13"
-#CHILCRIT=`awk -v m=$PERCHIL 'BEGIN { print (m > 90) ? "1" : "0" }'`
-#exitstate=$CHILCRIT
-#echo $CHILCRIT
+PERCHIL=`awk -v m=$MAXCHILDREN -v c=$CHILDREN 'BEGIN { printf "%.0f", ( ( c / m ) * 100 ) }'`
 service squid3 status > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
@@ -31,7 +33,11 @@ else
    exitstate=1
 fi
 
+if [ $PERCHIL -gt 90 ];then
+   exitstate=2
+fi
 
-echo $text", Blocked Today: "$DENIED" | BlockedToday="$DENIED".0;800;2000; Children="$CHILDREN".0;150;180; Used="$PERCHIL"%;80;%90%;"
 
-exit $exitstate
+echo $text", Blocked Today: "$DENIED" | BlockedToday="$DENIED".0;800;2000; Children="$CHILDREN".0;150;180; Used="$PERCHIL"%;80;90;"
+
+exit $exits
