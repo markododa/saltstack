@@ -12,19 +12,12 @@ install_proxy:
 {% set domain = salt['pillar.get']('domain') %}
 {% set host_name = grains['id'] %}
 {% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
-{% set myip = salt['pillar.get']('proxy_ip') %}
+{% set my_ip = salt['pillar.get']('proxy_ip') %}
 
 # SET IP IN PILLARS TO FORCE DESIRED IP ADDRESS FOR PROXY SERVICE
 
-# {% set myip = salt['grains.get']('ipv4')[0] %}
 
-# {% if myip == '127.0.0.1' %}    
-# {% set myip = salt['grains.get']('ipv4')[1] %}
-# {% endif %}    
-
-# {% if myip == '127.0.0.1' %}    
-# {% set myip = salt['grains.get']('ipv4')[2] %}
-# {% endif %}    
+{% if my_ip != None %}  
 
 
 /root/e2guardian.deb:
@@ -169,6 +162,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }}  
@@ -181,6 +175,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }}  
@@ -194,6 +189,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       PROXY_HOSTNAME: {{ host_name }}  
@@ -206,6 +202,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /etc/e2guardian/lists/bannedsitelist2:
   file.managed:
@@ -213,6 +210,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /etc/e2guardian/lists/bannedsitelist3:
   file.managed:
@@ -220,6 +218,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /etc/e2guardian/lists/exceptionsitelist1:
   file.managed:
@@ -227,6 +226,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /etc/e2guardian/lists/exceptionsitelist2:
   file.managed:
@@ -234,6 +234,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /etc/e2guardian/lists/exceptionsitelist3:
   file.managed:
@@ -241,6 +242,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /etc/e2guardian/lists/exceptionextensionlist:
   file.managed:
@@ -248,6 +250,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /etc/e2guardian/lists/authplugins/ipgroups:
   file.managed:
@@ -255,6 +258,7 @@ stop_e2guardian:
     - user: root
     - group: root
     - mode: 644
+    - replace: False
 
 /usr/share/e2guardian/languages/ukenglish/template.html:
   file.managed:
@@ -271,6 +275,9 @@ make_blacklists:
 # cmd.run:
 #    - name: /etc/e2guardian/updateBL.sh
 
+writableresolve_proxy:
+  cmd.run:
+    - name: chattr -i /etc/resolv.conf 
 
 /etc/resolv.conf:
   file.managed:
@@ -306,6 +313,10 @@ e2guardian:
 lighttpd:
   service.running:
     - enable: True
+
+
+{% endif %}
+
 
 #### functionality script
 /usr/lib/nagios/plugins/:
