@@ -287,7 +287,7 @@ label_categories:
 label_categories_run:
   cmd.run:
     - name: /etc/e2guardian/label_categories.sh
-    
+
 #get_blacklists:
 # cmd.run:
 #    - name: /etc/e2guardian/updateBL.sh
@@ -353,6 +353,22 @@ restart_functionality_proxy:
   file.managed:
     - name: /usr/lib/nagios/plugins/restart_functionality.sh
     - source: salt://proxy/files/restart_functionality.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+top_visits:
+  file.managed:
+    - name: /etc/e2guardian/top_visits.sh
+    - source: salt://proxy/files/top_visits.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+top_blocked:
+  file.managed:
+    - name: /etc/e2guardian/top_blocked.sh
+    - source: salt://proxy/files/top_blocked.sh
     - user: root
     - group: root
     - mode: 755
