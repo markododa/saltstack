@@ -275,6 +275,19 @@ make_blacklists:
   file.append:
     - text: '#listcategory: "Custom List"'
 
+
+label_categories:
+  file.managed:
+    - name: /etc/e2guardian/label_categories.sh
+    - source: salt://proxy/files/label_categories.sh
+    - user: root
+    - group: root
+    - mode: 755
+
+label_categories_run:
+  cmd.run:
+    - name: /etc/e2guardian/label_categories.sh
+    
 #get_blacklists:
 # cmd.run:
 #    - name: /etc/e2guardian/updateBL.sh
