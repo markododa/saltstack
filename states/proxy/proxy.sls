@@ -271,6 +271,10 @@ make_blacklists:
   cmd.run:
     - name: /etc/e2guardian/make_empty_bl.sh
 
+/etc/e2guardian/lists/blacklists/_custom/domains:
+  file.append:
+    - text: '#listcategory: "Custom List"'
+
 #get_blacklists:
 # cmd.run:
 #    - name: /etc/e2guardian/updateBL.sh
