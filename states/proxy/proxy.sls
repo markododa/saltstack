@@ -6,13 +6,26 @@ install_proxy:
       - libtommath0
 
 
-# CNAME record na DNS za host: wpad kon web server sto ke gi sodrzi wpad.dat i proxy.pac 
 # http://contentfilter.futuragts.com/wiki/doku.php?id=automatic_proxy_configuration    
-# treba samo da slusha na 8080 i eventualno 80 (squid portata 3128 mora da e nedostapna)
+
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set host_name = grains['id'] %}
 {% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+{% set myip = salt['pillar.get']('proxy_ip') %}
+
+# SET IP IN PILLARS TO FORCE DESIRED IP ADDRESS FOR PROXY SERVICE
+
+# {% set myip = salt['grains.get']('ipv4')[0] %}
+
+# {% if myip == '127.0.0.1' %}    
+# {% set myip = salt['grains.get']('ipv4')[1] %}
+# {% endif %}    
+
+# {% if myip == '127.0.0.1' %}    
+# {% set myip = salt['grains.get']('ipv4')[2] %}
+# {% endif %}    
+
 
 /root/e2guardian.deb:
   file.managed:
@@ -38,7 +51,7 @@ cert_lhttps:
     - name: openssl req -new -x509 -keyout /etc/lighttpd/certs/lighttpd.pem -out /etc/lighttpd/certs/lighttpd.pem -days 3650 -nodes -sha256 -subj '/CN={{ host_name }}.{% filter lower %}{{ domain }}{% endfilter %}/O=VA-Proxy/C=US'
   
 squid_2_e2g_only:
- file.replace:
+  file.replace:
     - name: /etc/squid3/squid.conf
     - pattern: http_port 3128
     - repl: http_port 127.0.0.1:3128
@@ -73,7 +86,8 @@ prevent_localhost_url:
     - template: jinja
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
-      PROXY_HOSTNAME: {{ host_name }} 
+      PROXY_HOSTNAME: {{ host_name }}  
+      PROXY_IP: {{ my_ip }} 
 
 /var/www/html/proxy.pac:
   file.managed:
@@ -84,7 +98,8 @@ prevent_localhost_url:
     - template: jinja
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
-      PROXY_HOSTNAME: {{ host_name }} 
+      PROXY_HOSTNAME: {{ host_name }}  
+      PROXY_IP: {{ my_ip }} 
 
 #show blocked info by default
 /var/www/html/index.html:
@@ -96,7 +111,8 @@ prevent_localhost_url:
     - template: jinja
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
-      PROXY_HOSTNAME: {{ host_name }} 
+      PROXY_HOSTNAME: {{ host_name }}  
+      PROXY_IP: {{ my_ip }} 
 
 
 #show make different config page
@@ -109,7 +125,8 @@ prevent_localhost_url:
     - template: jinja
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
-      PROXY_HOSTNAME: {{ host_name }} 
+      PROXY_HOSTNAME: {{ host_name }}  
+      PROXY_IP: {{ my_ip }} 
 
 # E2GUARDIAN
 install_e2b:
@@ -154,7 +171,8 @@ stop_e2guardian:
     - mode: 644
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
-      PROXY_HOSTNAME: {{ host_name }} 
+      PROXY_HOSTNAME: {{ host_name }}  
+      PROXY_IP: {{ my_ip }} 
 
 /etc/e2guardian/e2guardianf2.conf:
   file.managed:
@@ -165,7 +183,8 @@ stop_e2guardian:
     - mode: 644
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
-      PROXY_HOSTNAME: {{ host_name }} 
+      PROXY_HOSTNAME: {{ host_name }}  
+      PROXY_IP: {{ my_ip }} 
 
 
 /etc/e2guardian/e2guardianf3.conf:
@@ -177,7 +196,8 @@ stop_e2guardian:
     - mode: 644
     - context:
       PROXY_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
-      PROXY_HOSTNAME: {{ host_name }} 
+      PROXY_HOSTNAME: {{ host_name }}  
+      PROXY_IP: {{ my_ip }} 
 
 
 /etc/e2guardian/lists/bannedsitelist1:
@@ -274,7 +294,7 @@ resolvednsip_proxy:
 readableresolve_proxy:
   cmd.run:
     - name: chattr +i /etc/resolv.conf 
- 
+
 squid3:
   service.running:
     - enable: True
