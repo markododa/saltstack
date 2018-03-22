@@ -372,3 +372,12 @@ top_blocked:
     - user: root
     - group: root
     - mode: 755
+    
+last_blocked:
+  file.managed:
+    - name: /etc/e2guardian/last_blocked.sh
+    - source: salt://proxy/files/last_blocked.sh
+    - user: root
+    - group: root
+    - mode: 755
+
