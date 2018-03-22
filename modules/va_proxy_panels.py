@@ -4,7 +4,8 @@ panels = {
         "tbl_source": {
             "table": {
                 "source": "panel_banned_list"
-            },
+            }
+            ,
             "table2": {
                 "source": "panel_exceptions_list"
             }
@@ -78,9 +79,9 @@ panels = {
                                 "action": "cancel"
                             }, {
                                 "type": "Button",
-                                "name": "Add group",
+                                "name": "Add exception",
                                 "class": "primary",
-                                "action": "add_to_exception"
+                                "action": "add_exception_site"
                             }],
                             "content": [{
                                 "type": "Form",
@@ -157,7 +158,7 @@ panels = {
                 }],
                 "actions": [{
                     "name": "Remove item",
-                    "action": "_remove_exception_item"
+                    "action": "remove_exception_site"
                 }],
                 "id": ["group", "item"],
                 "source": "panel_exceptions_list"
@@ -223,55 +224,56 @@ panels = {
                                 }]
                             }]
                         }
-                    },
-                    {
-                        "type": "Button",
-                        "name": "Add file extension filter",
-                        "glyph": "plus",
-                        "action": "modal",
-                        "reducers": ["modal"],
-                        "modal": {
-                            "title": "Add new file extension to blocked list",
-                            "buttons": [{
-                                "type": "Button",
-                                "name": "Cancel",
-                                "action": "cancel"
-                            }, {
-                                "type": "Button",
-                                "name": "Add extension",
-                                "class": "primary",
-                                "action": "add_extension"
-                            }],
-                            "content": [{
-                                "type": "Form",
-                                "name": "form",
-                                "class": "left",
-                                "elements": [{
-                                    "type": "text",
-                                    "name": "extension",
-                                    "value": "",
-                                    "label": "Extension",
-                                    "required": True
-                                }]
-                            }, {
-                                "type": "Div",
-                                "name": "div",
-                                "class": "right",
-                                "elements": [{
-                                    "type": "Heading",
-                                    "name": "Fill the form to add a new item"
-                                }, {
-                                    "type": "Paragraph",
-                                    "name": "File extension examples: *.exe, *.rar, *.torrent "
-                                }]
-                            }]
-                        }
                     }
+                    # ,
+                    # {
+                    #     "type": "Button",
+                    #     "name": "Add file extension filter",
+                    #     "glyph": "plus",
+                    #     "action": "modal",
+                    #     "reducers": ["modal"],
+                    #     "modal": {
+                    #         "title": "Add new file extension to blocked list",
+                    #         "buttons": [{
+                    #             "type": "Button",
+                    #             "name": "Cancel",
+                    #             "action": "cancel"
+                    #         }, {
+                    #             "type": "Button",
+                    #             "name": "Add extension",
+                    #             "class": "primary",
+                    #             "action": "add_extension"
+                    #         }],
+                    #         "content": [{
+                    #             "type": "Form",
+                    #             "name": "form",
+                    #             "class": "left",
+                    #             "elements": [{
+                    #                 "type": "text",
+                    #                 "name": "extension",
+                    #                 "value": "",
+                    #                 "label": "Extension",
+                    #                 "required": True
+                    #             }]
+                    #         }, {
+                    #             "type": "Div",
+                    #             "name": "div",
+                    #             "class": "right",
+                    #             "elements": [{
+                    #                 "type": "Heading",
+                    #                 "name": "Fill the form to add a new item"
+                    #             }, {
+                    #                 "type": "Paragraph",
+                    #                 "name": "File extension examples: .exe, .rar, .torrent "
+                    #             }]
+                    #         }]
+                    #     }
+                    # }
                 ]
             }, {
                 "type": "Table",
                 "name": "table_custom",
-                "reducers": ["table", "filter", "alert"],
+                "reducers": ["table", "filter","panel", "modal", "alert"],
                 "columns": [{
                     "key": "item",
                     "label": "Items in Custom list",
@@ -287,34 +289,35 @@ panels = {
                 }],
                 "id": ["item"],
                 "source": "panel_custom_list"
-            },
-            {
-                "type": "Table",
-                "name": "table_ext",
-                "reducers": ["table", "filter", "alert"],
-                "columns": [{
-                    "key": "extension",
-                    "label": "Allowed file extensions",
-                    "width": "95%"
-                }, {
-                    "key": "action",
-                    "label": "Actions",
-                    "width": "5%"
-                }],
-                "actions": [{
-                    "name": "Remove item",
-                    "action": "_remove_extension_item"
-                }],
-                "id": ["extension"],
-                "source": "panel_exceptions_extensions"
             }
+            # ,
+            # {
+            #     "type": "Table",
+            #     "name": "table_ext",
+            #     "reducers": ["table", "filter", "panel", "modal","alert"],
+            #     "columns": [{
+            #         "key": "extension",
+            #         "label": "Allowed file extensions",
+            #         "width": "95%"
+            #     }, {
+            #         "key": "action",
+            #         "label": "Actions",
+            #         "width": "5%"
+            #     }],
+            #     "actions": [{
+            #         "name": "Remove item",
+            #         "action": "remove_extension"
+            #     }],
+            #     "id": ["extension"],
+            #     "source": "panel_exceptions_extensions"
+            # }
         ]
     },
     "proxy.categories": {
-        "title": "Forbidden web site categories",
+        "title": "Denied web site categories",
         "tbl_source": {
             "table": {
-                "source": "get_all_banned_lists"
+                "source": "panel_categories"
             }
         },
         "content": [{
@@ -326,17 +329,21 @@ panels = {
                 "key": "category",
                 "label": "Category"
             }, {
+                "key": "size",
+                "label": "Items",
+                "width": "20%"
+            }, {
                 "key": "VIP",
                 "label": "VIP group",
-                "width": "20%"
+                "width": "15%"
             }, {
                 "key": "Standard",
                 "label": "Standard group",
-                "width": "20%"
+                "width": "15%"
             }, {
                 "key": "Safe",
                 "label": "Safe group",
-                "width": "20%"
+                "width": "15%"
             }, {
                 "key": "action",
                 "label": "Actions",
@@ -353,7 +360,7 @@ panels = {
                 "name": "Toggle for Safe"
             }],
             "id": ["category"],
-            "source": "get_all_banned_lists",
+            "source": "panel_categories",
         }]
     },
     "proxy.groups": {
@@ -412,7 +419,7 @@ panels = {
                             "name": "Fill the form to add a new range"
                         }, {
                             "type": "Paragraph",
-                            "name": "Ranges are used to group computers. There are 3 possible build-in groups."
+                            "name": "There are 3 possible build-in groups. All IPs outside defined ranges are classified as Standard group too."
                         }]
                     }]
                 }
@@ -420,7 +427,7 @@ panels = {
         }, {
             "type": "Table",
             "name": "table",
-            "reducers": ["table", "filter", "panel", "alert"],
+            "reducers": ["table", "panel", "modal", "alert"],
             "columns": [{
                 "key": "group",
                 "label": "Group",
@@ -434,15 +441,13 @@ panels = {
                 "width": "5%"
             }],
             "actions": [{
-                "action": "modal_action_edit_ip_group",
-                "name": "Edit"
-            }, {
                 "action": "action_remove_ip_group",
                 "name": "Remove",
                 "class": "danger"
             }],
-            "id": ["category"],
-            "source": "panel_ip_groups",
+            "id": ["group","range"],
+            "source": "panel_ip_groups"
+            
         }]
     },
     "proxy.overview": {
@@ -451,12 +456,24 @@ panels = {
             "table_chkf": {
                 "source": "panel_check_functionality"
             },
+            "table_config": {
+                "source": "panel_config"
+            },
             "table_stats": {
                 "source": "panel_statistics"
             },
             "table_net": {
                 "source": "panel_networking",
                 "module": "va_utils"
+            },
+            "table_top": {
+                "source": "panel_top_visits"
+            },
+            "table_blocked": {
+                "source": "panel_top_blocked"
+            },
+            "table_last": {
+                "source": "panel_last_blocked"
             }
         },
         "content": [{
@@ -471,15 +488,29 @@ panels = {
             }, {
                 "key": "output",
                 "label": "Value"
+            }, {
+                "key": "action",
+                "label": "Actions",
+                "width": "5%"
             }],
-            "id": ["status"],
+            "actions": [{
+                "action": "restart_functionality",
+                "name": "Restart services",
+                "class": "danger"
+            },{
+                "action": "e2guardian_reload",
+                "name": "Reload config"
+            }],
             "source": "va_utils.check_functionality"
-        }, {
+        }, 
+        
+        
+        {
             "type": "CustomChart",
             "chartType": "line",
             "name": "graph1",
             "xCol": "time",
-            "height": "50",
+            "height": "70",
             "options": {
                 "scales": {
                     "yAxes": [{
@@ -504,7 +535,7 @@ panels = {
             "datasets": [{
                     "column": "childs",
                     "label": "Children",
-                    # "backgroundColor": "#337ab7",
+                    "backgroundColor": "#2e6da422",
                     #"backgroundColor": "#fff",
                     "borderColor": "#2e6da4",
                     "fill": False,
@@ -516,24 +547,109 @@ panels = {
                     "type": "line",
                     "label": "Free Children",
                     "borderColor": "#2E6F00",
-                    "fill": False,
+                    "backgroundColor": "#2E6F0022",
+                    # "fill": False,
                                 "pointRadius" : 0,
                     "data": []
                     
                 },
                 {
-                    "column": "conx",
+                    "column": "conx/s",
                     "type": "line",
-                    "label": "Connections",
+                    "label": "Connections/Sec",
                     "borderColor": "#6F0020",
+                    "backgroundColor": "#6F002022",
                     "fill": False,
                                 "pointRadius" : 0,
                     "data": []
                 }
+                # ,
+                # {
+                #     "column": "wait",
+                #     "type": "line",
+                #     "label": "Waiting",
+                #     "borderColor": "#C17504",
+                #     "fill": False,
+                #                 "pointRadius" : 0,
+                #     "data": []
+                # }
             ],
             "target": "table_stats"
         },
-        # , {
+        
+        {
+            "type": "Table",
+            "name": "table_top",
+            # "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "site",
+                "label": "Top requested domains",
+                "width": "30%"
+            },{
+                "key": "count",
+                "label": "Count"
+            }],
+            "source": "panel_top_visits"
+        },{
+            "type": "Table",
+            "name": "table_blocked",
+            # "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "site",
+                "label": "Top blocked domains",
+                "width": "30%"
+            },{
+                "key": "count",
+                "label": "Count"
+            }],
+            "source": "panel_top_blocked"
+        },{
+            "type": "Table",
+            "name": "table_last",
+            # "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "time",
+                "label": "Time",
+                "width": "15%"
+            },{
+                "key": "ip",
+                "label": "IP",
+                "width": "15%"
+            },{
+                "key": "group",
+                "label": "Group",
+                "width": "10%"
+            },{
+                "key": "domain",
+                "label": "Last blocked Domains",
+                "width": "30%"
+            },{
+                "key": "reason",
+                "label": "Reason",
+                "width": "30%"
+            }],
+            "source": "panel_last_blocked"
+        },
+        {
+            "type": "Table",
+            "name": "table_config",
+            "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "key",
+                "label": "Item",
+                "width": "30%"
+            }, {
+                "key": "value",
+                "label": "Value"
+            }],
+            "source": "panel_config"
+        }
+        # ,
+        #  {
         #     "type": "Table",
         #     "name": "table_stats",
         #     #"pagination": False,
@@ -575,7 +691,8 @@ panels = {
         #         "label": "Connections/sec",
         #         "width": "10%"
         #     }, ]
-        # }, 
+        # }
+        , 
         {
             "type": "Table",
             "name": "table_net",

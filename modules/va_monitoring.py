@@ -3,6 +3,7 @@ import requests
 import json
 import re
 import time, datetime
+import salt
 from requests.auth import HTTPBasicAuth
 
 from va_utils import check_functionality as panel_check_functionality
@@ -11,7 +12,21 @@ from va_monitoring_panels import panels
 from monitoring_stats import parse
 
 #Using this to convert from integer states to icinga states( 0 = OK, 1 = WARNING etc. )
+states = {0 : 'OK', 1 : 'Warning', 2 : 'Critical', 3 : 'Unknown', 99 : 'Pending'} #NINO
 states = ['OK', 'Warning', 'Critical', 'Unknown']
+
+user = 'admin'
+password = ''
+ip = ''
+
+def __init__(opts):
+    # Init global
+    global ip
+    global password
+
+    password = __salt__['pillar.get']('admin_password') 
+    ip = __salt__['grains.get']('ipv4')
+    ip = [x for x in ip if '127.0.0.1' not in x][0]
 
 
 def get_panel(panel_name, provider='', service=''):
@@ -127,9 +142,11 @@ def panel_history_summary_monthly(name, host_name):
     res=panel_history_summary(host_name,name,'1month')
     return res
 
+
 def panel_history_summary(host_name='*', name='*', historyperiod='*'):
     data = get_hosts_periods_data(host = host_name, service = name, duration = historyperiod) or {host_name : {}}
     lines = []
+    total_time = data[host_name].get('total')
     summary_dict = {
         'key': "Hostname",
         'value': host_name
@@ -144,35 +161,43 @@ def panel_history_summary(host_name='*', name='*', historyperiod='*'):
 
     summary_dict = {
         'key': "Time in OK state",
-        'value': data[host_name].get('OK') or '-'
+        'value': pretty_time_and_percent(data[host_name].get('OK'),total_time)
     }
     lines.append(summary_dict)
 
     summary_dict = {
         'key': "Time in WARNING state",
-        'value': data[host_name].get('Warning') or '-'
+        'value': pretty_time_and_percent(data[host_name].get('Warning'),total_time)
     }
     lines.append(summary_dict)
 
     summary_dict = {
         'key': "Time in CRITICAL state",
-        'value': data[host_name].get('Critical') or '-'
+        'value': pretty_time_and_percent(data[host_name].get('Critical'),total_time)
     }
     lines.append(summary_dict)
 
     summary_dict = {
         'key': "Time in UNKNOWN state",
-        'value': data[host_name].get('Uknown') or '-'
+        'value': pretty_time_and_percent(data[host_name].get('Unknown'),total_time)
     }
     lines.append(summary_dict)
 
     summary_dict = {
         'key': "TOTAL TIME",
-        'value': data[host_name].get('total') or '-'
+        'value': seconds_to_pretty(total_time) or '-'
     }
     lines.append(summary_dict)
 
     return lines
+
+def pretty_time_and_percent(data, total):
+    if data:
+        text = '('+ "{0:05.2f}".format(data*100/total) + '%) '+ seconds_to_pretty(data)
+    else:
+        text = '-' 
+        # text = '('+str(data*100/total)+'%) ' + seconds_to_pretty(data)
+    return text
 
 def panel_history_events_weekly(name, host_name):
     res=panel_history_events(host_name,name,'1week')
@@ -188,7 +213,6 @@ def panel_history_events(host_name='*', name='*', historyperiod='*'):
     #We add this element to the list for calculating lengths - we iterate to the (i-1)th element and subtract timestamps
 #    host_data.sort(key = lambda x: x['timestamp'], reverse = True)
     host_data = [{'timestamp' : int(time.time())}] + host_data
-   
     timestamp_to_date = lambda t: datetime.datetime.fromtimestamp(int(t)).strftime('%Y-%m-%d %H:%M:%S')
     duration_to_pretty = lambda d: ' '.join(seconds_to_pretty(abs(int(d))).split(' ')[:2])
 
@@ -204,8 +228,7 @@ def panel_history_events(host_name='*', name='*', historyperiod='*'):
             'state' : states[int(host_data[i]['state'])],
             'name': timestamp_to_date(host_data[i]['timestamp']),
             'duration' : duration_to_pretty(int(host_data[i]['timestamp']) - int(host_data[i-1]['timestamp'])),
-            #NINO Ova treba da pravi razlikamegu x[timestamp] i prethodniot , nesto pokompaktno ili samo saati ili samo minuti vkupno
-            # 'name': str(timestamp_to_date(x['timestamp']))+' ' +states[int(x['state'])]
+
         }
     for i in range(1, len(host_data))]
 
@@ -411,10 +434,12 @@ def get_total_times(history_data, host_name, service_name):
     state_periods = get_state_periods(history_data)
 
     total_times = { 
-        states[i] : seconds_to_pretty(sum([x['length'] for x in state_periods if int(x['state']) == i and x['host_name'] == host_name and x['service_name'] == service_name]))
+        states[i] : (sum([x['length'] for x in state_periods if int(x['state']) == i and x['host_name'] == host_name and x['service_name'] == service_name]))
     for i in range(len(states))}
 
-    total_times['total'] = seconds_to_pretty(sum([x['length'] for x in state_periods]))
+    total_times['total'] = sum([x['length'] for x in state_periods])
+    # total_times['total'] = (total_times['total_seconds'])
+
 
     return total_times
 

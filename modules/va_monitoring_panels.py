@@ -427,9 +427,6 @@ panels = {
                     }, {
                         "name": "Last month history",
                         "action": "month_history"
-                    }, {
-                        "name": "Last week history",
-                        "action": "week_history"
                     }],
                     "id": ["name","host_name"]
                 }]

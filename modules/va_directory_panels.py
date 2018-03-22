@@ -929,10 +929,12 @@ panels = {
             "reducers": ["table", "filter", "panel", "modal", "alert", "form"],
             "columns": [{
                 "key": "group_name",
-                "label": "Record"
+                "label": "Record",
+                "width": "15%"
             }, {
                 "key": "type",
-                "label": "Type"
+                "label": "Type",
+                "width": "10%"
             }, {
                 "key": "value",
                 "label": "Value"

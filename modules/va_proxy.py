@@ -2,19 +2,58 @@ import os
 import time, datetime
 import subprocess, va_utils, json, re
 from va_utils import check_functionality as panel_check_functionality
+from va_utils import restart_functionality as restart_functionality
 from va_proxy_panels import panels
+import salt
 
 proxy_conf_dir = '/etc/e2guardian'
 config_line = '.Include</etc/e2guardian/lists/blacklists/{category}/domains>'
 
-def e2guardian_reload():    
+
+proxy_ip = ''
+
+def __init__(opts):
+    # Init global
+    global proxy_ip
+    proxy_ip = __salt__['pillar.get']('proxy_ip') 
+
+
+def e2guardian_reload(junk='None'):    
     try:
-        reload=subprocess.call(['/usr/sbin/e2guardian', '-g'])
+        # reload=subprocess.call(['/usr/sbin/e2guardian', '-g'])
+        reload_fail=subprocess.call(['/usr/sbin/service', 'e2guardian', ' reload'])
     except:
-        reload=True
-    if reload:
-        subprocess.check_output(['/usr/sbin/e2guardian', '-r'])
+        reload_fail=True
+    if reload_fail:
+        # subprocess.check_output(['/usr/sbin/e2guardian', '-r'])
+        subprocess.check_output(['/usr/sbin/service', 'e2guardian', ' restart'])
     return True
+
+def panel_last_blocked():    
+    c=subprocess.check_output(['/etc/e2guardian/last_blocked.sh'])
+    c = c.split('\n')
+    tabs = [x.split('\t') for x in c]
+    site = [{'time':to_time_string(x[0].split('.')[0]),'ip':x[1],'domain':x[2].split('/')[2],'reason':x[3],'group':x[4]} for x in tabs if x[0]]
+    site = remove_duplicate_dicts(site)
+    sorted_blocks = sorted(site, key = lambda x: x['time'], reverse = True)
+    return sorted_blocks
+
+def remove_duplicate_dicts(d):
+    return [dict(t) for t in set([tuple(l.items()) for l in d])]
+
+def panel_top_visits():    
+    c=subprocess.check_output(['/etc/e2guardian/top_visits.sh'])
+    c = c.split('\n')
+    site = [x.lstrip().split(' ') for x in c]
+    site = [{'count':float(x[0]),'site':x[1]} for x in site if x[0]]
+    return site
+
+def panel_top_blocked():    
+    c=subprocess.check_output(['/etc/e2guardian/top_blocked.sh'])
+    c = c.split('\n')
+    site = [x.lstrip().split(' ') for x in c]
+    site = [{'count':int(x[0]),'site':x[1]} for x in site if x[0]]
+    return site
 
 def generate_config_line_for_cat(category):
     line = config_line.format(category = category)
@@ -40,6 +79,7 @@ def get_config_file_path_for_group(group, conf_type):
         'banned_site_list' : proxy_conf_dir + '/lists/bannedsitelist%s',
         'exception_site_list' : proxy_conf_dir + '/lists/exceptionsitelist%s',
         'e2_guardian' : proxy_conf_dir + '/e2guardianf%s.conf',
+        'filter' : 'filter%s',
     }
     conf = configs.get(conf_type)
     conf = conf % (groups.index(group) + 1)
@@ -59,13 +99,19 @@ def write_config_file_for_group(group, conf_type, new_data):
 
     with open(conf_path, 'w') as f:
         f.write(new_data)
-   
-
 
 def get_all_categories():
-    categories = os.listdir(proxy_conf_dir + '/lists/blacklists')
+    categories=[d for d in os.listdir(proxy_conf_dir + '/lists/blacklists') if os.path.isdir(proxy_conf_dir + '/lists/blacklists/'+d)]
     return categories
 
+def category_size(category):
+    folder = proxy_conf_dir + '/lists/blacklists/'+category+'/'
+    total_size = 0 
+    for item in os.listdir(folder):
+        itempath = os.path.join(folder, item)
+        if os.path.isfile(itempath):
+            total_size += sum(1 for line in open(itempath) if not '#' in line)
+    return total_size #/1024
 
 def get_banned_list(group):
     conf_file = get_config_file_for_group(group, 'banned_site_list')
@@ -83,6 +129,14 @@ def get_banned_list(group):
 
     return result
 
+def panel_config():
+    # ip = __salt__['grains.get']('ipv4')
+    # ip = [x for x in ip if '127.0.0.1' not in x]
+    # ip.append(__salt__['grains.get']('fqdn'))
+    # res = [{'key' : 'Auto-config URL', 'value'  : 'http://'+x+'/wpad.dat or http://'+x+'/proxy.pac'} for x in ip]
+    res = [{'key' : 'Auto-config URL', 'value'  : 'http://'+proxy_ip+'/wpad.dat or http://'+proxy_ip+'/proxy.pac'}]
+    res += [{'key' : 'More help', 'value'  : 'http://'+proxy_ip+'/config.html'}]
+    return res
 
 def panel_banned_list():
     groups = get_groups()
@@ -119,22 +173,32 @@ def manage_site_bans(group, value, ban_type = 'bans', action = 'append'):
 def add_customlist(item):
     manage_file_add(proxy_conf_dir + '/lists/blacklists/_custom/domains', item)
 
-
 def remove_customlist(item):
-    manage_file_remove(proxy_conf_dir + '/lists/blacklists/_custom/domains', item)
+    manage_file_remove(proxy_conf_dir + '/lists/blacklists/_custom/domains',item)
 
+
+def add_extension(extension):
+    manage_file_add(proxy_conf_dir + '/lists/exceptionextensionlist', '\n'+extension)
+
+def remove_extension(extension):
+    manage_file_remove(proxy_conf_dir + '/lists/exceptionextensionlist', extension)
 
 def manage_file_add(file,item):
-    #NINO
-    #write to file
+    with open(file, 'a+') as f: 
+        f.write(str(item)+'\n')
+        f.close() 
     e2guardian_reload()
-    return "Item added to file"
 
 def manage_file_remove(file,item):
-    #NINO
-    #find and remove line
+    f = open(file,"r+")
+    d = f.readlines()
+    f.seek(0)
+    for i in d:
+        if str(item+'\n') != str(i):
+            f.write(i)
+    f.truncate()
+    f.close()
     e2guardian_reload()
-    return "Item removed from file"
 
 def panel_custom_list():
     conf_file = proxy_conf_dir + '/lists/blacklists/_custom/domains'
@@ -147,21 +211,15 @@ def panel_custom_list():
     
     return result
 
-def add_extension(extension):
-    manage_file_add(proxy_conf_dir + '/lists/exceptionextensionlist', item)
-
-def remove_extension(extension):
-    manage_file_remove(proxy_conf_dir + '/lists/exceptionextensionlist', item)
-
 def add_exception_site(group, site):
-    #NINO
-    manage_site_bans(group, site, 'bans')
-    #reload
+    conf_file = get_config_file_path_for_group(group, 'exception_site_list')
+    # return conf_file
+    manage_file_add(conf_file,site)
 
 def remove_exception_site(group, site):
-    #NINO
-    manage_site_bans(group, site, action = 'remove')
-    #erload
+    conf_file = get_config_file_path_for_group(group, 'exception_site_list')
+    # return conf_file
+    manage_file_remove(conf_file,site)
 
 def add_banned_site(group, site):
     manage_site_bans(group, site, 'bans')
@@ -191,26 +249,21 @@ def panel_exceptions_list():
         all_exceptions += get_exceptions_list(g)
     return all_exceptions
 
-def get_all_banned_lists():
+def panel_categories():
     groups = get_groups()
 
     categories = get_all_categories()
 
     all_lists = {g : get_banned_list(g) for g in groups}
 
-    cats = [{'category' : cat}  for cat in categories]
+    cats = [{'category' : cat, 'size' : category_size(cat)}  for cat in categories]
     cat_status_in_group = lambda cat, group: 'Denied' * (row['category'] in all_lists[group]['included']) + ' ' * (row['category'] in all_lists[group]['excluded'])
     [row.update({group : cat_status_in_group(cat, group) for group in groups}) for row in cats]
+    # [row.update({size : category_size(cat)} for row in cats)]
     result = sorted(cats, key = lambda x: x['category'], reverse = False)
     return result
 
 def panel_statistics():
-    #tail -n 100 /var/log/e2guardian/dstats.log
-    #time		childs 	busy	free	wait	births	deaths	conx	conx/s
-    #1521091807	20	0	20	0	0	0	0	0
-    # ponekogash se pojavuva linija so headers/text
-    # res = [{'time': '3434', 'childs': '2', 'busy': '3' , 'free': '6', 'wait': '3', 'births': '33', 'deaths': '22', 'conx': '32', 'conx/s': '1'}]
-    # return res
     conf_file = '/var/log/e2guardian/dstats.log'
     with open(conf_file) as f: 
         conf_file = f.read()
@@ -223,8 +276,8 @@ def panel_statistics():
         'busy': x[2], 
         'free': x[3], 
         'wait': x[4], 
-        'births': x[5], 
-        'deaths': x[6], 
+        # 'births': x[5], 
+        # 'deaths': x[6], 
         'conx': x[7], 
         'conx/s': x[8]
         } for x in conf_file ]
@@ -232,6 +285,7 @@ def panel_statistics():
     return result
 
 def to_time_string(timestamp):
+    # timestamp=timestamp.split('.')[0]
     res = datetime.datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m-%d %H:%M')
     return res
 
@@ -260,20 +314,13 @@ def panel_ip_groups():
 
     return result
 
-def action_edit_ip_group(group,range,new_range):
-    #NINO
-    return result
-
-
 def action_remove_ip_group(group,range):
-    #NINO
-    return result
-
+    filter_range=get_config_file_path_for_group(group,'filter')
+    manage_file_remove(proxy_conf_dir + '/lists/authplugins/ipgroups',str(range)+' = '+filter_range)
 
 def action_add_ip_group(group,range):
-    #NINO
-    return result
-
+    filter_range=get_config_file_path_for_group(group,'filter')
+    manage_file_add(proxy_conf_dir + '/lists/authplugins/ipgroups',str(range)+' = '+filter_range)
 
 def toggle_vip(category):
     toggle_cat=category
@@ -286,7 +333,6 @@ def toggle_standard(category):
 def toggle_safe(category):
     toggle_cat=category
     res = toggle_category_status_in_group('Safe', toggle_cat)
-    
 
 def toggle_category_status_in_group(group, category):
     conf_file = get_config_file_for_group(group, 'banned_site_list')
