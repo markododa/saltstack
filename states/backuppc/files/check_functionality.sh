@@ -7,7 +7,7 @@ text="OK: "
 CLEAN_OUT=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g'`
 OLDEST=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | sed "s/.*=> //" | sed 's/,//'| sort -nr | tail -n 1 | awk '{print int($1)}'`
 GOODBACKUPS=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | wc -l`
-TOTALBACKUPS=`echo "$CLEAN_OUT" | grep reason | wc -l`
+TOTALBACKUPS=`echo "$CLEAN_OUT" | grep -E '"type" => "incr|full"' | wc -l`
 FAILEDBACKUPS=`echo "$CLEAN_OUT" |  grep 'Reason_backup_failed' | wc -l`
 RUNNING=`echo "$CLEAN_OUT" |  grep Status_backup_in_progress | wc -l`
 
