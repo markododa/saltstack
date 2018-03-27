@@ -39,7 +39,8 @@ openvpn_service:
       - pkg: openvpn_pkgs
 
 systemctl start {{ map.service }}@{{name}}:
-  cmd.run
+  cmd.run:
+    - order: last
 
 {% endif %}
 
