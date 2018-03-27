@@ -10,7 +10,7 @@ include:
     - source: salt://openvpn/files/openvpn@.service
 
 systemctl mask openvpn@client.service:
-  cmd.run:
+  cmd.run
 
 {% for type, names in salt['pillar.get']('openvpn', {}).iteritems() %}
 {% if type == 'server' or type == 'client' %}
