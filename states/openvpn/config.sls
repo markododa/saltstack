@@ -42,11 +42,6 @@ openvpn_service:
     - require:
       - pkg: openvpn_pkgs
 
-systemctl daemon-reload; systemctl start {{ map.service }}@{{name}}:
-  cmd.run:
-    - require:
-      - pkg: openvpn_pkgs
-
 {% endif %}
 
 {% if config.ca is defined and config.ca_content is defined %}
