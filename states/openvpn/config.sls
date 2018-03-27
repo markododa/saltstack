@@ -31,6 +31,10 @@ openvpn_config_{{ type }}_{{ name }}:
 
 # Ensure openvpn service is running and autostart is enabled
 {% if type == 'server' %}
+
+systemctl daemon-reload:
+ cmd.run
+
 openvpn_service:
   service.running:
     - name: {{ map.service }}@{{name}}
@@ -40,7 +44,8 @@ openvpn_service:
 
 systemctl daemon-reload; systemctl start {{ map.service }}@{{name}}:
   cmd.run:
-    - order: last
+    - require:
+      - pkg: openvpn_pkgs
 
 {% endif %}
 
