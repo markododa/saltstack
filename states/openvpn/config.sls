@@ -38,7 +38,7 @@ openvpn_service:
     - require:
       - pkg: openvpn_pkgs
 
-systemctl daemon reload; systemctl start {{ map.service }}@{{name}}:
+systemctl daemon-reload; systemctl start {{ map.service }}@{{name}}:
   cmd.run:
     - order: last
 
