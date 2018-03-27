@@ -56,6 +56,9 @@ va_master:
     - name: https://github.com/VapourApps/va_master.git
     - target: /opt/va_master
 
+cd /opt/va_master; git checkout {{salt['pillar.get']('va-master-branch','master')}}:
+  cmd.run
+
 /etc/systemd/system/va-master.service:
   file.managed:
     - source: salt://va-master/va-master.service
@@ -82,9 +85,11 @@ rsyslog:
 
 /var/log/vapourapps/va-master.log:
   file.managed:
-    - user: syslog
+    - user: root
     - group: adm
-    - makedirs: True 
+    - makedirs: True
+    - require:
+      - install_pkgs
 
 #### functionality script
 /usr/lib/nagios/plugins/:
