@@ -10,7 +10,7 @@ include:
     - source: salt://openvpn/files/openvpn@.service
 
 systemctl mask openvpn@client.service:
-  cmd.run:
+  cmd.run
 
 {% for type, names in salt['pillar.get']('openvpn', {}).iteritems() %}
 {% if type == 'server' or type == 'client' %}
@@ -31,15 +31,17 @@ openvpn_config_{{ type }}_{{ name }}:
 
 # Ensure openvpn service is running and autostart is enabled
 {% if type == 'server' %}
+
+systemctl daemon-reload:
+ cmd.run
+
 openvpn_service:
   service.running:
     - name: {{ map.service }}@{{name}}
     - enable: True
     - require:
       - pkg: openvpn_pkgs
-
-systemctl start {{ map.service }}@{{name}}:
-  cmd.run
+    - order: last
 
 {% endif %}
 
