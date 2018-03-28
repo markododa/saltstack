@@ -2,4 +2,4 @@
 #
 # TOP ALLOWED
 
-cat /var/log/e2guardian/access.log*  | grep -v '*DENIED*'|  grep -v '.jpg	'  | grep -v '.png	' | grep -v '.gif	'| awk -v N=4 '{print $N}'  | cut --delimiter=/ -f 3 | sort | uniq -c | sort -nr
+cat /var/log/e2guardian/access.log*  | grep -v '*DENIED*'|  grep -v '.jpg	'  | grep -v '.png	' | grep -v '.gif	'| cut -f 6 | cut --delimiter=/ -f 3 | sort | uniq -c | sort -nr
