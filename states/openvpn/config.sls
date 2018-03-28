@@ -41,7 +41,7 @@ openvpn_service:
     - enable: True
     - require:
       - pkg: openvpn_pkgs
-      - order: last
+    - order: last
 
 {% endif %}
 
