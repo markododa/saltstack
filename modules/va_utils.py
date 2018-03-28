@@ -56,6 +56,13 @@ def get_time_zone():
         raise Exception("Error")
     return result
 
+
+def get_clock():
+    result = __salt__['system.get_system_date_time']()+' - '+get_time_zone()
+    if not result: 
+        raise Exception("Error")
+    return result
+
 def get_ip_addresses():
     result = __salt__['grains.get']('ipv4')
     if not result: 
@@ -69,7 +76,7 @@ def get_dns_addresses():
     return result
 
 def panel_networking():
-    result = [{"ip":get_ip_addresses(), "dns":get_dns_addresses()}]
+    result = [{"ip":get_ip_addresses(), "dns":get_dns_addresses(), "clock":get_clock()}]
     return result
 
 

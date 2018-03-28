@@ -450,6 +450,9 @@ panels = {
             }, {
                 "key": "dns",
                 "label": "DNS servers"
+            }, {
+                "key": "clock",
+                "label": "Clock"
             }
             ],
             "id": ["ip"],

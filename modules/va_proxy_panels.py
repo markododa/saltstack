@@ -59,7 +59,7 @@ panels = {
                                     "name": "Fill the form to add a new item"
                                 }, {
                                     "type": "Paragraph",
-                                    "name": "**s is for all https web sites."
+                                    "name": "Enter domain name only or TLD. **s = all https web sites. *ip = all sites accessed by IP. *ips = all https sites accesed by IP"
                                 }]
                             }]
                         }
@@ -109,12 +109,11 @@ panels = {
                                     "name": "Fill the form to add a new item"
                                 }, {
                                     "type": "Paragraph",
-                                    "name": "**s is for all https web sites."
+                                    "name": "Enter domain name only or TLD. **s = all https web sites. *ip = all sites accessed by IP. *ips = all https sites accesed by IP"
                                 }]
                             }]
                         }
                     }
-
                 ]
             }, {
                 "type": "Table",
@@ -139,7 +138,6 @@ panels = {
                 "id": ["group", "item"],
                 "source": "panel_banned_list"
             },
-
             {
                 "type": "Table",
                 "name": "table2",
@@ -368,6 +366,9 @@ panels = {
         "tbl_source": {
             "table": {
                 "source": "panel_ip_groups"
+            },
+            "table_users": {
+                "source": "panel_users"
             }
         },
         "content": [{
@@ -447,6 +448,26 @@ panels = {
             }],
             "id": ["group","range"],
             "source": "panel_ip_groups"
+            
+        }, {
+            "type": "Table",
+            "name": "table_users",
+            "reducers": ["table", "panel", "modal", "alert"],
+            "columns": [{
+                "key": "group",
+                "label": "Assigned to Group",
+                "width": "20%"
+            }, {
+                "key": "ip",
+                "label": "Active IP addresses in logs"
+            },{
+                "key": "hostname",
+                "label": "Hostname (PTR Record)"
+            },{
+                "key": "requests",
+                "label": "Requests"
+            }],
+            "source": "panel_users"
             
         }]
     },
@@ -613,15 +634,20 @@ panels = {
             "columns": [{
                 "key": "time",
                 "label": "Time",
-                "width": "15%"
-            },{
-                "key": "ip",
-                "label": "IP",
-                "width": "15%"
+                "width": "12%"
             },{
                 "key": "group",
                 "label": "Group",
-                "width": "10%"
+                "width": "7%"
+            },{
+                "key": "ip",
+                "label": "IP",
+                "width": "12%"
+            },{
+                "key": "hostname",
+                "label": "Hostname"
+                ,
+                "width": "14%"
             },{
                 "key": "domain",
                 "label": "Last blocked Domains",
@@ -629,7 +655,7 @@ panels = {
             },{
                 "key": "reason",
                 "label": "Reason",
-                "width": "30%"
+                "width": "25%"
             }],
             "source": "panel_last_blocked"
         },
@@ -705,6 +731,9 @@ panels = {
             }, {
                 "key": "dns",
                 "label": "DNS servers"
+            }, {
+                "key": "clock",
+                "label": "Clock"
             }],
             "id": ["ip"],
             "source": "va_utils.panel_networking"
