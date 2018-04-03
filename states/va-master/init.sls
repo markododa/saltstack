@@ -8,7 +8,6 @@ install_pkgs:
       - libvirt-dev
       - build-essential
       - python-dev
-      - python-pip
       - libssl-dev
       - libffi-dev
       - libzmq3-dev
@@ -47,7 +46,7 @@ consul:
     - watch:
       - file: /etc/systemd/system/consul.service
 
-pip install setuptools:
+easy_install pip setuptools :
   cmd.run
 
 va_master:
