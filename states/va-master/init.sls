@@ -20,6 +20,7 @@ install_pkgs:
       - salt-cloud
       - git
       - rsyslog
+      - libjpeg-dev
 
 wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip:
   cmd.run:
