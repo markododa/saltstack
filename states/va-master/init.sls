@@ -5,6 +5,7 @@ salt://va-master/node-repo.sh:
 install_pkgs:
   pkg.installed:
     - pkgs:
+      - libvirt-dev
       - build-essential
       - python-dev
       - libssl-dev
@@ -13,7 +14,6 @@ install_pkgs:
       - unzip
       - supervisor
       - curl
-      - python-libvirt
       - nodejs
       - python-setuptools
       - salt-master
