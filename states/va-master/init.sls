@@ -16,7 +16,6 @@ install_pkgs:
       - supervisor
       - curl
       - nodejs
-      - python-setuptools
       - salt-master
       - salt-cloud
       - git
@@ -48,6 +47,8 @@ consul:
     - watch:
       - file: /etc/systemd/system/consul.service
 
+pip install setuptools:
+  cmd.run
 
 va_master:
   git.latest:
