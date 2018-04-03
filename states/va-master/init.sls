@@ -23,6 +23,10 @@ install_pkgs:
       - libjpeg-dev
       - libvirt-clients
 
+python-libvirt:
+  pkg.installed:
+    - install_recommends: False
+    
 wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip:
   cmd.run:
     - creates: /root/consul_0.7.4_linux_amd64.zip
