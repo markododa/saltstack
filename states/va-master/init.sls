@@ -6,6 +6,7 @@ install_pkgs:
   pkg.installed:
     - pkgs:
       - libvirt-dev
+      - python-pip
       - build-essential
       - python-dev
       - libssl-dev
@@ -46,7 +47,7 @@ consul:
     - watch:
       - file: /etc/systemd/system/consul.service
 
-easy_install pip setuptools :
+pip install setuptools :
   cmd.run
 
 va_master:
