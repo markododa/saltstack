@@ -65,7 +65,7 @@ cd /opt/va_master; git checkout {{salt['pillar.get']('va-master-branch','master'
 
 npm-build:
   cmd.run:
-    - name: npm install --no-bin-links && node build.js
+    - name: npm install && node build.js
     - cwd: /opt/va_master/va_dashboard
 
 pip_install:
