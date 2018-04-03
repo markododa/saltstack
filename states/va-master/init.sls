@@ -49,7 +49,7 @@ consul:
     - watch:
       - file: /etc/systemd/system/consul.service
 
-pip install setuptools :
+pip install --upgrade setuptools :
   cmd.run
 
 va_master:
