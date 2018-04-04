@@ -5,6 +5,8 @@ salt://va-master/node-repo.sh:
 install_pkgs:
   pkg.installed:
     - pkgs:
+      - libvirt-dev
+      - python-pip
       - build-essential
       - python-dev
       - libssl-dev
@@ -13,17 +15,18 @@ install_pkgs:
       - unzip
       - supervisor
       - curl
-      - python-libvirt
       - nodejs
-      - python-setuptools
       - salt-master
       - salt-cloud
       - git
       - rsyslog
+      - libjpeg-dev
+      - libvirt-clients
 
-easy_install pip:
-  cmd.run
-
+python-libvirt:
+  pkg.installed:
+    - install_recommends: False
+    
 wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip:
   cmd.run:
     - creates: /root/consul_0.7.4_linux_amd64.zip
@@ -50,6 +53,8 @@ consul:
     - watch:
       - file: /etc/systemd/system/consul.service
 
+pip install --upgrade setuptools :
+  cmd.run
 
 va_master:
   git.latest:
@@ -65,7 +70,7 @@ cd /opt/va_master; git checkout {{salt['pillar.get']('va-master-branch','master'
 
 npm-build:
   cmd.run:
-    - name: npm install --no-bin-links && node build.js
+    - name: npm install && node build.js
     - cwd: /opt/va_master/va_dashboard
 
 pip_install:
