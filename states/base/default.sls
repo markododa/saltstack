@@ -21,6 +21,9 @@ install_packages:
       - alias cp='cp -i'
       - alias mv='mv -i'
       - export HISTTIMEFORMAT="%d/%m/%y %T "
+      - export HISTCONTROL=ignorespace:ignoredups
+      - export HISTSIZE=30000
+      - shopt -s histappend
 
 {% if salt['grains.get']('role')  == None %}
 {% set role='Application' %}
