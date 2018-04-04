@@ -1,4 +1,4 @@
-{% from "owncloud/map.jinja" import owncloud with context %}
+{% from "cloudshare/map.jinja" import owncloud with context %}
 
 {% if grains['os_family'] == 'Debian' %}
 owncloud-repo:

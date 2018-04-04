@@ -1,5 +1,5 @@
 include:
-  - owncloud.python-mysqldb
+  - cloudshare.python-mysqldb
 
 mysql-requirements:
   pkg.installed:

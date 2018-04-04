@@ -9,7 +9,7 @@ base:
   'role:directory':
     - match: grain
     - credentials
-  'role:owncloud':
+  'role:cloudshare':
     - match: grain
     - credentials
   'role:lamp':

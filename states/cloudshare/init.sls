@@ -1,5 +1,8 @@
+apt-transport-https:
+  pkg.installed:
+    - order: first
 include:
-  - owncloud.mysql
-  - owncloud.repo
-  - owncloud.setup
-  - owncloud.ldap
+  - cloudshare.mysql
+  - cloudshare.repo
+  - cloudshare.setup
+  - cloudshare.ldap

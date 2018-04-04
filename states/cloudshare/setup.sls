@@ -1,4 +1,4 @@
-{% from "owncloud/map.jinja" import owncloud with context %}
+{% from "cloudshare/map.jinja" import owncloud with context %}
 
 apache2-stuff:
   pkg.installed:
@@ -20,7 +20,7 @@ install-owncloud:
 
 /var/www/owncloud/config/autoconfig.php:
   file.managed:
-    - source: salt://owncloud/files/autoconfig.php
+    - source: salt://cloudshare/files/autoconfig.php
     - file_mode: 644
     - user: www-data
     - group: www-data
@@ -100,7 +100,7 @@ curl {{ipaddrss}} > /dev/null:
   
 /etc/sudoers.d/occ:
   file.managed:
-    - source: salt://owncloud/files/occ
+    - source: salt://cloudshare/files/occ
     - user: root
     - group: root
     - mode: 440
@@ -109,7 +109,7 @@ curl {{ipaddrss}} > /dev/null:
 /usr/lib/nagios/plugins/check_functionality.sh:
   file.managed:
     - source:
-      - salt://owncloud/files/check_functionality.sh
+      - salt://cloudshare/files/check_functionality.sh
     - user: root
     - group: root
     - mode: 755
