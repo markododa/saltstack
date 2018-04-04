@@ -231,3 +231,4 @@ def change_user_detail(username, item, new_value):
     attr = attr_map[item]
     result = edit_user(username, {attr : new_value})
     return 
+
