@@ -1,0 +1,13 @@
+[Unit]
+Description=Minio Object Store
+Requires=network-online.target
+
+[Service]
+WorkingDirectory=/opt/minio
+Restart=on-failure
+ExecStart=/opt/minio/minio server /opt/minio/data
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+
+[Install]
+WantedBy=multi-user.target

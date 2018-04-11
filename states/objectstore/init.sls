@@ -1,13 +1,12 @@
-
 /opt/minio:
   file.directory:
     - makedirs: True
 
-/opt/minio/data
+/opt/minio/data:
   file.directory:
     - makedirs: True
 
-/usr/local/bin/minio:
+/opt/minio/minio:
   file.managed:
     - name: /opt/minio/minio
     - source: https://dl.minio.io/server/minio/release/linux-amd64/minio
@@ -16,11 +15,9 @@
     - group: root
     - mode: 655
 
-
-install_test:
-  cmd.run:
-    - name: dpkg --force-all -i /opt/minio/minio.deb
-
+/etc/systemd/system/minio.service:
+  file.managed:
+    - source: salt://objectstore/files/minio.service
 
 check_functionality_objectstore:
   file.managed:
@@ -30,3 +27,8 @@ check_functionality_objectstore:
     - group: root
     - mode: 755
 
+minio:
+  service.running:
+    - enable: True
+    - watch:
+      - file: /etc/systemd/system/minio.service
