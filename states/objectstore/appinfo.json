@@ -1,0 +1,40 @@
+{
+    "name": "objectstore",
+    "description": "Object storage server with S3 compatibility.",
+    "version": "1.0",
+    "icon": "fa-archive",
+    "dependency": "",
+    "substates": ["objectstore.objectstore"], 
+    "module": "va_objectstore",
+    "services": [
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "Local Web Server",
+            "http": "https://VAR_DNS:443/",
+            "tls_skip_verify": true,
+            "method" : "POST",
+            "interval": "30s",
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
+    "panels": {
+        "admin": [{
+            "key": "objectstore.overview",
+            "name": "Overview"
+        }],
+        "user": []
+    },
+    "path": "-"
+}

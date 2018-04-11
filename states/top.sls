@@ -31,6 +31,9 @@ base:
   'role:proxy':
     - match: grain
     - proxy.proxy
+  'role:objectstore':
+    - match: grain
+    - objectstore.objectstore
   'role:va-master':
     - match: grain
     - va-master
