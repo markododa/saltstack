@@ -3,7 +3,7 @@
 # CHECK SCRIPT FOR VA-OBJECTSTORE
 
 exitstate=0
-text="OK"
+text=""
 
 OUT=`ps aux | grep /opt/minio/minio | grep -v grep | wc -l`
 if [ $OUT -eq 0 ];then
