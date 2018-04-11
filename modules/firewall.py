@@ -1,5 +1,6 @@
 import salt
 
+
 def nat_rules():
     return __salt__['iptables.get_rules']()['nat']['PREROUTING']['rules']
 

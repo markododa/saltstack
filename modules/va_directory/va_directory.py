@@ -176,6 +176,14 @@ def rm_user_from_group2(group,username):
     return manage_user_groups(username, [group], action = 'removemembers')
 
 
+def toggle_user_from_group(username, group, status):
+    if status=="":
+        result = add_user_to_group(username,group)
+    else:
+        result = rm_user_from_group(username,group)
+    return result
+
+
 def panel_list_user_groups(username):
     user_groups=[]
     groups = get_groups()
@@ -194,6 +202,22 @@ def panel_list_user_groups_notmember(username):
         if username not in group_members:
             user_groups.append({"groupname" : group[0], "username" : username})
     return user_groups
+
+
+
+def panel_list_user_groups_mixed(username):
+    user_groups=[]
+    groups = get_groups()
+    for group in groups:
+        group_members = list_group_members(group[0])
+        if username in group_members:
+            user_groups.append({"groupname" : group[0], "username" : username, "status" : "Member","zorder" : 1})
+        else:
+            user_groups.append({"groupname" : group[0], "username" : username, "status" : "","zorder" : 2})
+    user_groups = sorted(user_groups, key = lambda x: (x['zorder'],x['groupname']), reverse = False)
+    return user_groups
+
+
 
 def panel_user_details(username):
     user_details=[]
@@ -231,4 +255,3 @@ def change_user_detail(username, item, new_value):
     attr = attr_map[item]
     result = edit_user(username, {attr : new_value})
     return 
-

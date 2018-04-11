@@ -29,11 +29,18 @@ def e2guardian_reload(junk='None'):
         subprocess.check_output(['/usr/sbin/service', 'e2guardian', ' restart'])
     return True
 
+def panel_users():
+    c=subprocess.check_output(['/etc/e2guardian/ips.sh'])
+    c = c.split('\n')
+    tabs = [x.split('\t') for x in c]
+    ips = [{'ip':x[0].lstrip().split(' ')[1],'requests':x[0].lstrip().split(' ')[0],'hostname':x[1] or '-','group':x[2]} for x in tabs if x[0]]
+    return ips
+
 def panel_last_blocked():    
     c=subprocess.check_output(['/etc/e2guardian/last_blocked.sh'])
     c = c.split('\n')
     tabs = [x.split('\t') for x in c]
-    site = [{'time':to_time_string(x[0].split('.')[0]),'ip':x[1],'domain':x[2].split('/')[2],'reason':x[3],'group':x[4]} for x in tabs if x[0]]
+    site = [{'time':to_time_string(x[0].split('.')[0]),'ip':x[1],'hostname':x[2] or '-','domain':x[3].split('/')[2],'reason':x[4],'group':x[5]} for x in tabs if x[0]]
     site = remove_duplicate_dicts(site)
     sorted_blocks = sorted(site, key = lambda x: x['time'], reverse = True)
     return sorted_blocks
@@ -172,10 +179,14 @@ def manage_site_bans(group, value, ban_type = 'bans', action = 'append'):
     
 def add_customlist(item):
     manage_file_add(proxy_conf_dir + '/lists/blacklists/_custom/domains', item)
+    result = {"success" : True, "message" : "Item added", "data" : {}}
+    return result
 
 def remove_customlist(item):
     manage_file_remove(proxy_conf_dir + '/lists/blacklists/_custom/domains',item)
-
+    #result = {"success" : False, "message" : "Item can not be removed now", "data" : {}}
+    result = {"success" : True, "message" : "Item removed", "data" : {}}
+    return result
 
 def add_extension(extension):
     manage_file_add(proxy_conf_dir + '/lists/exceptionextensionlist', '\n'+extension)

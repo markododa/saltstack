@@ -169,10 +169,11 @@ panels = {
 
             "table_custom": {
                 "source": "panel_custom_list"
-            },
-            "table_ext": {
-                "source": "panel_exceptions_extensions"
             }
+            # ,
+            # "table_ext": {
+            #    "source": "panel_exceptions_extensions"
+            #}
         },
         "content": [{
                 "type": "Form",
@@ -187,6 +188,8 @@ panels = {
                         "action": "modal",
                         "reducers": ["modal"],
                         "modal": {
+                            "refreshAction": "panel_custom_list",
+                            "tableName": "table_custom",
                             "title": "Add new item to the _custom category",
                             "buttons": [{
                                 "type": "Button",

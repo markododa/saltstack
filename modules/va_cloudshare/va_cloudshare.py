@@ -3,17 +3,16 @@ from va_utils import check_functionality as panel_check_functionality
 from va_cloudshare_panels import panels
 
 admin_user = 'admin'
+admin_pass = None 
+salt_dict = {}
 
-def get_admin_pass():
+def __init__(opts):
+    # Init global
+    global admin_pass
     admin_pass = __salt__['pillar.get']('admin_password')
-    if not admin_pass: 
-        raise Exception("admin_password from pillar is empty - can not perform authorized requests. ")
-    return admin_pass
-
 
 def get_v1_url():
-    admin_pass = get_admin_pass()
-    url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php'
+    url = 'http://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php'
     return url
 
 def owncloud_request(endpoint, data = {}, params = {}, method = 'get'):
@@ -48,27 +47,27 @@ def bytes_to_readable(num, suffix='B'):
 #For some reason, using /shares or /users only gives you some information. You have to manually iterate through users or shares to get data like quota. This is done through salt for efficiency.
 def panel_shares():
     #TODO testing, remove these
-        url = get_v1_url() + '/apps/files_sharing/api/v1/shares'
-        params = {"format" : "json"}
-        files = requests.get(url, params = params, verify = False).text
-        files = json.loads(files)['ocs']['data']
-        if not files : return []
-        files_list = []
-        for f in files:
-                url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares/' + str(f['id']) + '?format=json'
-                result = requests.get(url, verify = False).text
-                new_file = json.loads(result)['ocs']['data']['element']
-                if f.has_key('url'):
-                    #if (new_file['share_with'] == None) :
-                    new_file['share_with'] = 'Direct link'
-                    #    new_file['share_with'] = f['url'] #'link'
-                    #else:
-                    #    new_file['share_with'] = str(new_file['share_with'])+' + link'
+    url = get_v1_url() + '/apps/files_sharing/api/v1/shares'
+    params = {"format" : "json"}
+    files = requests.get(url, params = params, verify = False).text
+    files = json.loads(files)['ocs']['data']
+    if not files : return []
+    files_list = []
+    for f in files:
+            url = 'http://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares/' + str(f['id']) + '?format=json'
+            result = requests.get(url, verify = False).text
+            new_file = json.loads(result)['ocs']['data']['element']
+            if f.has_key('url'):
+                #if (new_file['share_with'] == None) :
+                new_file['share_with'] = 'Direct link'
+                #    new_file['share_with'] = f['url'] #'link'
+                #else:
+                #    new_file['share_with'] = str(new_file['share_with'])+' + link'
 
 
-                files_list.append(new_file)
+            files_list.append(new_file)
 
-        return files_list
+    return files_list
 
 def panel_new():
     #TODO testing, remove these
@@ -81,7 +80,7 @@ def panel_new():
         if not files : return []
         files_list = []
         for f in files:
-                url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares/' + str(f['id']) + '?format=json'
+                url = 'http://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/apps/files_sharing/api/v1/shares/' + str(f['id']) + '?format=json'
                 result = requests.get(url, verify = False).text
                 new_file = json.loads(result)['ocs']['data']['element']
                 if f.has_key('url'):
@@ -139,14 +138,14 @@ def user_quota(user,default_q):
 
 
 def panel_quota():
-        url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/cloud/users'
+        url = 'http://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/cloud/users'
         params = {"format" : "json"}
         users = requests.get(url, params = params, verify = False).text
         users = json.loads(users)['ocs']['data']['users']
         users_list = []
         default_q = get_defaut_quota()
         for user in users:
-                url = 'http://' + admin_user + ':' + get_admin_pass() + '@localhost/ocs/v1.php/cloud/users/'+user+'?format=json'
+                url = 'http://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php/cloud/users/'+user+'?format=json'
                 new_user = requests.get(url, verify = False).text
                 new_user =json.loads(new_user)
                 new_user = new_user['ocs']['data']
@@ -167,7 +166,7 @@ def panel_quota():
 
 def panel_list_users():
 # This will get only LDAP users, ight be better if we can list all of them	
-    output =  __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ ldap:search ''")
+    output =  salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ ldap:search ''")
     output_lines = output.split('\n')
 #[1:-2]
     output_lines_stripped = [x.strip() for x in output_lines]
@@ -175,7 +174,7 @@ def panel_list_users():
     users = []
     for x in output_lines_column_separated:
         user_name=x[1].replace(')','')
-        last_login= __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ user:lastseen "+user_name)
+        last_login= salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ user:lastseen "+user_name)
         last_login = ''.join(last_login.split(': ')[1:]) or 'Never' #last_login
         user = {
             'name' : x[0],
@@ -213,7 +212,7 @@ def get_defaut_quota():
 
 
 def panel_plugins():
-    output =  __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:list")
+    output =  salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:list")
     output_lines = output.split('\n')[1:]
     output_lines_stripped = [x.strip() for x in output_lines]
     #output_lines_column_separated = [x.split(' (') for x in output_lines_stripped]
@@ -235,7 +234,7 @@ def panel_plugins():
 
 
 def panel_statistics():
-    diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/www/owncloud/ -o TARGET').split()[1]]
+    diskusage =salt_dict['disk.usage']()[salt_dict['cmd.run']('findmnt --target /var/www/owncloud/ -o TARGET').split()[1]]
     statistics = [{'key' : 'Storage partition used size (MB)', 'value': int(diskusage['used'])/1024},
                     {'key' : 'Storage partition free space (MB)', 'value': int(diskusage['available'])/1024},
                     {'key' : 'Storage partition mount point', 'value': diskusage['filesystem']},
@@ -248,7 +247,7 @@ def action_toggle_app(app,current_state):
     cmd =""
     #return app
     if current_state == "Enabled":
-        cmd= __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:disable "+app)
+        cmd= salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:disable "+app)
     elif current_state == "Disabled":
-        cmd= __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:enable "+app)
+        cmd= salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:enable "+app)
     return
