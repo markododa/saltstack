@@ -42,3 +42,6 @@ base:
   'role:libvirt':
     - match: grain
     - libvirt
+  'role:nginx':
+    - match: grain
+    - nginx
