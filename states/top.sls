@@ -33,7 +33,7 @@ base:
     - proxy.proxy
   'role:objectstore':
     - match: grain
-    - objectstore.objectstore
+    - objectstore
   'role:va-master':
     - match: grain
     - va-master
