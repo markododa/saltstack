@@ -12,11 +12,6 @@ config_line = '.Include</etc/e2guardian/lists/blacklists/{category}/domains>'
 
 proxy_ip = ''
 
-def __init__(opts):
-    # Init global
-    global proxy_ip
-    proxy_ip = __salt__['pillar.get']('proxy_ip') 
-
 
 def e2guardian_reload(junk='None'):    
     try:

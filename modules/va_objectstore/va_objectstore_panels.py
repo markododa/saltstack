@@ -8,6 +8,9 @@ panels = {
             "table_config": {
                 "source": "panel_config"
             },
+            "table_statistics": {
+                "source": "panel_statistics"
+            },
             "table_net": {
                 "source": "panel_networking",
                 "module": "va_utils"
@@ -51,7 +54,23 @@ panels = {
                     "label": "Value"
                 }],
                 "source": "panel_config"
+            } ,{
+            "type": "Table",
+            "name": "table_statistics",
+            "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "key",
+                "label": "Storage",
+                "width": "30%"
+            }, {
+                "key": "value",
+                "label": "Value"
             }
+            ],
+            "id": ["key"],
+            "source": "panel_statistics"
+        }
             ,
             {
                 "type": "Table",

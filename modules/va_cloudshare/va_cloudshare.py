@@ -4,7 +4,6 @@ from va_cloudshare_panels import panels
 
 admin_user = 'admin'
 admin_pass = None 
-salt_dict = {}
 
 def __init__(opts):
     # Init global
@@ -166,7 +165,7 @@ def panel_quota():
 
 def panel_list_users():
 # This will get only LDAP users, ight be better if we can list all of them	
-    output =  salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ ldap:search ''")
+    output =  __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ ldap:search ''")
     output_lines = output.split('\n')
 #[1:-2]
     output_lines_stripped = [x.strip() for x in output_lines]
@@ -174,7 +173,7 @@ def panel_list_users():
     users = []
     for x in output_lines_column_separated:
         user_name=x[1].replace(')','')
-        last_login= salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ user:lastseen "+user_name)
+        last_login= __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ user:lastseen "+user_name)
         last_login = ''.join(last_login.split(': ')[1:]) or 'Never' #last_login
         user = {
             'name' : x[0],
@@ -212,7 +211,7 @@ def get_defaut_quota():
 
 
 def panel_plugins():
-    output =  salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:list")
+    output =  __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:list")
     output_lines = output.split('\n')[1:]
     output_lines_stripped = [x.strip() for x in output_lines]
     #output_lines_column_separated = [x.split(' (') for x in output_lines_stripped]
@@ -234,7 +233,7 @@ def panel_plugins():
 
 
 def panel_statistics():
-    diskusage =salt_dict['disk.usage']()[salt_dict['cmd.run']('findmnt --target /var/www/owncloud/ -o TARGET').split()[1]]
+    diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/www/owncloud/ -o TARGET').split()[1]]
     statistics = [{'key' : 'Storage partition used size (MB)', 'value': int(diskusage['used'])/1024},
                     {'key' : 'Storage partition free space (MB)', 'value': int(diskusage['available'])/1024},
                     {'key' : 'Storage partition mount point', 'value': diskusage['filesystem']},
@@ -247,7 +246,7 @@ def action_toggle_app(app,current_state):
     cmd =""
     #return app
     if current_state == "Enabled":
-        cmd= salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:disable "+app)
+        cmd= __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:disable "+app)
     elif current_state == "Disabled":
-        cmd= salt_dict['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:enable "+app)
+        cmd= __salt__['cmd.run']("sudo -u www-data /var/www/owncloud/occ app:enable "+app)
     return
