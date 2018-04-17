@@ -1,7 +1,7 @@
 #!/usr/bin/python
 from va_utils import check_functionality as panel_check_functionality
 import salt, subprocess
-import json
+import json, re
 
 def get_config():
     data = json.load(open('/root/.minio/config.json'))
@@ -24,3 +24,11 @@ def panel_statistics():
                     {'key' : 'Storage partition mount point', 'value': diskusage['filesystem']}
                 ]
     return statistics
+
+def panel_list_buckets(path='/opt/minio/data/'):
+    command = ['du', path, '-d1', '-b', '-m'] 
+    result = subprocess.check_output(command).split('\n')
+    result = [re.sub(r'\s+', ' ', x).split(' ') for x in result if x]
+    result = [{'path': path+x[1].split('/')[-1], 'size' : int(x[0]), 'bucket' : x[1].split('/')[-1]} for x in result]
+    result = sorted(result, key = lambda x: x['size'], reverse = False)
+    return result

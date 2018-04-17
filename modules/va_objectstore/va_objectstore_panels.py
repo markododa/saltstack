@@ -92,5 +92,39 @@ panels = {
                 "source": "va_utils.panel_networking"
             }
         ]
+    }, "objectstore.buckets": {
+        "title": "Buckets and Disk usage",
+        "tbl_source": {
+            "table_shares": {
+                "source": "panel_list_buckets"
+            }
+        },
+        "content": [{
+            "type": "Table",
+            "pagination": False,
+            "name": "table_shares",
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                    "key": "share",
+                    "label": "Share",
+                    "width": "20%"
+            }, {
+                "key": "bucket",
+                "label": "Bucket",
+                "width": "20%"
+            }, {
+                "key": "size",
+                "label": "Total Size (MB)",
+                "width": "15%"
+            }, {
+                "key": "path",
+                "label": "Filesystem path",
+                "width": "40%"
+            }
+            ],
+            "id": ["path"],
+            "source": "panel_list_buckets"
+        }
+        ]
     }
 }

@@ -54,7 +54,7 @@ else
         OUT=`find /opt/minio/data -iname sync.log -mmin -3 | grep ".sysconfig/sync.log" | grep -v ".minio.sys"` 
         for f in $OUT
         do
-            TEST=`cat $f | grep "ERROR" | wc -l`
+            TEST=`cat $f | grep "mc.exe: <ERROR>" | wc -l`
             CLIENT=`echo $f | sed -e 's/\/opt\/minio\/data\///g' | sed -e 's/.sysconfig\/sync.log//g'`
             if [ $TEST -eq 0 ];then
                 t=""
