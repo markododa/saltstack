@@ -33,7 +33,7 @@
         "admin": [{
             "key": "objectstore.buckets",
             "name": "Buckets"
-        }{
+        },{
             "key": "objectstore.overview",
             "name": "Overview"
         }],
