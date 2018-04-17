@@ -104,11 +104,7 @@ panels = {
             "pagination": False,
             "name": "table_shares",
             "reducers": ["table", "panel", "alert"],
-            "columns": [{
-                    "key": "share",
-                    "label": "Share",
-                    "width": "20%"
-            }, {
+            "columns": [ {
                 "key": "bucket",
                 "label": "Bucket",
                 "width": "20%"
