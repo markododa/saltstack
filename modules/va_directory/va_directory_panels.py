@@ -96,7 +96,6 @@ panels = {
                 "action": "va_utils.generate_password",
                 "data": {"server_name":"va-master","module":"va_utils","action":"generate_password"},
                 "reducers": ["alert"]
-
             }
             ]
         }, {
@@ -106,10 +105,12 @@ panels = {
             "source": "panel_list_users",
             "columns": [{
                 "key": "username",
-                "label": "Username"
+                "label": "Username",
+                "width": "20%"
             }, {
                 "key": "name",
-                "label": "Name"
+                "label": "Name",
+                "width": "30%"
             }, {
                 "key": "description",
                 "label": "Description"
@@ -320,89 +321,15 @@ panels = {
                     }
                     ]
                 },
-                # "manage_groupsxx": {
-                #     "title": "Manage groups",
-                #     "buttons": [{
-                #         "type": "Button",
-                #         "name": "Cancel",
-                #         "action": "cancel"
-                #     }, {
-                #         "type": "Button",
-                #         "name": "Submit",
-                #         "class": "primary",
-                #         "action": "manage_groups"
-                #     }
-                #     ],
-                #     "content": [{
-                #         "type": "Form",
-                #         "name": "form",
-                #         "class": "left",
-                #         "elements": [{
-                #             "type": "label",
-                #             "name": "Add user to these groups"
-                #         }, {
-                #             "type": "multi_checkbox",
-                #             "name": "info",
-                #             "value": False,
-                #             "label": "Info",
-                #             "required": False
-                #         }, {
-                #             "type": "multi_checkbox",
-                #             "name": "domain_admins",
-                #             "value": False,
-                #             "label": "Domain Admins",
-                #             "required": False
-                #         }, {
-                #             "type": "multi_checkbox",
-                #             "name": "support",
-                #             "value": False,
-                #             "label": "Support",
-                #             "required": False
-                #         }, {
-                #             "type": "multi_checkbox",
-                #             "name": "sales",
-                #             "value": False,
-                #             "label": "Sales",
-                #             "required": False
-                #         }, {
-                #             "type": "multi_checkbox",
-                #             "name": "dev",
-                #             "value": False,
-                #             "label": "Dev",
-                #             "required": False
-                #         }, {
-                #             "type": "multi_checkbox",
-                #             "name": "remote",
-                #             "value": False,
-                #             "label": "Remote Desktop Users",
-                #             "required": False
-                #         }, {
-                #             "type": "label",
-                #             "name": "Remove user from these groups"
-                #         }
-                #         ]
-                #     }, {
-                #         "type": "Div",
-                #         "name": "div",
-                #         "class": "right",
-                #         "elements": [{
-                #             "type": "Heading",
-                #             "name": "Manage groups for user : "
-                #         }
-                #         ]
-                #     }
-                #     ]
-                # }
+                
             },
             "panels": {
                 "list_logins": "directory.list_logins",
-                "manage_user_membership": "directory.manage_user_membership",
+                #"manage_user_membership": "directory.manage_user_membership",
+                "manage_user_membership_mixed": "directory.manage_user_membership_mixed",
                 "edit_user_details": "directory.edit_user_details"
             },
             "actions": [{
-                        # "name": "Edit user",
-                        # "action": "edit_user"
-                        # }, {
                         "name": "Edit details",
                         "action": "edit_user_details"
                         }, {
@@ -428,7 +355,7 @@ panels = {
                         #
                         }, {
                         "name": "Manage groups",
-                        "action": "manage_user_membership"
+                        "action": "manage_user_membership_mixed"
                         }, {
                         "name": "Change org. unit",
                         "action": "change_ou"
@@ -579,7 +506,6 @@ panels = {
                             "value": "",
                             "label": "New value",
                             "required": True
-
                         }
                         ]
                     }, {
@@ -597,7 +523,6 @@ panels = {
                     }
                     ]
                 },
-
                 "edit_group_mail": {
                     "title": "Change mail",
                     "kwargs": {
@@ -625,7 +550,6 @@ panels = {
                             "value": "",
                             "label": "New value",
                             "required": True
-
                         }
                         ]
                     }, {
@@ -825,7 +749,6 @@ panels = {
                     "title": "Add MX record",
                     "kwargs": {
                         "entry_type": "MX"
-
                     },
                     "buttons": [{
                         "type": "Button",
@@ -986,10 +909,6 @@ panels = {
                     ]
                 }
             },
-            # "readonly": {
-            #     "group_name": "Entryname",
-            #     "type": "Type"
-            # },
             "actions": [{
                         "name": "Edit record",
                         "action": "edit_dns_record"
@@ -1393,62 +1312,6 @@ panels = {
             }
         },
         "content": [
-            #     {
-            #     "type": "Form",
-            #     "name": "form",
-            #     "class": "tbl-ctrl",
-            #     "elements": [{
-            #         "type": "Button",
-            #         "name": "Add Group",
-            #         "glyph": "plus",
-            #         "action": "modal",
-            #         "reducers": ["modal", "alert"],
-            #         "modal": {
-            #             "title": "Add this user to Group",
-            #           #  "kwargs": {
-            #          #       "entry_type": "username"
-            #         #    },
-            #             "buttons": [{
-            #                 "type": "Button",
-            #                 "name": "Cancel",
-            #                 "action": "cancel"
-            #             }, {
-            #                 "type": "Button",
-            #                 "name": "Add",
-            #                 "class": "primary",
-            #                 "action": "add_user_to_group"
-            #             }
-            #             ],
-            #             "content": [{
-            #                 "type": "Form",
-            #                 "name": "form",
-            #                 "class": "left",
-            #                 "elements": [{
-            #                     "type": "text",
-            #                     "name": "group",
-            #                     "value": "",
-            #                     "label": "Group name",
-            #                     "required": True
-            #                 }
-            #                 ]
-            #             }, {
-            #                 "type": "Div",
-            #                 "name": "div",
-            #                 "class": "right",
-            #                 "elements": [{
-            #                     "type": "Heading",
-            #                     "name": "Enter a group to add user to"
-            #                 }, {
-            #                     "type": "Paragraph",
-            #                     "name": "Users can be members in multiple groups."
-            #                 }
-            #                 ]
-            #             }
-            #             ]
-            #         }
-            #     }
-            #     ]
-            # },
             {
                 "type": "Table",
                 "name": "member",
@@ -1489,6 +1352,40 @@ panels = {
                 ],
                 "source": "panel_list_user_groups_notmember",
                 "id": ["groupname"]
+            }
+        ]
+    },
+        "directory.manage_user_membership_mixed": {
+        "title": "Group membership",
+        "tbl_source": {
+            "member": {
+                "source": "panel_list_user_groups_mixed"
+            }
+        },
+        "content": [
+            {
+                "type": "Table",
+                "name": "member",
+                "reducers": ["table", "panel", "alert"],
+                "columns": [{
+                    "key": "groupname",
+                    "label": "Groups"
+                }, {
+                    "key": "status",
+                    "label": "Status in group"
+                },{
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }
+                ],
+                "actions": [{
+                    "action": "toggle_user_from_group",
+                    "name": "Toggle membership"
+                }
+                ],
+                "source": "panel_list_user_groups_mixed",
+                "id": ["groupname", "status"]
             }
         ]
     },
@@ -1571,7 +1468,6 @@ panels = {
                                     "value": "",
                                     "label": "New value",
                                     "required": True
-
                                 }
                                 ]
                             }, {
@@ -1589,10 +1485,8 @@ panels = {
                             }
                             ]
                         }
-
                     },
                     }
                     ],
-
     }
 }

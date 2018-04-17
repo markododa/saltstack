@@ -33,7 +33,7 @@ base:
     - proxy.proxy
   'role:objectstore':
     - match: grain
-    - objectstore.objectstore
+    - objectstore
   'role:va-master':
     - match: grain
     - va-master
@@ -42,3 +42,6 @@ base:
   'role:libvirt':
     - match: grain
     - libvirt
+  'role:nginx':
+    - match: grain
+    - nginx

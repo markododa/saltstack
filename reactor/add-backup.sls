@@ -6,7 +6,7 @@
 {% set folders = ['/etc/openvpn','/root/.va/backup','/var/lib/samba/sysvol/','/etc/samba'] %}
 {% elif data['type'] == 'backup' %}
 {% set folders = ['/etc/backuppc'] %}
-{% elif data['type'] == 'owncloud' %}
+{% elif data['type'] == 'cloudshare' %}
 {% set folders = ['/var/www/owncloud','/root/.va/backup'] %}
 {% elif data['type'] == 'fileshare' %}
 {% set folders = ['/home','/etc/samba'] %}

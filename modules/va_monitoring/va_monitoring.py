@@ -16,18 +16,15 @@ states = {0 : 'OK', 1 : 'Warning', 2 : 'Critical', 3 : 'Unknown', 99 : 'Pending'
 states = ['OK', 'Warning', 'Critical', 'Unknown']
 
 user = 'admin'
-password = ''
-ip = ''
 
-def __init__(opts):
-    # Init global
-    global ip
-    global password
-
+def get_password():
     password = __salt__['pillar.get']('admin_password') 
+    return password
+
+def get_ip():
     ip = __salt__['grains.get']('ipv4')
     ip = [x for x in ip if '127.0.0.1' not in x][0]
-
+    return ip
 
 def get_panel(panel_name, provider='', service=''):
     users_panel = panels[panel_name]
@@ -377,9 +374,6 @@ def icinga2():
     # return formatted_hosts #result
 
 user = 'admin'
-password = 'test'
-ip = '10.120.155.213'
-
 def seconds_to_pretty(seconds):
     periods = [
         ('Months', 12 * 7 * 24 * 60 * 60), 
@@ -459,11 +453,11 @@ def get_history_for_host(history_data, host_name, service_name):
 
 def get_history_data(duration, host_name, service_display_name):
     headers = {'Accept' : 'application/json'}
-    user_auth = auth=HTTPBasicAuth(user, password)
+    user_auth = auth=HTTPBasicAuth(user, get_password())
 
     params = {'host_display_name': host_name, 'modifyFilter' : '1', 'format' : 'json', 'service_display_name' : service_display_name} #'type!' : 'notification',
 
-    url = 'http://%s/monitoring/list/eventhistory?type!=notify&timestamp>=-%s' % (ip, duration)
+    url = 'http://%s/monitoring/list/eventhistory?type!=notify&timestamp>=-%s' % (get_ip(), duration)
 
     result = requests.get(url, headers = headers, auth = user_auth, params = params)
     result = result.json()

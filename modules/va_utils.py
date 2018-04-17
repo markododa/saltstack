@@ -1,11 +1,18 @@
 import salt, subprocess, json, importlib, sys, os, random, string
-from va_pdf_utils import get_pdf
+from va_salt_utils.va_pdf_utils import get_pdf
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 panel_jsons = {
 #    'va_directory' : '/opt/va-directory/samba.json'
 }
+
+salt_panels = ''
+
+def __init__(opts):
+# Init global
+    global salt_panels
+    salt_panels = __salt__
 
 def check_functionality():
     bash_cmd = '/usr/lib/nagios/plugins/check_functionality.sh'
@@ -110,10 +117,10 @@ def get_panel(module_name, panel_name, *args, **kwargs):
     #If the module already has a get_panel function, we just return that. 
     panel = None
     kwargs = {x : kwargs[x] for x in kwargs if x[0] != '_'}
-    if module_name + '.get_panel' in __salt__:
+    if module_name + '.get_panel' in salt_panels:
 
 #        try:
-        panel =  __salt__[module_name + '.get_panel'](panel_name, *args, **kwargs)
+        panel =  salt_panels[module_name + '.get_panel'](panel_name, *args, **kwargs)
 #        except: 
 #            panel = None
     if panel: 
