@@ -3,41 +3,71 @@
 # CHECK SCRIPT FOR VA-OBJECTSTORE
 
 exitstate=0
-text="OK"
+text=""
+PROBLEMS=0
 
-# DENIED=`grep '*DENIED*' /var/log/e2guardian/access.log | wc -l`
-# CHILDREN=`tail -n 1 /var/log/e2guardian/dstats.log | awk -v N=2 '{print $N}'`
+OUT=`ps aux | grep /opt/minio/minio | grep -v grep | wc -l`
+if [ $OUT -eq 0 ];then
+    text=$text"Minio not running"
+    exitstate=2
+else
+    text=$text"Minio is running"
+fi
 
-# if [ $CHILDREN == "childs" ];then
-# CHILDREN=`tail -n 2 /var/log/e2guardian/dstats.log | head -n 1 | awk -v N=2 '{print $N}'`
-# fi
+OUT=`find /opt/minio/data -iname sync.log | grep ".sysconfig/sync.log" | grep -v ".minio.sys" | wc -l`
+if [ $OUT -eq 0 ];then
+    t=""
+else
+    text=$text", Sync logs found: "$OUT
+    text=$text", Clients with problems: "
+    
+    
+    # CHECK FOR OLD ONES
+    
+    OUT=`find /opt/minio/data -iname sync.log -mmin +3 | grep ".sysconfig/sync.log" | grep -v ".minio.sys" | wc -l`
+    PROBLEMS=$OUT
+    
+    if [ $OUT -eq 0 ];then
+        t=""
+    else
+        OUT2=`find /opt/minio/data -iname sync.log -mmin +3 | grep ".sysconfig/sync.log" | grep -v ".minio.sys"`
+        
+        
+        for f in $OUT2
+        do
+            CLIENT=`echo $f | sed -e 's/\/opt\/minio\/data\///g' | sed -e 's/.sysconfig\/sync.log//g'`
+            
+            text=$text$CLIENT" (Outdated), "
+            exitstate=1
+            
+        done
+        
+    fi
+    
+    
+    # IF NOT OLD CHECK FOR ERRORS
+    OUT=`find /opt/minio/data -iname sync.log -mmin -3 | grep ".sysconfig/sync.log" | grep -v ".minio.sys" | wc -l`
+    if [ $OUT -eq 0 ];then
+        t=""
+    else
+        
+        OUT=`find /opt/minio/data -iname sync.log -mmin -3 | grep ".sysconfig/sync.log" | grep -v ".minio.sys"` 
+        for f in $OUT
+        do
+            TEST=`cat $f | grep "ERROR" | wc -l`
+            CLIENT=`echo $f | sed -e 's/\/opt\/minio\/data\///g' | sed -e 's/.sysconfig\/sync.log//g'`
+            if [ $TEST -eq 0 ];then
+                t=""
+            else
+                PROBLEMS=$(($PROBLEMS +1))
+                text=$text$CLIENT" (Error), "
+                exitstate=1
+            fi
+        done
+    fi
+    
+fi
 
-
-# MAXCHILDREN=`grep '^maxchildren' /etc/e2guardian/e2guardian.conf | sed -e 's/[^0-9]*\([0-9]*\)/\1/g'`
-# PERCHIL=`awk -v m=$MAXCHILDREN -v c=$CHILDREN 'BEGIN { printf "%.0f", ( ( c / m ) * 100 ) }'`
-# service squid3 status > /dev/null
-# OUT=$?
-# if [ $OUT -eq 0 ];then
-#    text=$text"Squid Server is up"
-# else
-#    text=$text"Squid Server is DOWN"
-#    exitstate=1
-# fi
-
-# service e2guardian status > /dev/null
-# OUT=$?
-# if [ $OUT -eq 0 ];then
-#    text=$text", E2Guardian is up ("$CHILDREN"/"$MAXCHILDREN" children)"
-# else
-#    text=$text", E2Guardian is DOWN"
-#    exitstate=1
-# fi
-
-# if [ $PERCHIL -gt 90 ];then
-#    exitstate=2
-# fi
-
-
-echo $text" | exit_status="$exitstate
-
-exit $exits
+echo $text" | exit_status="$exitstate"; err_clients="$PROBLEMS";0;0;"
+#echo $PROBLEMS
+exit $exitstate

@@ -40,4 +40,4 @@ fi
 
 echo $text", Blocked Today: "$DENIED" | BlockedToday="$DENIED".0;800;2000; Children="$CHILDREN".0;150;180; Used="$PERCHIL"%;80;90;"
 
-exit $exits
+exit $exitstate
