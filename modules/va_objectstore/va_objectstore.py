@@ -26,9 +26,9 @@ def panel_statistics():
     return statistics
 
 def panel_list_buckets(path='/opt/minio/data/'):
-    command = ['du', path, '-d1', '-b', '-m'] 
+    command = ['du', path, '-d1', '-b', '-m', '--exclude=.minio.sys'] 
     result = subprocess.check_output(command).split('\n')
     result = [re.sub(r'\s+', ' ', x).split(' ') for x in result if x]
-    result = [{'path': path+x[1].split('/')[-1], 'size' : int(x[0]), 'bucket' : x[1].split('/')[-1]} for x in result]
+    result = [{'path': path+x[1].split('/')[-1], 'size' : int(x[0]), 'bucket' : x[1].split('/')[-1]} for x in result if x[1].split('/')[-1] ]
     result = sorted(result, key = lambda x: x['bucket'], reverse = False)
     return result
