@@ -112,5 +112,5 @@ check_functionality_va_master:
 /etc/logrotate.d/rsyslog:
   file.line:
     - content: /var/log/vapourapps/va-master.log
-    - after: /var/log/messages 
+    - after: /var/log/syslog
     - mode: ensure
