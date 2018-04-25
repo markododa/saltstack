@@ -68,6 +68,12 @@ cd /opt/va_master; git checkout {{salt['pillar.get']('va-master-branch','master'
 /etc/systemd/system/va-master.service:
   file.managed:
     - source: salt://va-master/va-master.service
+    
+va-master:
+  service.running:
+    - enable: True
+    - watch:
+      - file: /etc/systemd/system/va-master.service
 
 npm-build:
   cmd.run:
