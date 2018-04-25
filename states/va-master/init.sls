@@ -22,6 +22,7 @@ install_pkgs:
       - rsyslog
       - libjpeg-dev
       - libvirt-clients
+      - lxc-dev
 
 python-libvirt:
   pkg.installed:
