@@ -15,7 +15,9 @@ else
 fi
 fi
 
-OUT=`timeout 10 bash -c "wbinfo -u | wc -l"`
+
+OUT=`timeout 10 bash -c "sudo samba-tool user list | wc -l"`
+#OUT=`timeout 10 bash -c "wbinfo -u | wc -l"`
 if [ "$?" -eq 0 ];then
 if [ $OUT -eq 0 ];then
     text=$text', '"No users!"
