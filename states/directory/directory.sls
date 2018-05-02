@@ -163,11 +163,16 @@ changepsswdpolicy2:
 #    - pattern: DOMAIN
 #    - repl: {{ domain }}
 
+
+# shadow should be only compat
+
 nsswitch:
   file.replace:
     - name: /etc/nsswitch.conf
     - pattern: compat
     - repl: compat winbind
+    - count: 2
+    
 
 nsswitchw2:
   file.replace:
