@@ -1,5 +1,10 @@
 {% from "cloudshare/map.jinja" import owncloud with context %}
 
+install_basics:
+  pkg.installed:
+    - pkgs:
+      - curl
+      
 apache2-stuff:
   pkg.installed:
     - pkgs:
