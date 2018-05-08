@@ -271,7 +271,10 @@ def add_win_host_to_icinga(host_name, displayname, always_on, joined, printer, m
     value_pairs = {"vars.os": "Windows"}
     if displayname:
         value_pairs["display_name"] = displayname
-
+    else:
+        displayname = host_name
+        value_pairs["display_name"] = displayname
+        
     if always_on == 'Yes':
         value_pairs["vars.windesktop"] = "False"
     else:
@@ -279,11 +282,13 @@ def add_win_host_to_icinga(host_name, displayname, always_on, joined, printer, m
 
     if joined == 'Domain Member':
         value_pairs["vars.standalone"] = "False"
+        value_pairs["vars.domain_controller"] = "False"
     elif joined == 'Domain Controller':
         value_pairs["vars.standalone"] = "False"
         value_pairs["vars.domain_controller"] = "True"
     elif joined == 'Standalone':
         value_pairs["vars.standalone"] = "True"
+        value_pairs["vars.domain_controller"] = "False"
         value_pairs["vars.wmi_authfile_path"] = "/etc/icinga2/conf.d/cred_win_standalone.txt"
 
 # Different values depending on credentials set
@@ -299,10 +304,12 @@ def add_win_host_to_icinga(host_name, displayname, always_on, joined, printer, m
 
         if printer == 'Yes':
             value_pairs["vars.printserver_standalone"]="True"
-
+        else:
+            value_pairs["vars.printserver_standalone"]="False"        
         if iis == 'Yes':
             value_pairs["vars.iis_server_standalone"]="True"
-
+        else:
+            value_pairs["vars.iis_server_standalone"]="False"            
     else:
         if mssql == 'Yes':
             value_pairs["vars.mssql_server"]="True"
@@ -311,14 +318,17 @@ def add_win_host_to_icinga(host_name, displayname, always_on, joined, printer, m
         elif mssql == "Express version":
             value_pairs["vars.mssql_server"]="True"
             value_pairs["vars.mssql_edition"]="Express"
-
+            
         if printer == 'Yes':
-            value_pairs["vars.printserver"]="True"
-
+            value_pairs["vars.printserver_standalone"]="True"
+        else:
+            value_pairs["vars.printserver_standalone"]="False"        
         if iis == 'Yes':
-            value_pairs["vars.iis_server"]="True"
+            value_pairs["vars.iis_server_standalone"]="True"
+        else:
+            value_pairs["vars.iis_server_standalone"]="False"   
 
-    add_host_to_icinga(host_name, host_name, value_pairs)
+    add_host_to_icinga(displayname, host_name, value_pairs)
     return value_pairs
 
 
