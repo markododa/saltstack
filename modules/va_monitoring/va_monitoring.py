@@ -58,10 +58,6 @@ icinga_conf_template = 'object Host "%s" { \n\
     '
 
 
-#   display_name = "%s" \n\
-# vars.os="Windows" \n\
-# vars.windesktop="False"
-
 def panel_overview():
     lines = []
     output = __salt__['cmd.run'](
@@ -274,7 +270,7 @@ def add_win_host_to_icinga(host_name, displayname, always_on, joined, printer, m
     else:
         displayname = host_name
         value_pairs["display_name"] = displayname
-        
+
     if always_on == 'Yes':
         value_pairs["vars.windesktop"] = "False"
     else:
@@ -320,13 +316,13 @@ def add_win_host_to_icinga(host_name, displayname, always_on, joined, printer, m
             value_pairs["vars.mssql_edition"]="Express"
             
         if printer == 'Yes':
-            value_pairs["vars.printserver_standalone"]="True"
+            value_pairs["vars.printserver"]="True"
         else:
-            value_pairs["vars.printserver_standalone"]="False"        
+            value_pairs["vars.printserver"]="False"        
         if iis == 'Yes':
-            value_pairs["vars.iis_server_standalone"]="True"
+            value_pairs["vars.iis_server"]="True"
         else:
-            value_pairs["vars.iis_server_standalone"]="False"   
+            value_pairs["vars.iis_server"]="False"   
 
     add_host_to_icinga(displayname, host_name, value_pairs)
     return value_pairs
@@ -482,4 +478,11 @@ def get_hosts_periods_data(host, service, duration = '7days'):
     hosts_histories = {h : get_history_for_host(history_data, h, service) for h in hosts}
     return hosts_histories
 
+
+def force_check(service_name,host_name):
+    out=subprocess.check_output(
+        ['/usr/lib/nagios/plugins/force_check.sh', host_name, service_name])
+#    json_out=json.loads(out)
+    return "OK"
+    # return formatted_hosts #result
 

@@ -430,6 +430,10 @@ panels = {
                     }, {
                         "name": "Last month history",
                         "action": "month_history"
+                    },
+                    {
+                        "name": "Force check now",
+                        "action": "force_check"
                     }],
                     "id": ["name","host_name"]
                 }]
