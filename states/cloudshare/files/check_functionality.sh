@@ -9,8 +9,8 @@ text=""
 #OUT=`sudo -u www-data /var/www/owncloud/occ --version`
 #text=$OUT":"
 
-OUT=`sudo -u www-data /var/www/owncloud/occ ldap:show-remnants | wc -l`
-OUT=$(($OUT-3))
+OUT=`sudo -u www-data /var/www/owncloud/occ ldap:show-remnants | grep '^|'| wc -l`
+OUT=$(($OUT-1))
 if [ $OUT -eq 0 ];then
     text="No ghost profiles"
 else
