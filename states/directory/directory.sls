@@ -268,9 +268,9 @@ restart_samba:
   file.directory:
     - makedirs: True
 
-/opt/va-directory/samba.json:
-  file.managed:
-    - source: salt://directory/files/samba.json
+#/opt/va-directory/samba.json:
+#  file.managed:
+#    - source: salt://directory/files/samba.json
 
 /vapour/winexe_1.00.1-1_amd64.deb:
   file.managed:
