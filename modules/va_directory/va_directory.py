@@ -2,7 +2,6 @@
 ''' Imports all VapourApps API functions into SaltStack'''
 import salt, sys
 from va_samba_api import *
-import va_samba_api
 import json
 from va_utils import check_functionality as panel_check_functionality
 from va_directory_panels import panels

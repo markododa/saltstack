@@ -13,9 +13,9 @@ base:
   'role:fileshare':
     - match: grain
     - fileshare.fileshare
-  'role:owncloud':
+  'role:cloudshare':
     - match: grain
-    - owncloud
+    - cloudshare
   'role:backup':
     - match: grain
     - backuppc

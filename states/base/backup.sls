@@ -22,6 +22,6 @@ salt/backup/new:
         name: {{ grains['id'] }} 
         ip: {{ salt['network.get_route'](salt['network.default_route']()[0]['gateway'])['source'] }}
         type: {{ grains['role'] }}
-        fqdn: {{ grains['fqdn'] }}
+        fqdn: {{ grains['host'] + '.' + grains['domain'] }}
         script_pre: {{ script_pre }}
     - order: last
