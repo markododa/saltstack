@@ -1,0 +1,3 @@
+username={{ MON_USER }}
+password={{ MON_PASSWORD }}
+domain={{ MON_SHORTDOMAIN }}

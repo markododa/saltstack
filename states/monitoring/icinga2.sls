@@ -77,8 +77,11 @@ add-notifications-scripts:
 
 #needs manual editing later, should be auto filled with credentails:	
 
+{% set admin_pass = salt['pillar.get']('admin_pass') %}
 {% set domain = salt['pillar.get']('domain') %}
+{% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set host_name = grains['id'] %}
+
 
 /etc/ssmtp/ssmtp.conf:
   file.managed:
@@ -91,7 +94,21 @@ add-notifications-scripts:
     - context:
       MON_DOMAIN: {% filter lower %}{{ domain }}{% endfilter %}
       MON_HOSTNAME: {{ host_name }} 
-   
+  
+  
+/etc/icinga2/conf.d/cred_win_domain.txt:
+  file.managed:
+    - source:
+      - salt://monitoring/files/cred_win_domain.txt
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
+    - context:
+      MON_SHORTDOMAIN: {{ shortdomain }}
+      MON_USER: Administrator 
+      MON_PASSWORD: {{ admin_pass }} 
+      
 icinga2-feature:
   cmd.run:
     - name: icinga2 feature enable api livestatus perfdata ido-mysql

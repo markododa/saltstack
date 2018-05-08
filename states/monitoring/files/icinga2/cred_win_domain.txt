@@ -1,3 +1,0 @@
-username=Administrator
-password=Password
-domain=SHORTDOMAIN
