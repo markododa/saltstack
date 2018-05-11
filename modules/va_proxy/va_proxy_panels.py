@@ -405,7 +405,7 @@ panels = {
                         "elements": [{
                             "type": "dropdown",
                             "name": "group",
-                            "values": ["Standard", "VIP", "Safe"],
+                            "values": ["VIP", "Safe"],
                             "label": "Group",
                             "required": True
                         }, {
@@ -423,7 +423,7 @@ panels = {
                             "name": "Fill the form to add a new range"
                         }, {
                             "type": "Paragraph",
-                            "name": "There are 3 possible build-in groups. All IPs outside defined ranges are classified as Standard group too."
+                            "name": "There are 3 possible build-in groups. All unlisted IPs are classified as Standard group."
                         }]
                     }]
                 }
@@ -637,7 +637,7 @@ panels = {
             "columns": [{
                 "key": "time",
                 "label": "Time",
-                "width": "12%"
+                "width": "16%"
             },{
                 "key": "group",
                 "label": "Group",
@@ -658,7 +658,7 @@ panels = {
             },{
                 "key": "reason",
                 "label": "Reason",
-                "width": "25%"
+                "width": "21%"
             }],
             "source": "panel_last_blocked"
         },

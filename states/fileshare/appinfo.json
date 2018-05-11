@@ -5,7 +5,7 @@
     "icon": "fa-folder-open",
     "dependency": "directory",
     "substates": ["fileshare.fileshare"],
-    "module": "fileshare",
+    "module": "va_fileshare",
     "fields": [{
             "type": "text",
             "name": "ip",
