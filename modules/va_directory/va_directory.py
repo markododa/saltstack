@@ -122,8 +122,9 @@ def panel_get_dc_info():
     return res
 
 def panel_gpo_polices():
+    #THIS NEED a FIX, The Last GPO is only listed
     res = output_to_dict(samba_tool(['gpo', 'listall']).split('\n'))
-    res['gpo'] = res.pop('GPO')
+    #res['gpo'] = res.pop('GPO')
     return [res]
 
 def panel_fsmo_show():
