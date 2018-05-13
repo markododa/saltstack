@@ -24,3 +24,5 @@ diff -ENwbur $REPO_PATH/states $PROD_PATH/salt | grep --color 'diff\|$'
 mv $PROD_PATH/modules $PROD_PATH/salt
 mv $PROD_PATH/salt/modules $PROD_PATH/salt/_modules
 echo ===============================
+echo If you\'re feeling overwhelmed by the results try:
+echo "/root/saltstack/diffs.sh | grep '^diff \|^Binary'"

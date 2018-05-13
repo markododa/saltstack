@@ -31,12 +31,15 @@ ownclouddb:
     - require:
       - mysql_user: {{ salt['pillar.get']('owncloud_dbuser', 'owncloud') }}
       - pkg: python-mysqldb
+
+mysql -uroot --execute "GRANT ALL PRIVILEGES ON owncloud.* TO 'owncloud'@'localhost';":
+  cmd.run
+
+grant_all_on_db:
   mysql_grants.present:
-    - grant: all privileges
-    - database:  {{ salt['pillar.get']('owncloud_database', 'owncloud') }}.*
+    - grant: ALL PRIVILEGES
+    - database: 'owncloud.*'
     - host: localhost
     - user: {{ salt['pillar.get']('owncloud_dbuser', 'owncloud') }}
     - require:
-      - mysql_database: {{ salt['pillar.get']('owncloud_database', 'owncloud') }}
       - pkg: python-mysqldb
-      - service: mysql
