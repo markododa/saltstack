@@ -106,12 +106,12 @@ def panel_level_show():
 
 def panel_get_pcs():
     res = samba_tool(['group', 'listmembers','Domain Computers']).split('\n')
-    res = [{'hostname' : x.replace('$','')} for x in res if x]
+    res = [{'hostname' : x.replace('$','').upper()} for x in res if x]
     return res
 
 def panel_get_dcs():
     res = samba_tool(['group', 'listmembers','Domain Controllers']).split('\n')
-    res = [{'hostname' : x.replace('$','')} for x in res if x]
+    res = [{'hostname' : x.replace('$','').upper()} for x in res if x]
     return res
 
 def panel_get_dc_info():

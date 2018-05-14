@@ -18,9 +18,12 @@ install_samba:
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
+# {% set dcipfix = '192.168.5.99' %}
+
 {% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set myip = salt['grains.get']('ipv4')[0] %}
+{% set host_name = grains['id'] %}
 
 # needs to find the interface for reaching domain controller
 
@@ -84,9 +87,9 @@ resolvednsip:
     - pattern: DCIP
     - repl: {{ dcip }}
     
-readableresolve:
-  cmd.run:
-    - name: chattr +i /etc/resolv.conf 
+#readableresolve:
+#  cmd.run:
+#    - name: chattr +i /etc/resolv.conf 
  
    
 ntpcnf:
@@ -191,30 +194,36 @@ fixbat_mt:
     - pattern: DOMEJN
     - repl: {{ shortdomain }}
     
+
 /etc/samba/smb.conf:
   file.managed:
     - source: salt://fileshare/files/smb.conf
     - user: root
     - group: root
     - mode: 644
-    
-smb:
-  file.replace:
-    - name: /etc/samba/smb.conf
-    - pattern: DOMAIN
-    - repl: {{ domain }}
+    - template: jinja
+    - context:
+      domain: {{ domain }}
+      shortdomain: {{ shortdomain }} 
+      host_name: {{ host_name }} 
+      
+#smb:
+#  file.replace:
+#    - name: /etc/samba/smb.conf
+#    - pattern: DOMAIN
+#    - repl: {{ domain }}
 
-smbnetbios:
-  file.replace:
-    - name: /etc/samba/smb.conf
-    - pattern: HOST
-    - repl: {{ grains['localhost'] }}
+#smbnetbios:
+#  file.replace:
+#    - name: /etc/samba/smb.conf
+#    - pattern: HOST
+#    - repl: {{ grains['localhost'] }}
 
-smbshortdm:
-  file.replace:
-    - name: /etc/samba/smb.conf
-    - pattern: DOMEJN
-    - repl: {{ shortdomain }}   
+#smbshortdm:
+#  file.replace:
+#    - name: /etc/samba/smb.conf
+#   - pattern: DOMEJN
+#    - repl: {{ shortdomain }}   
     
 /etc/pam.d/common-account:
   file.managed:
