@@ -17,7 +17,7 @@
 {% endif %}
 
 add_host_to_backup:
-  local.backuppc.add_rsync_host:
+  local.va_backup.add_rsync_host:
     - tgt: 'role:backup'
     - expr_form: grain
     - args:
@@ -25,7 +25,7 @@ add_host_to_backup:
       - address: {{ data['ip'] }}
 
 add_folders_to_backup:
-  local.backuppc.add_folder_list:
+  local.va_backup.add_folder_list:
     - tgt: 'role:backup'
     - expr_form: grain
     - args:
