@@ -46,6 +46,7 @@ fi
 
 apt-get update -y
 apt-get install salt-minion -y
+sed -i 's/^role:/#role:/g' /etc/salt/grains
 echo "role: $ROLE" >> /etc/salt/grains
 sed -i 's/^master:/#master:/g' /etc/salt/minion
 echo "master: $MASTER" >> /etc/salt/minion
