@@ -5,5 +5,5 @@ copypubkey:
     - tgt: 'role:va-master'
     - expr_form: grain
     - arg:
-      - /srv/salt/backuppc/files/pubkey
+      - /opt/backuppc-pubkey
       - '{{data['pubkey']}}'
