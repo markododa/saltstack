@@ -1,17 +1,19 @@
 {% set data = data['data'] %}
 
 {% if data['type'] == 'monitoring' %}
-{% set folders = ['/etc/icinga2','/root/.va/backup','/var/lib/pnp4nagios/perfdata/'] %}
+{% set folders = ['/etc/icinga2', '/root/.va/backup', '/etc/ssmtp', '/usr/lib/nagios/plugins',  '/var/lib/pnp4nagios/perfdata/', '/etc/nagios/nrpe.d/'] %}
 {% elif data['type'] == 'directory' %}
-{% set folders = ['/etc/openvpn','/root/.va/backup','/var/lib/samba/sysvol/','/etc/samba'] %}
+{% set folders = ['/root/.va/backup', '/etc/openvpn', '/etc/samba', '/var/lib/samba/', '/etc/nagios/nrpe.d/'] %}
 {% elif data['type'] == 'backup' %}
-{% set folders = ['/etc/backuppc'] %}
+{% set folders = ['/etc/backuppc', '/etc/nagios/nrpe.d/'] %}
 {% elif data['type'] == 'cloudshare' %}
-{% set folders = ['/var/www/owncloud','/root/.va/backup'] %}
+{% set folders = ['/root/.va/backup', '/var/www/owncloud', '/etc/nagios/nrpe.d/'] %}
 {% elif data['type'] == 'fileshare' %}
-{% set folders = ['/home','/etc/samba'] %}
+{% set folders = ['/home', '/etc/samba', '/etc/nagios/nrpe.d/'] %}
 {% elif data['type'] == 'email' %}
-{% set folders = ['/etc','/root/.va/backup','/var/vmail'] %}
+{% set folders = ['/etc/postfix', '/root/.va/backup', '/var/vmail/', '/etc/nagios/nrpe.d/'] %}
+{% elif data['type'] == 'proxy' %}
+{% set folders = [''/root/.va/backup', '/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'] %}
 {% else %}
 {% set folders = ['/root/.va/backup'] %}
 {% endif %}
