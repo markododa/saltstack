@@ -13,7 +13,7 @@
 {% elif data['type'] == 'email' %}
 {% set folders = ['/etc/postfix', '/root/.va/backup', '/var/vmail/', '/etc/nagios/nrpe.d/'] %}
 {% elif data['type'] == 'proxy' %}
-{% set folders = [''/root/.va/backup', '/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'] %}
+{% set folders = ['/root/.va/backup', '/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'] %}
 {% else %}
 {% set folders = ['/root/.va/backup'] %}
 {% endif %}
