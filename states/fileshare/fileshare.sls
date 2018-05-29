@@ -159,6 +159,11 @@ nsswitchw2:
     - makedirs: True
     - mode: 777
 
+/home/{{ domain }}/Share/.recycle:
+  file.directory:
+    - makedirs: True
+    - mode: 770
+    
 /home/{{ domain }}/Public/Tools/tools.tar.gz:
   file.managed:
     - source: salt://fileshare/wintools/tools.tar.gz
