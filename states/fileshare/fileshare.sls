@@ -43,18 +43,9 @@ install_samba:
 
 ## End of looking for DC ip
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
-{% set myip = salt['grains.get']('ipv4')[0] %}
 {% set host_name = grains['id'] %}
 
-# needs to find the interface for reaching domain controller
-
-{% if myip == '127.0.0.1' %}    
-{% set myip = salt['grains.get']('ipv4')[1] %}
-{% endif %}    
-
-{% if myip == '127.0.0.1' %}    
-{% set myip = salt['grains.get']('ipv4')[2] %}
-{% endif %}    
+{% set myip=salt['network.get_route'](dcip).source %}
 
 /etc/krb5.conf:
   file.managed:
