@@ -18,9 +18,30 @@ install_samba:
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
-# {% set dcipfix = '192.168.5.99' %}
 
-{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+## Looping directory minions, looping all network cards, looping first ip address per interface, testing for samba, testing for DNS, updating okdcip if reachable DC from the minion is found
+{% set okdcip = {'okdcip': 'unknown'} %}
+{% set dcs = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain').keys() %}
+{% for dc in dcs %}
+{% set ifaces=salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')[dc]['ip4_interfaces'].keys() %}
+##dc-{{dc}}:
+##  ifaces-{{dc}}: {{ifaces}}
+    {% for iface in ifaces %}
+    {% set ip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')[dc]['ip4_interfaces'][iface][0] %}
+
+    {% if ip != '127.0.0.1' %}
+    {% if salt['network.connect'](ip, 139).result %}
+    {% if salt['dnsutil.A'](domain, ip) %}
+##  okip-{{dc}}-{{iface}}: {{ip}}
+    {% do okdcip.update({'okdcip': ip}) %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+{% endfor %}
+{% set dcip=okdcip.okdcip %}
+
+## End of looking for DC ip
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set myip = salt['grains.get']('ipv4')[0] %}
 {% set host_name = grains['id'] %}
