@@ -328,6 +328,8 @@ def action_add_ip_group(group,range):
     filter_range=get_config_file_path_for_group(group,'filter')
     manage_file_add(proxy_conf_dir + '/lists/authplugins/ipgroups',str(range)+' = '+filter_range)
 
+    return {'success' : True, 'message' : 'IP added to Group. ', 'data' : {}}
+
 def toggle_vip(category):
     toggle_cat=category
     res = toggle_category_status_in_group('VIP', toggle_cat)

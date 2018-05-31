@@ -45,9 +45,19 @@ install_peewee:
     - require:
       - pkg: python-pip
 
-/vapour/vapourapps-samba-api.tar.gz:
-  file.managed:
-    - source: salt://directory/files/vapourapps-samba-api.tar.gz
+# /vapour/vapourapps-samba-api.tar.gz:
+#   file.managed:
+#     - source: salt://directory/files/vapourapps-samba-api.tar.gz
+
+samba-api-unpacked:
+    file.recurse:
+        - name: /vapour/samba-api
+        - source: salt://directory/files/samba-api/
+        - user: root
+        - group: root
+        - file_mode: 755
+        - dir_mode: 755
+
 
 {% if domain != None %}
 
@@ -81,9 +91,15 @@ resolv-ro:
   cmd.run:
     - name: chattr +i /etc/resolv.conf
       
-install_samba-api:
+# install_samba-api:
+#   pip.installed:
+#    - name: /vapour/vapourapps-samba-api.tar.gz
+
+
+install_unpacked_samba-api:
   pip.installed:
-    - name: /vapour/vapourapps-samba-api.tar.gz
+    - name: /vapour/samba-api
+
 
 create_domain:
   cmd.run:

@@ -1,5 +1,7 @@
 import salt, subprocess, json, importlib, sys, os, random, string
 from va_salt_utils.va_pdf_utils import get_pdf
+from salt.client import LocalClient
+
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
@@ -9,10 +11,18 @@ panel_jsons = {
 
 salt_panels = ''
 
+error_msgs = ['Minion did not return. [Not connected]']
+
 def __init__(opts):
 # Init global
     global salt_panels
     salt_panels = __salt__
+
+
+def get_all_roles():
+    cl = LocalClient()
+    result = cl.cmd('*', 'grains.get', arg = ['role'])
+    return {x : result[x] for x in result if result[x] not in error_msgs and result[x]}
 
 def check_functionality():
     bash_cmd = '/usr/lib/nagios/plugins/check_functionality.sh'

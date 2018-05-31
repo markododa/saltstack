@@ -15,7 +15,7 @@ def get_fileshares(path, share_type, extra_commands = []):
 
 def panel_all_fileshares():
     domain_command = ['grep', 'realm', '/etc/samba/smb.conf']
-    domain = subprocess.check_output(domain_command).split(' = ')[1].strip()
+    domain = subprocess.check_output(domain_command).split(' = ')[1].strip().lower()
 
     home_shares =   get_fileshares('/home/', share_type = 'Personal', extra_commands = ['--exclude=/home/' + domain])
     public_shares = get_fileshares('/home/' + domain + '/Public/', share_type = 'Public')

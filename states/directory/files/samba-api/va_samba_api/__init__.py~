@@ -1,0 +1,424 @@
+import samba
+from samba.dcerpc import security, dnsserver
+import ldb
+import subprocess
+import re
+import datetime
+import json
+import samba_parser
+from .models import db, User
+from .utils import *
+from samba.credentials import Credentials, DONT_USE_KERBEROS
+from samba.auth import system_session
+from samba.netcmd.common import netcmd_get_domain_infos_via_cldap
+from samba.samdb import SamDB
+from ldb import SCOPE_SUBTREE, SCOPE_BASE
+from samba import param, dsdb
+from samba.provision import ProvisionNames, provision_paths_from_lp
+from samba.param import LoadParm
+
+__version__ = '0.0.1'
+
+
+lp = LoadParm()
+lp.load_default()
+smbconf = lp.configfile
+creds = Credentials()
+creds.guess(lp)
+session = system_session()
+def get_paths():
+    smbconf = param.default_path()
+    lp = param.LoadParm()
+    lp.load(smbconf)
+    return provision_paths_from_lp(lp, 'foo')
+paths = get_paths()
+sam_ldb = SamDB(url=paths.samdb, session_info=session, credentials=creds, lp=lp)
+
+
+def get_cur_domain():
+    """Returns the domain name of the local Samba directory."""
+    res = netcmd_get_domain_infos_via_cldap(lp, None, '127.0.0.1')
+    return res.dns_domain
+
+def users_last_logins():
+    return samba_parser.open_and_parse_log('/var/log/lastlogin.log')
+
+def users_log():
+    return samba_parser.open_and_parse_log('/var/log/user.log')
+
+def list_users(auto_build_cache=True, get_groups = False, get_samba_log = False):
+    """Returns a list of all users (and their pdb data)"""
+    # Samba has a minimum of 1 user. If there are none in the cache, it means
+    # that the cache is empty and we have to build it
+    if auto_build_cache and User.select().count() == 0:
+        build_cache()
+
+    users = []
+    for user in User.select():
+        # .data is an internal dict that contains the fields.
+        # TODO: use playhouse.object_to_dict
+        users.append(user._data)
+
+    result = {'users' : users}
+    
+    if get_groups:
+        result['groups'] = get_groups_with_users()
+    if get_samba_log:
+        result['samba_log'] = users_last_logins()
+    return result
+
+def delete_user(username):
+    sam_ldb.deleteuser(username)
+    this_user = User.get(User.username == username)
+    this_user.delete_instance()
+
+
+def change_name(username, new_name):
+    """Finds a Samba user by username and then sets it's full name"""
+    try:
+        subprocess.check_output(['pdbedit', '-u' + username, '-f' + new_name],
+                                stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as exc:
+        raise SambaProcessError(exc)
+
+    this_user = get_user_by_username(username)
+    this_user.name = new_name
+    this_user.save()
+
+
+def add_user(username, password, name, surname, vpn):
+    """Adds a new user to Samba and then puts it into cache"""
+    try:
+        sam_ldb.newuser(username, password)
+        user_data = get_pdb_details(username)
+        subprocess.check_output(['pdbedit', '-u' + username, '-f%s %s' % (name, surname)],
+                                stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError as exc:
+        raise SambaProcessError(exc)
+
+    # The caching part...
+    user = User(username=username, name='%s %s' % (name, surname),
+                password_expiry=user_data['password_expiry'],
+                is_locked=user_data['is_locked'], flags=user_data['flags'])
+    user.save()
+
+def change_password(username, password, again_at_login=False):
+    sam_filter = get_filter_from_username(username)
+    sam_ldb.setpassword(sam_filter, password, force_change_at_next_login=again_at_login, username=username)
+    try:
+        user_data = get_pdb_details(username)
+        # After updating Samba, update password expiry date in the cache
+        user = get_user_by_username(username)
+        user.password_expiry = user_data['password_expiry']
+        user.save()
+    except subprocess.CalledProcessError:
+        raise SambaProcessError(exc)
+
+
+def list_dns():
+    from samba.dcerpc import dnsp, dnsserver
+    server = '127.0.0.1'
+    binding_str = 'ncacn_ip_tcp:%s[sign]' % server
+
+    cred_data = open('/vapour/dnsquery').read().split(':')
+
+    creds = Credentials()
+    creds.guess(lp)
+    creds.set_username(cred_data[0])
+    creds.set_password(cred_data[1].rstrip())
+    dns_conn = dnsserver.dnsserver(binding_str, lp, creds)
+    zone = get_cur_domain()
+    name = '@'
+    record_type = dnsp.DNS_TYPE_ALL
+    select_flags = dnsserver.DNS_RPC_VIEW_AUTHORITY_DATA
+    
+    buflen, res = dns_conn.DnssrvEnumRecords2(
+            dnsserver.DNS_CLIENT_VERSION_LONGHORN, 0, server, zone, name,
+            None, record_type, select_flags, None, None
+    )
+    record_groups = res.rec
+    result = []
+    for rec_group in record_groups:
+        group_name = rec_group.dnsNodeName.str
+        for rec in rec_group.records:
+            if rec.wType == dnsp.DNS_TYPE_A:
+                result.append({'group_name': group_name, 'type': 'A', 'value': rec.data})
+            elif rec.wType == dnsp.DNS_TYPE_AAAA:
+                result.append({'group_name': group_name, 'type': 'AAAA', 'value': rec.data})
+            elif rec.wType == dnsp.DNS_TYPE_PTR:
+                result.append({'group_name': group_name, 'type': 'PTR', 'value': rec.data.str})
+            elif rec.wType == dnsp.DNS_TYPE_NS:
+                result.append({'group_name': group_name, 'type': 'NS', 'value': rec.data.str})
+            elif rec.wType == dnsp.DNS_TYPE_CNAME:
+                result.append({'group_name': group_name, 'type': 'CNAME', 'value': rec.data.str})
+            elif rec.wType == dnsp.DNS_TYPE_SOA:
+                result.append({
+                    'group_name': group_name,
+                    'type': 'SOA',
+                    'value': 'serial=%d, refresh=%d, retry=%d, expire=%d, minttl=%d, ns=%s, email=%s' % (
+                        rec.data.dwSerialNo,
+                        rec.data.dwRefresh,
+                        rec.data.dwRetry,
+                        rec.data.dwExpire,
+                        rec.data.dwMinimumTtl,
+                        rec.data.NamePrimaryServer.str,
+                        rec.data.ZoneAdministratorEmail.str
+                    )
+                })
+            elif rec.wType == dnsp.DNS_TYPE_MX:
+                result.append({'group_name': group_name, 'type': 'MX', 'value': '%s (%d)' % (rec.data.nameExchange.str, rec.data.wPreference)})
+            elif rec.wType == dnsp.DNS_TYPE_SRV:
+                result.append({'group_name': group_name, 'type': 'SRV', 'value': '%s (%d, %d, %d)' % (
+                    rec.data.nameTarget, rec.data.wPort,
+                    rec.data.wPriority, rec.data.wWeight
+                )})
+            elif rec.wType == dnsp.DNS_TYPE_TXT:
+                slist = ['"%s"' % name.str for name in rec.data]
+                result.append({'group_name': group_name, 'type': 'TXT', 'value': ','.join(slist)})
+    return result
+
+
+def manage_dns_entry(name, entry_type, data, action):
+    try:
+        cred_data = open('/vapour/dnsquery').read().rstrip().replace(':', '%')
+        args = []
+        if entry_type in ['A', 'AAAA']:
+            args = ["dns", action, "localhost", get_cur_domain(), name, entry_type, data['address']]
+        elif entry_type == 'MX':
+            if not name : name = '@'
+            if not '.' in data['hostname'] : data['hostname'] += '.' + get_cur_domain()
+            args = ["dns", action, "localhost", get_cur_domain(), name, entry_type, data['hostname'] + ' ' + data['priority']]
+        elif entry_type in ['NS', 'CNAME']:
+            if not name : name = '@'
+            if not '.' in data['hostname'] : data['hostname'] += '.' + get_cur_domain()
+            args = ["dns", action, "localhost", get_cur_domain(), name, entry_type, data['hostname']]
+        return samba_tool(args + ['-U', cred_data])
+    except subprocess.CalledProcessError as exc:
+        raise SambaProcessError(exc)
+
+def update_dns_entry(name, entry_type, old_data, new_data):
+    try:
+        cred_data = open('/vapour/dnsquery').read().rstrip().replace(':', '%')
+        args = ['dns', 'update', 'localhost', get_cur_domain(), name, entry_type]
+        if entry_type in ['A', 'AAAA']:
+            args += [old_data['address'], new_data['address']]
+        elif entry_type in ['NS', 'CNAME']:
+            args += [old_data['hostname'], new_data['hostname']]
+        elif entry_type == 'MX':
+            args += [old_data['hostname'] + ' ' + old_data['priority'], new_data['hostname'] + ' ' + new_data['priority']]
+        return samba_tool(args + ['-U', cred_data])
+    except subprocess.CalledProcessError as exc:
+        raise SambaProcessError(exc)
+
+
+def list_groups():
+    domain_dn = sam_ldb.domain_dn()
+    res = sam_ldb.search(domain_dn, scope=ldb.SCOPE_SUBTREE,
+                       expression=("(objectClass=group)"),
+                       attrs=["samaccountname", "grouptype"])
+    if len(res) == 0:
+        return
+    else:
+        return [msg.get("samaccountname", idx=0) for msg in res]
+
+def add_group(name):
+    sam_ldb.newgroup(name)
+
+def list_group_members(group_name):
+    members = samba_tool(['group', 'listmembers', group_name])
+    return members.rstrip('\n').split('\n')
+
+def get_groups_with_users(group_names = []):
+    if not group_names : group_names = list_groups()
+    return {group : list_group_members(group) for group in group_names}
+
+def manage_user_groups(user, groups, action = 'addmembers'):
+    for group in groups:
+        try:
+            samba_tool(['group', action, group, user])
+        except Exception:
+            return False
+    return True
+
+def update_user_groups(user, add_to_groups, remove_from_groups):
+    if not manage_user_groups(user, add_to_groups): return False
+    if manage_user_groups(user, remove_from_groups, 'removemembers'): return True
+
+#Argument is a dictionary of form {'username':['group1', 'group2'...], ...}
+def manage_users_in_groups(users_groups, action = 'addmembers'):
+    for user in users_groups:
+        try :
+            manage_user_groups(user, users_groups[user], action)
+        except Exception:
+            return False
+    return True
+
+
+
+def set_user_status(username, lock):
+    """Locks or unlocks a specific user."""
+    sam_filter = get_filter_from_username(username)
+    func = {
+        True: sam_ldb.disable_account,  # if lock
+        False: sam_ldb.enable_account   # if not lock
+    }
+    func[lock](sam_filter)
+    user = get_user_by_username(username)
+    user_data = get_pdb_details(username)
+    for user_data_key in user_data.keys():
+        setattr(user, user_data_key, user_data[user_data_key])
+    user.save()
+
+def add_alias(username, alias):
+    def get_user_dn(ldb_instance, search_filter):
+        res = ldb_instance.search(
+            base=str(ldb_instance.get_default_basedn()),
+            scope=ldb.SCOPE_SUBTREE,
+            expression=search_filter, attrs=['userAccountControl']
+        )
+
+        if len(res) == 0:
+            raise ValueError()
+        assert(len(res) == 1)
+        return res[0].dn
+
+    username_filter = get_filter_from_username(username)
+    user_dn = get_user_dn(sam_ldb, username_filter)
+    mod = '\n' + 'dn: %s' % user_dn + '\n' + \
+          'changetype: modify' + '\n' + \
+          'add: proxyAddresses' + '\n' + \
+          'proxyAddresses: SMTP:%s' % alias + '\n'
+    sam_ldb.modify_ldif(mod)
+    
+# Caching system
+# It is used for fast API data retrieval, because Samba is really slow.
+
+
+def purge_cache():
+    """Deletes all the cache by removing all tables' rows"""
+    User.delete().execute()  # Deletes ALL users from cache
+
+
+def build_cache():
+    """Imports all users from Samba and bulk inserts them into cache"""
+    search_string = '(&(objectClass=user)(userAccountControl:%s:=%u))'
+    res = sam_ldb.search(sam_ldb.domain_dn(), scope=ldb.SCOPE_SUBTREE,
+                         expression=search_string % (ldb.OID_COMPARATOR_AND, dsdb.UF_NORMAL_ACCOUNT),
+                         attrs=['samaccountname'])
+    if not len(res):
+        raise Exception("Cant't find any user!")
+    else:
+        users = [msg.get('samaccountname', idx=0) for msg in res]
+
+    with db.atomic():
+        for username in users:
+            try:
+                user_data = get_pdb_details(username)
+            except subprocess.CalledProcessError:
+                continue  # ATM, we do not care if a single PDB request fails
+            user = get_user_by_username(user_data['username'])
+            if user is None:  # User doesn't exist in cache, insert it
+                new_user = User(**user_data)
+                new_user.save()
+            else:  # Users exists in cache, update data
+                for user_data_key in user_data.keys():
+                    setattr(user, user_data_key, user_data[user_data_key])
+                user.save()
+
+def get_dc_info():
+    res = netcmd_get_domain_infos_via_cldap(lp, None, '127.0.0.1')
+    return {'forest' : res.forest, 'domain' : res.dns_domain, 'domain_name': res.domain_name, 'pdc_dns_name' : res.pdc_dns_name, 'pdc_name' : res.pdc_name, 'server_site' : res.server_site, 'client_site' : res.client_site}
+    
+    
+def level_show():
+    domain_dn = sam_ldb.domain_dn()
+
+    res_forest = sam_ldb.search("CN=Partitions,%s" % sam_ldb.get_config_basedn(), scope=ldb.SCOPE_BASE, attrs=["msDS-Behavior-Version"])[0]['dn']
+    assert len(res_forest) == 1
+
+    res_domain = sam_ldb.search(domain_dn, scope=ldb.SCOPE_BASE, attrs=["msDS-Behavior-Version", "nTMixedDomain"])[0]['dn']
+    assert len(res_domain) == 1
+
+    res_dc_s = sam_ldb.search("CN=Sites,%s" % sam_ldb.get_config_basedn(), scope=ldb.SCOPE_SUBTREE, expression="(objectClass=nTDSDSA)",    attrs=["msDS-Behavior-Version"])[0]['dn']
+    assert len(res_dc_s) >= 1 
+    
+    return {'forest' : str(res_forest), 'domain' : str(res_domain), 'dc_s' : str(res_dc_s)}
+   
+
+def fsmo_show():
+    domain_dn = sam_ldb.domain_dn()
+    
+    fsmo_args = { 'infrastructure_dn' : "CN=Infrastructure," + domain_dn, 'naming_dn' : "CN=Partitions,%s" % sam_ldb.get_config_basedn(), 'schema_dn' : sam_ldb.get_schema_basedn(), 'rid_dn' : "CN=RID Manager$,CN=System," + domain_dn}
+    
+    res = {}
+    
+    for attr in fsmo_args:
+        temp_res = sam_ldb.search(fsmo_args[attr], scope = ldb.SCOPE_BASE, attrs = ['fsmoRoleOwner'])
+        assert len(temp_res) == 1
+        res[attr] = temp_res[0]['fsmoRoleOwner'][0]
+        
+    return res
+        
+        
+def get_passwordsettings():
+    domain_dn = sam_ldb.domain_dn()
+    res = sam_ldb.search(domain_dn, scope=ldb.SCOPE_BASE, attrs=["pwdProperties", "pwdHistoryLength", "minPwdLength", "minPwdAge", "maxPwdAge", "lockoutDuration", "lockoutThreshold", "lockOutObservationWindow"])[0]
+    return {x: str(res[x]) for x in res}
+    
+def get_gpo():
+    policies_dn = sam_ldb.get_default_basedn()
+    policies_dn.add_child(ldb.Dn(sam_ldb, "CN=Policies,CN=System"))
+
+    base_dn = policies_dn
+    search_expr = "(objectClass=groupPolicyContainer)"
+    search_scope = ldb.SCOPE_ONELEVEL
+
+    sd_flags=security.SECINFO_OWNER|security.SECINFO_GROUP|security.SECINFO_DACL|security.SECINFO_SACL
+    
+    res = sam_ldb.search(base=base_dn, scope=search_scope, expression=search_expr, attrs=['nTSecurityDescriptor', 'versionNumber', 'flags', 'name', 'displayName', 'gPCFileSysPath'], controls=['sd_flags:1:%d' % sd_flags])[0]
+    return {x: str(res[x]) for x in res if x != 'nTSecurityDescriptor'}
+
+
+def get_dns_zones():
+    request_filter = dnsserver.DNS_ZONE_REQUEST_PRIMARY
+    server = '127.0.0.1'
+    binding_str = 'ncacn_ip_tcp:%s[sign]' % server
+    cred_data = open('/vapour/dnsquery').read().split(':')
+
+    creds = Credentials()
+    creds.guess(lp)
+    creds.set_username(cred_data[0])
+    creds.set_password(cred_data[1].rstrip())
+
+    dns_conn = dnsserver.dnsserver(binding_str, lp, creds)
+    client_version = dnsserver.DNS_CLIENT_VERSION_LONGHORN
+
+    typeid, res = dns_conn.DnssrvComplexOperation2(client_version, 0, server, None, 'EnumZones', dnsserver.DNSSRV_TYPEID_DWORD, request_filter)
+
+    return dict(res)
+
+def output_to_dict(samba_output):
+    return dict([x.split(':') for x in samba_output if x])
+
+def get_overview_info():
+#    The functions I use from the samba module are weird and very lengthy. Will get this to work properly, but for the time being, I just use check_output to find the levels.
+#    On further investigation, turns out the same goes for most of the samba module. As it's a lot of work, I'll probably get to work on it some time in the future.
+#    schema = level_show()
+#    roles = fsmo_show()
+#    pass_settings = get_passwordsettings()
+#    list_gpos = get_gpo()
+#    dns_zones = get_dns_zones()
+#    dc_info = get_dc_info()
+
+    dc_info = output_to_dict(samba_tool(['domain', 'info', '127.0.0.1']).split('\n'))
+    schema = output_to_dict(samba_tool(['domain', 'level', 'show']).split('\n')[1:])
+    roles = output_to_dict(samba_tool(['fsmo', 'show']).split('\n'))
+    pass_settings = output_to_dict(samba_tool(['domain', 'passwordsettings', 'show']).split('\n')[1:])
+    list_gpos = output_to_dict(samba_tool(['gpo', 'listall']).split('\n'))
+    dns_zones = {}
+    joined_computers = [x.split(':')[0] for x in subprocess.check_output(['pdbedit', '-L']).split('\n') if '$' in x]
+
+    overview_info = {'dc_info' : dc_info, 'schema' : schema, 'roles' : roles, 'pass_settings' : pass_settings, 'list_gpos' : list_gpos, 'dns_zones' : dns_zones, 'joined_computers' : joined_computers}
+
+    return overview_info
+

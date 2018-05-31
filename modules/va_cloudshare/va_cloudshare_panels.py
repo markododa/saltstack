@@ -108,14 +108,17 @@ panels = {
             "reducers": ["table", "panel", "alert"],
             "columns": [{
                 "key": "username",
-                "label": "Username"
+                "label": "Username",
+                "width": "20%"
             }, {
                 "key": "name",
                 "label": "Display Name",
+                "width": "50%"
+
             }, {
                 "key": "lastlogin",
-                "label": "Last Login"
-            }
+                "label": "Last Login (UTC)"
+           }
             ],
             "id": ["username"],
             "source": "panel_list_users"
@@ -136,12 +139,18 @@ panels = {
             "columns": [{
                 "key": "username",
                 "label": "Username",
+                "width": "20%"
+
             }, {
                 "key": "displayname",
                 "label": "Display Name",
+                "width": "20%"
+
             }, {
                 "key": "enabled",
-                "label": "Enabled"
+                "label": "Enabled",
+                "width": "10%"
+
             }, {
                 "key": "used",
                 "label": "Used space"

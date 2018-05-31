@@ -9,8 +9,21 @@ apache2-stuff:
   pkg.installed:
     - pkgs:
       - apache2
-      - php5
-      - php5-gd
+      - php
+      - php-gd
+      - php-ldap
+      - libapache2-mod-php
+      - php-gd
+      - php-json
+      - php-mysql
+      - php-curl
+      - php-intl
+      - php-mcrypt
+      - php-imagick
+      - php-zip
+      - php-xml
+      - php-mbstring
+
   service.running:
     - name: apache2
     - watch:
@@ -85,17 +98,25 @@ password:
 {% set multisite = salt['pillar.get']('multisite') %}
 
 {% if multisite != True %}
+/etc/apache2/sites-available/owncloud.conf:
+  file.managed:
+    - source: salt://cloudshare/files/owncloud.conf
+
 remove_alias:
   file.replace:
-    - name: /etc/apache2/conf-available/owncloud.conf
+    - name: /etc/apache2/sites-available/owncloud.conf
     - pattern: Alias /owncloud "/var/www/owncloud/"
     - repl: Alias / "/var/www/owncloud/"
+
+a2ensite owncloud:
+  cmd.run
+
 
 apache2:
   service.running:
     - reload: True
     - watch:
-      - file: /etc/apache2/conf-available/owncloud.conf
+      - file: /etc/apache2/sites-available/owncloud.conf
 
 {% endif %}
 

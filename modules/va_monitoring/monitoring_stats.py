@@ -5,7 +5,7 @@ from os import path
 
 PERF_PATH = '/var/lib/pnp4nagios/perfdata'
 
-def parse(host, service, start = '-1h', interval = '60'):
+def parse_pnp_data(host, service, start = '-1h', interval = '60'):
     datapath = path.join(PERF_PATH, host)
     xml_path = path.join(datapath, '%s.xml' % service)
     rrd_path = path.join(datapath, '%s.rrd' % service)
@@ -33,3 +33,11 @@ def parse(host, service, start = '-1h', interval = '60'):
                      #for grouped in zip(*[iter(result)] * elements_to_avg)]
         data[label] = result
     return data
+
+def parse(host, service, start = '-1h', interval = '60'):
+    return parse_pnp_data(host, service, start, interval)
+
+def parse_get_table(host, service, start = '-1h', interval = '60'):
+    pnp_data = parse_pnp_data(host, service, start, interval)
+    pnp_data = [{'ts' : i['x'], key : i['y']} for key in pnp_data for i in pnp_data[key]]
+    return pnp_data

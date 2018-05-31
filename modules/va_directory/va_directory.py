@@ -2,7 +2,6 @@
 ''' Imports all VapourApps API functions into SaltStack'''
 import salt, sys
 from va_samba_api import *
-import va_samba_api
 import json
 from va_utils import check_functionality as panel_check_functionality
 from va_directory_panels import panels
@@ -96,23 +95,23 @@ def panel_list_organizational_units():
     return org_units
 
 def panel_get_pass_settings():
-    pass_settings = output_to_dict(samba_tool(['domain', 'passwordsettings', 'show']).split('\n')[1:])
+    pass_settings = output_to_dict(samba_tool(['domain', 'passwordsettings', 'show']))
     pass_settings = [{'key' : x, 'value'  : pass_settings[x]} for x in pass_settings]
     return pass_settings
 
 def panel_level_show():
-    res = output_to_dict(samba_tool(['domain', 'level', 'show']).split('\n')[1:])
+    res = output_to_dict(samba_tool(['domain', 'level', 'show']))
     res = [{'key' : x, 'value'  : res[x]} for x in res]
     return res
 
 def panel_get_pcs():
     res = samba_tool(['group', 'listmembers','Domain Computers']).split('\n')
-    res = [{'hostname' : x.replace('$','')} for x in res if x]
+    res = [{'hostname' : x.replace('$','').upper()} for x in res if x]
     return res
 
 def panel_get_dcs():
     res = samba_tool(['group', 'listmembers','Domain Controllers']).split('\n')
-    res = [{'hostname' : x.replace('$','')} for x in res if x]
+    res = [{'hostname' : x.replace('$','').upper()} for x in res if x]
     return res
 
 def panel_get_dc_info():
@@ -123,9 +122,9 @@ def panel_get_dc_info():
     return res
 
 def panel_gpo_polices():
-    res = output_to_dict(samba_tool(['gpo', 'listall']).split('\n'))
-    res['gpo'] = res.pop('GPO')
-    return [res]
+    res = output_to_dict(samba_tool(['gpo', 'listall']))
+    res = [{'gpo' : r.pop('GPO'), 'display name':  r['display name']} for r in res]
+    return res
 
 def panel_fsmo_show():
     res = samba_tool(['fsmo', 'show']).split('\n')

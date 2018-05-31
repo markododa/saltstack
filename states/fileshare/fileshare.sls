@@ -18,19 +18,34 @@ install_samba:
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set admin_password = salt['pillar.get']('admin_password') %}
-{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+
+## Looping directory minions, looping all network cards, looping first ip address per interface, testing for samba, testing for DNS, updating okdcip if reachable DC from the minion is found
+{% set okdcip = {'okdcip': 'unknown'} %}
+{% set dcs = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain').keys() %}
+{% for dc in dcs %}
+{% set ifaces=salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')[dc]['ip4_interfaces'].keys() %}
+##dc-{{dc}}:
+##  ifaces-{{dc}}: {{ifaces}}
+    {% for iface in ifaces %}
+    {% set ip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')[dc]['ip4_interfaces'][iface][0] %}
+
+    {% if ip != '127.0.0.1' %}
+    {% if salt['network.connect'](ip, 139).result %}
+    {% if salt['dnsutil.A'](domain, ip) %}
+##  okip-{{dc}}-{{iface}}: {{ip}}
+    {% do okdcip.update({'okdcip': ip}) %}
+    {% endif %}
+    {% endif %}
+    {% endif %}
+    {% endfor %}
+{% endfor %}
+{% set dcip=okdcip.okdcip %}
+
+## End of looking for DC ip
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
-{% set myip = salt['grains.get']('ipv4')[0] %}
+{% set host_name = grains['id'] %}
 
-# needs to find the interface for reaching domain controller
-
-{% if myip == '127.0.0.1' %}    
-{% set myip = salt['grains.get']('ipv4')[1] %}
-{% endif %}    
-
-{% if myip == '127.0.0.1' %}    
-{% set myip = salt['grains.get']('ipv4')[2] %}
-{% endif %}    
+{% set myip=salt['network.get_route'](dcip).source %}
 
 /etc/krb5.conf:
   file.managed:
@@ -84,9 +99,9 @@ resolvednsip:
     - pattern: DCIP
     - repl: {{ dcip }}
     
-readableresolve:
-  cmd.run:
-    - name: chattr +i /etc/resolv.conf 
+#readableresolve:
+#  cmd.run:
+#    - name: chattr +i /etc/resolv.conf 
  
    
 ntpcnf:
@@ -156,6 +171,11 @@ nsswitchw2:
     - makedirs: True
     - mode: 777
 
+/home/{{ domain }}/Share/.recycle:
+  file.directory:
+    - makedirs: True
+    - mode: 770
+    
 /home/{{ domain }}/Public/Tools/tools.tar.gz:
   file.managed:
     - source: salt://fileshare/wintools/tools.tar.gz
@@ -191,30 +211,36 @@ fixbat_mt:
     - pattern: DOMEJN
     - repl: {{ shortdomain }}
     
+
 /etc/samba/smb.conf:
   file.managed:
     - source: salt://fileshare/files/smb.conf
     - user: root
     - group: root
     - mode: 644
-    
-smb:
-  file.replace:
-    - name: /etc/samba/smb.conf
-    - pattern: DOMAIN
-    - repl: {{ domain }}
+    - template: jinja
+    - context:
+      domain: {{ domain }}
+      shortdomain: {{ shortdomain }} 
+      host_name: {{ host_name }} 
+      
+#smb:
+#  file.replace:
+#    - name: /etc/samba/smb.conf
+#    - pattern: DOMAIN
+#    - repl: {{ domain }}
 
-smbnetbios:
-  file.replace:
-    - name: /etc/samba/smb.conf
-    - pattern: HOST
-    - repl: {{ grains['localhost'] }}
+#smbnetbios:
+#  file.replace:
+#    - name: /etc/samba/smb.conf
+#    - pattern: HOST
+#    - repl: {{ grains['localhost'] }}
 
-smbshortdm:
-  file.replace:
-    - name: /etc/samba/smb.conf
-    - pattern: DOMEJN
-    - repl: {{ shortdomain }}   
+#smbshortdm:
+#  file.replace:
+#    - name: /etc/samba/smb.conf
+#   - pattern: DOMEJN
+#    - repl: {{ shortdomain }}   
     
 /etc/pam.d/common-account:
   file.managed:

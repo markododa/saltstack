@@ -6,16 +6,16 @@ exitstate=0
 text=""
 
 
-OUT=`smbclient -L localhost -N -d 0 -g | grep '^Disk|' | wc -l`
+OUT=`timeout 3 bash -c "smbclient -L localhost -N -d 0 -g | grep '^Disk|' | wc -l"`
 text="Shared folders: "$OUT
 
 
-OUT=`smbclient -L localhost -N -d 0 -g | grep '^Printer|' | wc -l`
+OUT=`timeout 3 bash -c "smbclient -L localhost -N -d 0 -g | grep '^Printer|' | wc -l"`
 text=$text", Shared printers: "$OUT
 
 
 
-OUT=`pdbedit -L | grep locked | wc -l`
+OUT=`timeout 10 bash -c "pdbedit -L | grep locked | wc -l"`
 if [ $OUT -eq 0 ];then
    text=$text", No locked users"
 else
@@ -23,7 +23,7 @@ else
    exitstate=1
 fi
 
-smbclient -L localhost -N -d 0 > /dev/null
+timeout 10 bash -c "smbclient -L localhost -N -d 0" > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
     text=$text #', '"Samba shares OK"
@@ -33,7 +33,7 @@ else
 fi
 
 
-smbstatus -d 0 > /dev/null
+timeout 10 bash -c "smbstatus -d 0" > /dev/null
 OUT=$?
 if [ $OUT -eq 0 ];then
     text=$text #', '"Samba status OK"
@@ -45,3 +45,4 @@ fi
 echo $text" | exit_status="$exitstate
 
 exit $exitstate
+

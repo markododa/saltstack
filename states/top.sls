@@ -45,3 +45,6 @@ base:
   'role:nginx':
     - match: grain
     - nginx
+  'role:lxd':
+    - match: grain
+    - lxd
