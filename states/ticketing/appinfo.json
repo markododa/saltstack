@@ -2,7 +2,7 @@
     "name": "ticketing",
     "description": "Platform for managing tickets, track tasks and delagate duties.",
     "version": "1.1",
-    "icon": "check-circle-o",
+    "icon": "fa-check-circle",
     "dependency": "directory,monitoring",
     "substates": ["ticketing.ticketing"], 
     "services": [

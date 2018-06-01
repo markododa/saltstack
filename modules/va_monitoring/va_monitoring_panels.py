@@ -20,7 +20,7 @@ panels = {
             "pagination": False,
             "reducers": ["table", "panel", "alert"],
             "columns": [{
-                "key": "status",
+                "key": "state",
                 "label": "Status",
                 "width": "20%"
             }, {
@@ -36,6 +36,7 @@ panels = {
                 "name": "Restart services",
                 "class": "danger"
             }],
+            "rowStyleCol": "state",
             "id": ["status"],
             "source": "va_utils.check_functionality"
         }, {
@@ -214,15 +215,146 @@ panels = {
             "reducers": ["panel"]
         }]
     },
-    "monitoring.status": {
-        "title": "Status",
+    "monitoring.details": {
+        "title": "Monitoring details",
         "tbl_source": {},
         "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
 
+                    {
+                        "type": "Filter",
+                        "name": "Filter",
+                        "reducers": ["filter"]
+                    }
+                ]
+            }, {
+                "type": "MultiTable",
+                "name": "div",
+                "reducers": ["table"],
+                "elements": [{
+                    "type": "Heading",
+                    "dc": "monitoring :num: services"
+                }, {
+                    "type": "Table",
+                    "pagination": False,
+                    "reducers": ["table", "panel", "alert", "filter"],
+                    "columns": [{
+                        "key": "name",
+                        "label": "Service"
+                    }, {
+                        "key": "output",
+                        "label": "Output",
+                        "width": "70%"
+                    }, {
+                        "key": "state",
+                        "label": "State",
+                        "width": "8%"
+                    }, {
+                        "key": "action",
+                        "label": "Actions",
+                        "width": "5%"
+                    }],
+                    "panels": {
+                        "view_graph": "monitoring.graph",
+                        "month_history": "monitoring.service_history_monthly",
+                        "week_history": "monitoring.service_history_weekly",
+                    },
+                    "rowStyleCol": "state",
+                    "actions": [{
+                        "name": "View graphs",
+                        "action": "chart"
+                    }, {
+                        "name": "Last month history",
+                        "action": "month_history"
+                    },
+                        {
+                        "name": "Force check now",
+                        "action": "force_check"
+                    }],
+                    "id": ["name", "host_name"]
+                }]
+            }
+        ]
+    },
+    "monitoring.problems": {
+        "title": "Current problems",
+        "tbl_source": {},
+        "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
+
+                    {
+                        "type": "Filter",
+                        "name": "Filter",
+                        "reducers": ["filter"]
+                    }
+                ]
+            }, {
+                "type": "MultiTable",
+                "name": "div",
+                "reducers": ["table"],
+                "elements": [{
+                    "type": "Heading",
+                    "dc": "monitoring :num: services"
+                }, {
+                    "type": "Table",
+                    "pagination": False,
+                    "reducers": ["table", "panel", "alert", "filter"],
+                    "columns": [{
+                        "key": "name",
+                        "label": "Service"
+                    }, {
+                        "key": "output",
+                        "label": "Output",
+                        "width": "70%"
+                    }, {
+                        "key": "state",
+                        "label": "State",
+                        "width": "8%"
+                    }, {
+                        "key": "action",
+                        "label": "Actions",
+                        "width": "5%"
+                    }],
+                    "panels": {
+                        "view_graph": "monitoring.graph",
+                        "month_history": "monitoring.service_history_monthly",
+                        "week_history": "monitoring.service_history_weekly",
+                    },
+                    "rowStyleCol": "state",
+                    "actions": [{
+                        "name": "View graphs",
+                        "action": "chart"
+                    }, {
+                        "name": "Last month history",
+                        "action": "month_history"
+                    },
+                        {
+                        "name": "Force check now",
+                        "action": "force_check"
+                    }],
+                    "id": ["name", "host_name"]
+                }]
+            }
+        ]
+    },
+    "monitoring.summary": {
+        "title": "Summary",
+        "tbl_source": {
+            "table_summary": {
+                "source": "icinga2_summary"
+            }},
+        "content": [
             {
                 "type": "Form",
                 "name": "form1",
-                #"class": "pull-right margina form-inline",
                 "elements": [{
                         "type": "Button",
                         "name": "Add Windows host",
@@ -303,7 +435,6 @@ panels = {
                             }]
                         }
                 },
-
                     {
                         "type": "Button",
                         "name": "Windows credentials",
@@ -392,51 +523,51 @@ panels = {
                     }
                 ]
             }, {
-                "type": "MultiTable",
-                "name": "div",
-                "reducers": ["table"],
-                "elements": [{
-                    "type": "Heading",
-                    "dc": "monitoring :num: services"
-                }, {
-                    "type": "Table",
-                    "pagination": False,
-                    "reducers": ["table", "panel", "alert", "filter"],
-                    "columns": [{
-                        "key": "name",
-                        "label": "Service"
+
+                "type": "Table",
+                "name": "table_summary",
+                "pagination": False,
+                "reducers": ["table", "panel", "alert", "filter"],
+                "columns": [
+                    {
+                        "key": "host_name",
+                        "label": "Hostname",
+                        "width": "25%"
                     }, {
-                        "key": "output",
-                        "label": "Output",
-                        "width": "70%"
+                        "key": "OK",
+                        "label": "OK",
+                        "width": "14%"
                     }, {
-                        "key": "state",
-                        "label": "State",
-                        "width": "8%"
+                        "key": "Warning",
+                        "label": "Warning",
+                        "width": "14%"
+                    }, {
+                        "key": "Critical",
+                        "label": "Critical",
+                        "width": "14%"
+                    }, {
+                        "key": "Unknown",
+                        "label": "Unknown",
+                        "width": "14%"
+                    }, {
+                        "key": "Pending",
+                        "label": "Pending",
+                        "width": "14%"
                     }, {
                         "key": "action",
                         "label": "Actions",
                         "width": "5%"
                     }],
-                    "panels": {
-                        "view_graph": "monitoring.graph",
-                        "month_history": "monitoring.service_history_monthly",
-                        "week_history": "monitoring.service_history_weekly",
-                    },
-                    "rowStyleCol": "state",
-                    "actions": [{
-                        "name": "View graphs",
-                        "action": "chart"
-                    }, {
-                        "name": "Last month history",
-                        "action": "month_history"
-                    },
-                    {
-                        "name": "Force check now",
-                        "action": "force_check"
-                    }],
-                    "id": ["name","host_name"]
-                }]
+                "panels": {
+                    "details": "monitoring.details"
+                },
+                "rowStyleCol": "state",
+                "actions": [{
+                    "name": "Details",
+                    "action": "details"
+                }],
+                "id": ["host_name"]
+
             }
         ]
     },

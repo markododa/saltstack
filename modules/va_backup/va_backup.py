@@ -414,7 +414,7 @@ def append_host_status(host_list):
         x['status'] = text[x['host']].get('reason', '-').capitalize()
         x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
         x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
-
+        x['state'] = 'Critical' if x['status']!='Nothing to do' else 'none'
     return host_list
 
 def panel_statistics():
@@ -431,15 +431,15 @@ def panel_statistics():
     # i_duplicates = text['cpoolFileCntRep']
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
     statistics = [{'key' : 'Version', 'value': text['Version']},
-                  {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
-                  {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
-                  {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
-                  {'key' : 'Nightly cleanup removed files', 'value': text['cpoolFileCntRm']},
-                  {'key' : 'Pool partition used size (KB)', 'value': int(diskusage['used'])/1024},
-                  {'key' : 'Pool partition free space (KB)', 'value': int(diskusage['available'])/1024},
-                  {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
-                  {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
-                  {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
+                {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
+                {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
+                {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
+                {'key' : 'Nightly cleanup removed files', 'value': text['cpoolFileCntRm']},
+                {'key' : 'Pool partition used size (KB)', 'value': int(diskusage['used'])/1024},
+                {'key' : 'Pool partition free space (KB)', 'value': int(diskusage['available'])/1024},
+                {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
+                {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
+                {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
     return statistics
 
 def panel_default_config():
@@ -451,15 +451,15 @@ def panel_default_config():
     incr_cnt = get_global_config('IncrKeepCnt')
 
     def_config = [{'key' : 'Full backups interval (days)', 'value': full_period},
-                  {'key' : 'Full backups to keep (max)', 'value': full_cnt},
-                  {'key' : 'Full backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
-                  {'key' : 'Expected Full backups history (days)', 'value': pretty_backup_periods(full_period, full_cnt,int(get_global_config('FullAgeMax')))},
-                  {'key' : 'Remove full backups older then', 'value': get_global_config('FullAgeMax')},
-                  {'key' : 'Incremental backups interval (days)', 'value': get_global_config('IncrPeriod')},
-                  {'key' : 'Incremental backups to keep (max)', 'value': incr_period},
-                  {'key' : 'Incremental backups to keep (min)', 'value': incr_cnt},
-                  {'key' : 'Expected Incremental backups history (days)', 'value': pretty_backup_periods(incr_period, incr_cnt,int(get_global_config('IncrAgeMax')))},
-                  {'key' : 'Remove incremental backups older then', 'value': get_global_config('IncrAgeMax')}]
+                {'key' : 'Full backups to keep (max)', 'value': full_cnt},
+                {'key' : 'Full backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
+                {'key' : 'Expected Full backups history (days)', 'value': pretty_backup_periods(full_period, full_cnt,int(get_global_config('FullAgeMax')))},
+                {'key' : 'Remove full backups older then', 'value': get_global_config('FullAgeMax')},
+                {'key' : 'Incremental backups interval (days)', 'value': get_global_config('IncrPeriod')},
+                {'key' : 'Incremental backups to keep (max)', 'value': incr_period},
+                {'key' : 'Incremental backups to keep (min)', 'value': incr_cnt},
+                {'key' : 'Expected Incremental backups history (days)', 'value': pretty_backup_periods(incr_period, incr_cnt,int(get_global_config('IncrAgeMax')))},
+                {'key' : 'Remove incremental backups older then', 'value': get_global_config('IncrAgeMax')}]
     return def_config
 
 
@@ -743,18 +743,7 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     
     return dr
 
-#def hashtodict(contents):
-#    contents = contents.replace('=>', ':')
-#    contents = contents.replace('%','')
-#    contents = contents.replace('\'','\"')
-#    contents = contents.replace('(','{')
-#    contents = contents.replace(')','}')
-#    contents = contents.replace(';','')
-#    contents = contents.replace('backupInfo = ','')
-#    contents = contents.replace('\"fillFromNum\" : undef,','')
-#    contents = contents.replace(' : undef',' : \"undef\"')
-#    return contents
-
+#
 def write_backupinfo_json(hostname, backup):
     hostname = hostname.lower()
     contents = ''
@@ -931,18 +920,20 @@ def infodict(path):
     cmd = 'sudo -u backuppc /usr/share/backuppc/bin/BackupPC_attribPrint \'%s/attrib\' > \'%s/attrib0\'' % (path, path)
     # cmd = ['sudo -u ', 'backuppc', '/usr/share/backuppc/bin/BackupPC_attribPrint '+path+'/attrib', '>', path+'/attrib0'
     subprocess.call(cmd, shell = True)
-    with open(path +'/attrib0','r+') as f:
-        contents = f.read()
-        contents = contents.replace('$VAR1 = {\n' , '{')
-        contents = contents.replace('}\n}', '}}')
-        contents = contents.replace('=>', ':')
-        contents = contents.replace('%','')
-        contents = contents.replace('\'','\"')
-        contents = contents.replace('(','{')
-        contents = contents.replace(')','}')
-        contents = contents.replace(';','')
+    conf = file_to_dict(path + '/attrib0')
 
-    contents = contents or '{}'
+#    with open(path +'/attrib0','r+') as f:
+#        contents = f.read()
+#        contents = contents.replace('$VAR1 = {\n' , '{')
+#        contents = contents.replace('}\n}', '}}')
+#        contents = contents.replace('=>', ':')
+#        contents = contents.replace('%','')
+#        contents = contents.replace('\'','\"')
+#        contents = contents.replace('(','{')
+#        contents = contents.replace(')','}')
+#        contents = contents.replace(';','')
+
+    contents = json.dumps(conf.get('$VAR1', {})) or '{}'
     with open(path+'/attrib.json', 'w') as f:
         json.dumps(f.write(contents))
 

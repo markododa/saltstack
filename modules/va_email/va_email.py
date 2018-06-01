@@ -211,9 +211,11 @@ def panel_get_dns_config():
         domains.append({"dns":"imap.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
         domains.append({"dns":"pop3.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
         domains.append({"dns":"smtp.va-email."+email_domains()[0],"type":'CNAME',"value":"va-email."+email_domains()[0]})
-        domains.append({"dns":url[0:-1],"type":'TXT',"value":dkim})
         domains.append({"dns":email_domains()[0],"type":'TXT',"value":"v=spf1 a mx ip4:"+public_ip+" ~all"})
         domains.append({"dns":"_dmarc."+email_domains()[0],"type":'TXT',"value":"v=DMARC1; p=none"})
+        dkim_multiline=dkim[:74] +'\n' + dkim[74:151]+'\n' + dkim[151:]
+        domains.append({"dns":url[0:-1],"type":'TXT',"value":dkim_multiline})
+
     return domains
 
 def panel_server_config():

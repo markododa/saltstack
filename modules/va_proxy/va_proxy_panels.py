@@ -506,7 +506,7 @@ panels = {
             "pagination": False,
             "reducers": ["table", "panel", "alert"],
             "columns": [{
-                "key": "status",
+                "key": "state",
                 "label": "Status",
                 "width": "30%"
             }, {
@@ -525,6 +525,7 @@ panels = {
                 "action": "e2guardian_reload",
                 "name": "Reload config"
             }],
+            "rowStyleCol": "state",
             "source": "va_utils.check_functionality"
         }, 
         

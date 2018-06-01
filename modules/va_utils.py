@@ -29,13 +29,13 @@ def check_functionality():
     try:
         out = subprocess.check_output([bash_cmd])
         out = out.split('|')[0]
-        returncode = [{"status":"OK", "output":out}]
+        returncode = [{"state":"OK", "output":out}]
     except subprocess.CalledProcessError as e:
         out = ''
         if e.returncode == 1:
-            returncode = [{"status":"WARNING", "output":e.output.split('|')[0]}]
+            returncode = [{"state":"Warning", "output":e.output.split('|')[0]}]
         else:
-            returncode = [{"status":"CRITICAL", "output":e.output.split('|')[0]}]
+            returncode = [{"state":"Critical", "output":e.output.split('|')[0]}]
 
     return returncode
 
@@ -81,9 +81,14 @@ def get_clock():
     return result
 
 def get_ip_addresses():
-    result = __salt__['grains.get']('ipv4')
-    if not result: 
+    ips = __salt__['grains.get']('ipv4')
+    if not ips: 
         raise Exception("Error")
+    else:
+        result = []
+        for ip in ips:
+            if ip != '127.0.0.1':
+                result.append(ip)
     return result
 
 def get_dns_addresses():

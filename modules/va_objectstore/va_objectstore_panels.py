@@ -22,7 +22,7 @@ panels = {
                 "pagination": False,
                 "reducers": ["table", "panel", "alert"],
                 "columns": [{
-                    "key": "status",
+                    "key": "state",
                     "label": "Status",
                     "width": "30%"
                 }, {
@@ -38,7 +38,8 @@ panels = {
                     "name": "Restart services",
                     "class": "danger"
                 }],
-                "source": "va_utils.check_functionality"
+            "rowStyleCol": "state",
+            "source": "va_utils.check_functionality"
             },
             {
                 "type": "Table",

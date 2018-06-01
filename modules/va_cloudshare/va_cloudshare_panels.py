@@ -30,6 +30,7 @@ panels = {
                 "label": "Value"
             }
             ],
+            "rowStyleCol": "state",
             "id": ["status"],
             "source": "va_utils.check_functionality"
         }, {

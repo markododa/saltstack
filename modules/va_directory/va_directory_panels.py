@@ -94,7 +94,7 @@ panels = {
                 "name": "Generate Password",
                 "glyph": "cog",
                 "action": "va_utils.generate_password",
-                "data": {"server_name":"va-master","module":"va_utils","action":"generate_password"},
+                "data": {"server_name": "va-master", "module": "va_utils", "action": "generate_password"},
                 "reducers": ["alert"]
             }
             ]
@@ -124,6 +124,7 @@ panels = {
             }
             ],
             "id": "username",
+            "rowStyleCol": "state",
             "modals": {
                 "edit_user": {
                     "title": "Edit user",
@@ -321,7 +322,7 @@ panels = {
                     }
                     ]
                 },
-                
+
             },
             "panels": {
                 "list_logins": "directory.list_logins",
@@ -1050,16 +1051,25 @@ panels = {
             "type": "Table",
             "name": "table_chkf",
             "pagination": False,
-            "reducers": ["table", "panel", "alert"],
+                "reducers": ["table", "panel", "alert", "filter"],
             "columns": [{
-                "key": "status",
+                "key": "state",
                 "label": "Status",
                 "width": "30%"
             }, {
                 "key": "output",
                 "label": "Value"
+            }, {
+                "key": "action",
+                "label": "Actions",
+                "width": "5%"
             }
             ],
+            "actions": [{
+                "name": "Details",
+                "action": "details"
+            }],
+            "rowStyleCol": "state",
             "id": ["status"],
             "source": "va_utils.check_functionality"
         }, {
@@ -1355,7 +1365,7 @@ panels = {
             }
         ]
     },
-        "directory.manage_user_membership_mixed": {
+    "directory.manage_user_membership_mixed": {
         "title": "Group membership",
         "tbl_source": {
             "member": {
@@ -1373,7 +1383,7 @@ panels = {
                 }, {
                     "key": "status",
                     "label": "Status in group"
-                },{
+                }, {
                     "key": "action",
                     "label": "Actions",
                     "width": "5%"

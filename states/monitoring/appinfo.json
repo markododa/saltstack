@@ -9,9 +9,12 @@
 	"path": "-",
 	"panels": {
 		"admin": [{
-			"key": "monitoring.status",
-			"name": "Status"
-		}, {
+			"key": "monitoring.summary",
+			"name": "Summary"
+		},{
+                        "key": "monitoring.problems",
+                        "name": "Current problems"
+                }, {
 			"key": "monitoring.history",
 			"name": "History"
 		}, {

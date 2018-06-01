@@ -61,7 +61,14 @@ def panel_list_group_members(group_name):
     return group_source
 
 def panel_list_users():
-    return list_users()['users']
+    user_list = list_users()['users']
+    for user in user_list:
+        if user["flags"] != '':
+            user["state"]='Warning' 
+        else:
+            user["state"]='none'
+                        
+    return user_list
 
 def action_add_group(name, description, mail):
     attrs = {'description':description, 'mail': mail}

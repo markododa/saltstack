@@ -23,7 +23,7 @@ panels = {
             "pagination": False,
             "reducers": ["table", "panel", "alert"],
             "columns": [{
-                "key": "status",
+                "key": "state",
                 "label": "Status",
                 "width": "30%"
             }, {
@@ -31,6 +31,7 @@ panels = {
                 "label": "Value"
             }
             ],
+            "rowStyleCol": "state",
             "id": ["status"],
             "source": "va_utils.check_functionality"
         }, {
@@ -513,6 +514,7 @@ panels = {
                         "class": "danger"
                         }
                         ],
+            "rowStyleCol": "state",
             "id": ["host"],
             "modals": {
                 "change_address": {

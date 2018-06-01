@@ -36,8 +36,16 @@ def get_panel(panel_name, provider='', service=''):
         users_panel['title'] = provider + ' - ' + service
         users_panel['content'][0]['data'] = data
         return users_panel
-    elif panel_name == 'monitoring.status':
-        data = icinga2()
+    elif panel_name == 'monitoring.problems':
+        data = icinga2_problems()
+        for host in data: 
+            for service in host['services']:
+                service['host_name'] = host['host_name']  #+'!'+service['name']
+        data1 = {x['host_name']: x['services'] for x in data}
+        users_panel['tbl_source'] = data1
+        return users_panel
+    elif panel_name == 'monitoring.details':
+        data = icinga2_singlehost(provider)
         for host in data: 
             for service in host['services']:
                 service['host_name'] = host['host_name']  #+'!'+service['name']
@@ -346,6 +354,73 @@ def add_host_to_icinga(host_name, ip_address, value_pairs = {}):
         subprocess.check_output(['service', 'icinga2', 'restart'])
     return True
 
+def icinga2_problems():
+    out=subprocess.check_output(
+        ['icingacli', 'monitoring', 'list', '--format', 'json'])
+    json_out=json.loads(out)
+
+    # The data that we receive is flat, we want to group services by host.
+    # hosts will be a dict that looks like: {'host1': [{'name': 'service1', 'state': 1}, ...], ...}
+    hosts={}
+    service_state_names={"0": "OK", "1": "Warning",
+                        "2": "Critical", "3": "Unknown", '99': 'Pending'}
+    for service_obj in json_out:
+        host=service_obj['host_name']
+        service={'name': service_obj['service_description'],
+                'state': service_state_names[service_obj['service_state']],
+                'output': service_obj['service_output']}
+        if service['state'] != 'OK':
+            if host in hosts:
+                hosts[host].append(service)
+            else:
+                hosts[host]=[service]
+
+    # Now the data is structured, but it has no schema (each host is a key)
+    # We want to transform [{'host1': data}, ...] into [{'name': host1, data}, ...]
+    # So that we have an API friendly result
+
+    formatted_hosts=[]
+    for host in hosts:
+      
+        formatted_hosts.append({'host_name': host, 'services': hosts[host]})
+    result=sorted(formatted_hosts, key = lambda x: (
+        x['host_name']), reverse=False)
+    return result
+    # return formatted_hosts #result
+
+
+def icinga2_singlehost(host_name):
+    out=subprocess.check_output(
+        ['icingacli', 'monitoring', 'list', '--format', 'json', '--host='+host_name])
+    json_out=json.loads(out)
+
+    # The data that we receive is flat, we want to group services by host.
+    # hosts will be a dict that looks like: {'host1': [{'name': 'service1', 'state': 1}, ...], ...}
+    hosts={}
+    service_state_names={"0": "OK", "1": "Warning",
+                        "2": "Critical", "3": "Unknown", '99': 'Pending'}
+    for service_obj in json_out:
+        host=service_obj['host_name']
+        service={'name': service_obj['service_description'],
+                'state': service_state_names[service_obj['service_state']],
+                'output': service_obj['service_output']}
+        if host in hosts:
+            hosts[host].append(service)
+        else:
+            hosts[host]=[service]
+
+    # Now the data is structured, but it has no schema (each host is a key)
+    # We want to transform [{'host1': data}, ...] into [{'name': host1, data}, ...]
+    # So that we have an API friendly result
+
+    formatted_hosts=[]
+    for host in hosts:
+        formatted_hosts.append({'host_name': host, 'services': hosts[host]})
+    result=sorted(formatted_hosts, key = lambda x: (
+        x['host_name']), reverse=False)
+    return result
+    # return formatted_hosts #result
+
 
 def icinga2():
     out=subprocess.check_output(
@@ -374,6 +449,75 @@ def icinga2():
     formatted_hosts=[]
     for host in hosts:
         formatted_hosts.append({'host_name': host, 'services': hosts[host]})
+    result=sorted(formatted_hosts, key = lambda x: (
+        x['host_name']), reverse=False)
+    return result
+    # return formatted_hosts #result
+
+
+def icinga2_summary():
+    out=subprocess.check_output(
+        ['icingacli', 'monitoring', 'list', '--format', 'json'])
+    json_out=json.loads(out)
+
+    # The data that we receive is flat, we want to group services by host.
+    # hosts will be a dict that looks like: {'host1': [{'name': 'service1', 'state': 1}, ...], ...}
+    hosts={}
+    service_state_names={"0": "OK", "1": "Warning",
+                        "2": "Critical", "3": "Unknown", '99': 'Pending'}
+    for service_obj in json_out:
+        host=service_obj['host_name']
+        service={'name': service_obj['service_description'],
+                'state': service_state_names[service_obj['service_state']],
+                'output': service_obj['service_output']}
+        if host in hosts:
+            hosts[host].append(service)
+        else:
+            hosts[host]=[service]
+
+    # Now the data is structured, but it has no schema (each host is a key)
+    # We want to transform [{'host1': data}, ...] into [{'name': host1, data}, ...]
+    # So that we have an API friendly result
+
+    formatted_hosts=[]
+    for host in hosts:
+        count_ok=0
+        count_warning=0
+        count_critical=0
+        count_unknown=0
+        count_pending=0
+        for services in hosts[host]:
+            if services['state']=='OK':
+                count_ok=count_ok+1
+            if services['state']=='Warning':
+                count_warning=count_warning+1
+            if services['state']=='Critical':
+                count_critical=count_critical+1
+            if services['state']=='Unknown':
+                count_unknown=count_unknown+1
+            if services['state']=='Pending':
+                count_pending=count_pending+1
+        state='OK'
+        if count_warning>0:
+            state='Warning'
+        if count_critical>0:
+            state='Critical'
+        if (count_unknown>0) and (count_critical==0) and (count_warning==0):
+            state='Unknown'
+        if (count_pending>0) and (count_critical==0) and (count_warning==0):
+            state='Pending'
+        if count_ok==0:
+            count_ok=''
+        if count_warning==0:
+            count_warning=''
+        if count_critical==0:
+            count_critical=''
+        if count_unknown==0:
+            count_unknown=''
+        if count_pending==0:
+            count_pending=''
+
+        formatted_hosts.append({'host_name': host, 'OK': count_ok, 'Warning' :count_warning,'Critical' :count_critical,'Unknown' :count_unknown,'Pending' :count_pending, 'state': state})
     result=sorted(formatted_hosts, key = lambda x: (
         x['host_name']), reverse=False)
     return result
