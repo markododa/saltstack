@@ -10,6 +10,7 @@ from va_utils import check_functionality as panel_check_functionality
 from va_utils import restart_functionality as restart_functionality
 from va_monitoring_panels import panels
 from monitoring_stats import parse
+from monitoring_stats import parse_multichart
 
 #Using this to convert from integer states to icinga states( 0 = OK, 1 = WARNING etc. )
 states = {0 : 'OK', 1 : 'Warning', 2 : 'Critical', 3 : 'Unknown', 99 : 'Pending'} #NINO
@@ -36,11 +37,28 @@ def get_panel(panel_name, provider='', service=''):
         users_panel['title'] = provider + ' - ' + service
         users_panel['content'][0]['data'] = data
         return users_panel
+    elif panel_name == 'monitoring.multi_charts':
+        data = parse_multichart(provider, service)
+        users_panel['tbl_source'] = {x['host_name']: x['zharts'] for x in data}
+        return users_panel
+    elif panel_name == 'monitoring.multi_charts_1h':
+        data = parse_multichart(provider, service)
+        users_panel['tbl_source'] = {x['host_name']: x['zharts'] for x in data}
+        return users_panel
+    elif panel_name == 'monitoring.multi_charts_1d':
+        data = parse_multichart(provider, service,'-1d','7200')
+        # data = parse_multichart(provider, service,'-1d','1800')
+        users_panel['tbl_source'] = {x['host_name']: x['zharts'] for x in data}
+        return users_panel
+    elif panel_name == 'monitoring.multi_charts_1w':
+        data = parse_multichart(provider, service,'-7d','14400')
+        users_panel['tbl_source'] = {x['host_name']: x['zharts'] for x in data}
+        return users_panel
     elif panel_name == 'monitoring.problems':
         data = icinga2_problems()
         for host in data: 
             for service in host['services']:
-                service['host_name'] = host['host_name']  #+'!'+service['name']
+                service['host_name'] = host['host_name'] 
         data1 = {x['host_name']: x['services'] for x in data}
         users_panel['tbl_source'] = data1
         return users_panel
@@ -48,7 +66,7 @@ def get_panel(panel_name, provider='', service=''):
         data = icinga2_singlehost(provider)
         for host in data: 
             for service in host['services']:
-                service['host_name'] = host['host_name']  #+'!'+service['name']
+                service['host_name'] = host['host_name'] 
         data1 = {x['host_name']: x['services'] for x in data}
         users_panel['tbl_source'] = data1
         return users_panel

@@ -343,3 +343,12 @@ def view_mail_queue_id(message_id):
     __salt__['cmd.run']('postcat -vq '+messsage_id)
     return "OK"
 
+def error_mail_queue_id(message_id):
+    queue = mail_queue()
+    for msg in queue:
+        if msg['queue_id']==message_id:
+            if msg['error']:
+                return {"success" :  False, "message" : msg['error'], "data" : {}}
+            else:
+                return {"success" :  True, "message" : "So far so good", "data" : {}}
+

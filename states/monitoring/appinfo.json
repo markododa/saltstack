@@ -1,7 +1,7 @@
 {
 	"name": "monitoring",
-	"description": "Monitoring critical parameters for each server (Linux or Windows) and network devices. Support creating custom sensors.",
-	"version": "1.2",
+	"description": "Monitoring Linux or Windows servers and network devices. Support for creating custom sensors.",
+	"version": "1.3",
 	"icon": "fa-heartbeat",
 	"dependency": "directory,vpn",
 	"substates": ["monitoring.icingaweb2", "salt-master.salt"],

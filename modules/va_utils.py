@@ -145,7 +145,7 @@ def get_panel(module_name, panel_name, *args, **kwargs):
     if module_name in panel_jsons.keys():
         panel = json.load(open(panel_jsons[module_name]))
     else:
-        panel = module.panels
+        panel = getattr(module, 'panels')
     panel = panel.get(panel_name)
     temp_data = []
     for t in panel['tbl_source']:

@@ -152,6 +152,9 @@ panels = {
                         "action": "delete_mail_queue_id",
                         "name": "Delete",
                         "class": "danger"
+                        }, {
+                        "action": "error_mail_queue_id",
+                        "name": "Show error"
                         }
                         ],
             "id": ["queue_id"]

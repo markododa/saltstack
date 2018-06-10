@@ -260,14 +260,23 @@ panels = {
                     }],
                     "panels": {
                         "view_graph": "monitoring.graph",
+                        "view_multi_graph_1h": "monitoring.multi_charts_1h",
+                        "view_multi_graph_1d": "monitoring.multi_charts_1d",
+                        "view_multi_graph_1w": "monitoring.multi_charts_1w",
                         "month_history": "monitoring.service_history_monthly",
                         "week_history": "monitoring.service_history_weekly",
                     },
                     "rowStyleCol": "state",
                     "actions": [{
-                        "name": "View graphs",
-                        "action": "chart"
+                        "name": "Graphs (last hour)",
+                        "action": "view_multi_graph_1h"
                     }, {
+                        "name": "Graphs (last day)",
+                        "action": "view_multi_graph_1d"
+                    }, {
+                        "name": "Graphs (last week)",
+                        "action": "view_multi_graph_1w"
+                    },  {
                         "name": "Last month history",
                         "action": "month_history"
                     },
@@ -325,6 +334,10 @@ panels = {
                     }],
                     "panels": {
                         "view_graph": "monitoring.graph",
+                        "view_multi_graph": "monitoring.multi_charts",
+                        "view_multi_graph_1h": "monitoring.multi_charts_1h",
+                        "view_multi_graph_1d": "monitoring.multi_charts_1d",
+                        "view_multi_graph_1w": "monitoring.multi_charts_1w",
                         "month_history": "monitoring.service_history_monthly",
                         "week_history": "monitoring.service_history_weekly",
                     },
@@ -332,6 +345,15 @@ panels = {
                     "actions": [{
                         "name": "View graphs",
                         "action": "chart"
+                    }, {
+                        "name": "Graphs (last hour)",
+                        "action": "view_multi_graph_1h"
+                    }, {
+                        "name": "Graphs (last day)",
+                        "action": "view_multi_graph_1d"
+                    }, {
+                        "name": "Graphs (last week)",
+                        "action": "view_multi_graph_1w"
                     }, {
                         "name": "Last month history",
                         "action": "month_history"
@@ -343,6 +365,124 @@ panels = {
                     "id": ["name", "host_name"]
                 }]
             }
+        ]
+    },
+    "monitoring.multi_charts_1h": {
+        "title": "Charts (last hour)",
+        "tbl_source": {},
+        "content": [{
+            "type": "MultiTable",
+            "name": "div",
+            "reducers": ["table"],
+            "elements": [{
+                    "type": "Heading"
+            },
+                {
+                "type": "CustomChart",
+                "chartType": "line",
+                "xCol": "timestamp",
+                "colorAuto": True,
+                "height": 50,
+                "colorAuto": True,
+                "target": "auto",
+                "reducers": ["table"],
+                "options":{
+                        "legend": {"display": False,
+                                   "hidden": True
+                                   }
+                },
+                "datasets": [{
+                    "column": "y",
+                    "data": []
+                }
+                ],
+
+            }]
+        }
+        ]
+    },
+    "monitoring.multi_charts_1d": {
+        "title": "Charts (last 24 hours)",
+        "tbl_source": {},
+        "content": [
+                {
+                "type": "MultiTable",
+                "name": "div",
+                "reducers": ["table"],
+                "elements": [{
+                    "type": "Heading"
+                }, {
+                    "type": "Table",
+                    "reducers": ["table", "panel", "alert", "filter"],
+                    "columns": [{
+                        "key": "timestamp",
+                        "label": "time"
+                    }, {
+                        "key": "y",
+                        "label": "y",
+                        "width": "50%"
+                    }]
+                },
+                    {
+                    "type": "CustomChart",
+                    "chartType": "line",
+                    "xCol": "timestamp",
+                "colorAuto": True,
+                "target": "auto",
+                                "options": {
+                        "legend": {"display": False,
+                                   "hidden": True
+                                   }
+                },
+                "reducers": ["table"],
+                    "height": 50,
+                    "datasets": [{
+                        "column": "y",
+                        "data": []
+                    }
+                    ],
+                    "columns": [{
+                        "key": "timestamp",
+                        "label": "time"
+                    }, {
+                        "key": "y",
+                        "label": "y",
+                        "width": "50%"
+                    }]
+                }]
+            }
+        ]
+    },
+    "monitoring.multi_charts_1w": {
+        "title": "Charts (last 7 days)",
+        "tbl_source": {},
+        "content": [{
+            "type": "MultiTable",
+            "name": "div",
+            "reducers": ["table"],
+            "elements": [{
+                    "type": "Heading"
+            },   
+                      {
+                "type": "CustomChart",
+                "chartType": "line",
+                "xCol": "timestamp",
+                "height": 50,
+                "colorAuto": True,
+                "target": "auto",
+                "reducers": ["table"],
+                "options": {
+                        "legend": {"display": False,
+                                   "hidden": True
+                                   }
+                },
+                "datasets": [{
+                    "column": "y",
+                    "data": []
+                }
+                ]
+            }]
+        }
         ]
     },
     "monitoring.summary": {

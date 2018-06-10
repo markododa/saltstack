@@ -469,6 +469,7 @@ panels = {
             "subpanels": {
                     "link": "backup.info"
             },
+            "source": "panel_list_hosts",
             "columns": [{
                         "key": "host",
                         "label": "Source",

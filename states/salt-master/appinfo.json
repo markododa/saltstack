@@ -1,0 +1,49 @@
+{
+    "name": "va-master",
+    "description": "Manage servers with Saltstack.",
+    "version": "1.1",
+    "icon": "fa-certificate",
+    "dependency": "monitoring",
+    "substates": ["saltmaster.master"], 
+    "module": "va_saltmaster",
+    "services": [
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
+            "interval": "30s",
+            "timeout": "5s"
+        },{
+            "id": "web",
+            "name": "Local Web Server",
+            "http": "https://VAR_DNS:443/",
+            "tls_skip_verify": true,
+            "method" : "POST",
+            "interval": "30s",
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
+    "panels": {
+        "admin": [{
+            "key": "saltmaster.minions",
+            "name": "Minions"
+        },{
+            "key": "saltmaster.keys",
+            "name": "Keys and Roles"
+        },  {
+            "key": "saltmaster.functionality",
+            "name": "Apps functionality"
+        },  {
+            "key": "saltmaster.overview",
+            "name": "Overview"
+        }],
+        "user": []
+    },
+    "path": "-"
+}
