@@ -411,19 +411,7 @@ panels = {
                 "reducers": ["table"],
                 "elements": [{
                     "type": "Heading"
-                }, {
-                    "type": "Table",
-                    "reducers": ["table", "panel", "alert", "filter"],
-                    "columns": [{
-                        "key": "timestamp",
-                        "label": "time"
-                    }, {
-                        "key": "y",
-                        "label": "y",
-                        "width": "50%"
-                    }]
-                },
-                    {
+                },         {
                     "type": "CustomChart",
                     "chartType": "line",
                     "xCol": "timestamp",

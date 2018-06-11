@@ -712,9 +712,10 @@ panels = {
                 "datasets": [{
                     "column": "sizeGraph",
                     "label": "Size (MB)",
-                    "backgroundColor": "#337ab7",
+                    "backgroundColor": "#337ab788",
                     #"backgroundColor": "#fff",
-                    "borderColor": "#2e6da4",
+                    #"borderColor": "#2e6da4",
+                    "borderColor": "#337ab7",
 
                     "data": []
                 }
