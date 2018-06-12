@@ -75,7 +75,7 @@ panels = {
         }]
     },
     "saltmaster.keys": {
-        "title": "Keys and Roles",
+        "title": "Salt Keys",
         "tbl_source": {},
         "content": [
             {
@@ -92,6 +92,7 @@ panels = {
                 ]
             },  {
                 "type": "Table",
+                "source":"salt_keys",
                 "name": "table",
                 "pagination": False,
                 "reducers": ["table", "panel", "alert", "filter"],
@@ -102,10 +103,6 @@ panels = {
                 }, {
                     "key": "status",
                     "label": "Key",
-                    "width": "30%"
-                }, {
-                    "key": "role",
-                    "label": "Role/Status",
                     "width": "30%"
                 }, {
                     "key": "action",
@@ -191,7 +188,7 @@ panels = {
                 },
                 "rowStyleCol": "state",
                 "actions": [{
-                    "name": "None",
+                    "name": "Test",
                     "action": "none"
                 }],
                 "id": ["minion"]
