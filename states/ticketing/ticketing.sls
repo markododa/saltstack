@@ -95,12 +95,17 @@ stop_apache2:
     - group: root
     - mode: 644
 
+
+/usr/share/redmine/public/themes/gitmike:
+  file.directory:
+    - makedirs: True
+    
 theme-redmine:
-    file.recurse:
-        - name: /usr/share/redmine/public/themes/gitmake
-        - source: salt://ticketing/files/gitmake
-        - clean: True
-        - include_empty: True
+  file.recurse:
+    - name: /usr/share/redmine/public/themes/gitmike/
+    - source: salt://ticketing/files/gitmike/
+    - clean: True
+    - include_empty: True
 
 apache2:
   service.running:

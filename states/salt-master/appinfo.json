@@ -35,14 +35,13 @@
             "name": "Minions"
         },{
             "key": "saltmaster.keys",
-            "name": "Keys and Roles"
+            "name": "Salt Keys"
         },  {
             "key": "saltmaster.functionality",
             "name": "Apps functionality"
-        },  {
-            "key": "saltmaster.overview",
-            "name": "Overview"
-        }],
+        }
+        
+        ],
         "user": []
     },
     "path": "-"

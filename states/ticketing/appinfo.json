@@ -28,6 +28,12 @@
 
     }
     ],
-    
+    	"panels": {
+		"admin": [ {
+			"key": "ticketing.overview",
+			"name": "Overview"
+		}],
+		"user": []
+	},
     "path": "-"
 }

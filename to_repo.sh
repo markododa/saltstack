@@ -1,8 +1,9 @@
+
 #!/bin/bash
 REPO_PATH="/root/saltstack"
 PROD_PATH="/srv"
 NOW=$(date +"%Y_%m_%d-%H_%M_%S")
-
+NOW="backup_repo_"$NOW
 echo Copying from $PROD_PATH to $REPO_PATH : States, Reactors and Modules. 
 echo Newer files are not overwritten. Files deleted on source are removed from the destination too.
 echo Making copy to /root/$NOW first...
