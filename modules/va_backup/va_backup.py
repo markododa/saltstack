@@ -418,19 +418,12 @@ def append_host_status(host_list):
     return host_list
 
 def panel_statistics():
-    cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status info'
-    text =  __salt__['cmd.run'](cmd, runas='backuppc')
-    text = hashtodict(text)
-#    text1 = hashtodict(text)
-#    text = text.split('=')[1]
-#    text = json.loads(text)
-    # i_version = text['Version']
-    # i_todaypool = text['DUDailyMax']
-    # i_yesterdaypool = text['DUDailyMaxPrev']
-    # i_folders = text['cpoolDirCnt']
-    # i_duplicates = text['cpoolFileCntRep']
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
-    statistics = [{'key' : 'Version', 'value': text['Version']},
+    bash_cmd = ['/bin/su', 'backuppc', '/usr/share/backuppc/bin/BackupPC_serverMesg', 'status' ,'info']
+    try:
+        out = subprocess.check_output(bash_cmd)
+        text = hashtodict(out)
+        statistics = [{'key' : 'Version', 'value': text['Version']},
                 {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
                 {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
                 {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
@@ -440,6 +433,19 @@ def panel_statistics():
                 {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
                 {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
                 {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
+    
+    except subprocess.CalledProcessError as e:
+
+        statistics = [{'key' : 'Version', 'value': 'N/A'},
+                {'key' : 'Files in pool', 'value': 'N/A'},
+                {'key' : 'Folders in pool', 'value': 'N/A'},
+                {'key' : 'Duplicates in pool', 'value': 'N/A'},
+                {'key' : 'Nightly cleanup removed files', 'value': 'N/A'},
+                {'key' : 'Pool partition used size (KB)', 'value': int(diskusage['used'])/1024},
+                {'key' : 'Pool partition free space (KB)', 'value': int(diskusage['available'])/1024},
+                {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
+                {'key' : 'Pool usage now (%)', 'value': 'N/A'},
+                {'key' : 'Pool usage yesterday (%)', 'value': 'N/A'}]
     return statistics
 
 def panel_default_config():

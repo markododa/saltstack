@@ -1,11 +1,15 @@
 #!/bin/sh
-#
+    #
 # CHECK SCRIPT FOR VA-BACKUPPC
 
 exitstate=0
 text="OK: "
 CLEAN_OUT=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g'`
 OLDEST=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | sed "s/.*=> //" | sed 's/,//'| sort -nr | tail -n 1 | awk '{print int($1)}'`
+if [ -z "$OLDEST" ]; then
+    OLDEST='0'
+fi
+
 GOODBACKUPS=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | wc -l`
 TOTALBACKUPS=`echo "$CLEAN_OUT" | grep -E '"type" => "incr|full"' | wc -l`
 FAILEDBACKUPS=`echo "$CLEAN_OUT" |  grep 'Reason_backup_failed' | wc -l`
