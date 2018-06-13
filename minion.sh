@@ -1,27 +1,38 @@
 #!/bin/bash
 set -e
 if [ -z "$1" ]
-then 
+then
 echo "The first argument should be the role, the second the master"
 exit
 fi
-if [ -n "$1" ]
+if [[ "$#" == "2" ]];
 then
 ROLE=$1
 MASTER=$2
 fi
 
-if ! (  command lsb_release );then
+if [[ "$#" == "1" ]];
+then
+MASTER=$1
+fi
+
         apt-get update
-        apt-get -y install lsb-release wget gnupg
+        apt-get -y install wget curl
+
+if ! (  command lsb_release );then
+        apt-get -y install lsb-release lsb-core gnupg
 fi
 
 
 version=$(lsb_release -cs)
+echo "Version is "$version
 
 if [ $version != "artful" ] && [ $version != "jessie" ] && [ $version != "xenial" ] && [ $version != "stretch" ]; then
-        echo "OS not supported"
-        false
+#try the salt bootstrap script
+        curl -L https://bootstrap.saltstack.com -o install_salt.sh
+        sh install_salt.sh -P
+        #echo "OS not supported"
+        #false
 fi
 
 if [ $version == "jessie" ]; then
@@ -46,7 +57,11 @@ fi
 
 apt-get update -y
 apt-get install salt-minion -y
-echo "role: $ROLE" >> /etc/salt/grains
-echo "master: $MASTER" >> /etc/salt/minion
+touch /etc/salt/grains
+sed -i 's/^role:/#role:/g' /etc/salt/grains
+echo "role: "$ROLE > /etc/salt/grains
+
+sed -i 's/^master:/#master:/g' /etc/salt/minion
+echo "master: "$MASTER > /etc/salt/minion
 service salt-minion restart
 
