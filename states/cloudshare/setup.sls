@@ -74,13 +74,17 @@ password:
     - repl: "{{ salt['pillar.get']('admin_password', '') }}"
 
 /dev/vdb:
-  blockdev.formatted
+  blockdev.formatted:
+    - onlyif:
+        - test -e /dev/vdb
 
 /mnt/va-owncloud:
   mount.mounted:
     - device: /dev/vdb
     - fstype: ext4
     - mkmnt: True
+    - onlyif:
+        - test -e /dev/vdb
 
 'mv /var/www/owncloud /mnt/va-owncloud/':
   cmd.run:

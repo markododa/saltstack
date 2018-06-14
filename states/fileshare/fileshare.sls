@@ -284,13 +284,17 @@ join_domain:
 {% endif %}
 
 /dev/vdb:
-  blockdev.formatted
+  blockdev.formatted:
+    - onlyif:
+        - test -e /dev/vdb
 
 /mnt/va-fileshare:
   mount.mounted:
     - device: /dev/vdb
     - fstype: ext4
     - mkmnt: True
+    - onlyif:
+        - test -e /dev/vdb
 
 'mv /home /mnt/va-fileshare/':
   cmd.run:
