@@ -18,6 +18,14 @@ install-pkgs:
     - pattern: "workgroup = .*"
     - repl: 'workgroup = {% filter upper %}{{salt['pillar.get']('shortdomain')}}{% endfilter %}'
 
+force_smb2:
+  file.line:
+    - name: /etc/samba/smb.conf
+    - mode: ensure
+    - content: client max protocol = SMB2
+    - after: \[global\]
+
+
 backuppc:
   pkg.installed:
     - name: {{ backuppc.server.pkg }}
@@ -98,7 +106,10 @@ libxml-rss-perl:
     - content: '    "json"                       => "JSON",'
 
 /dev/vdb:
-  blockdev.formatted
+  blockdev.formatted:
+    - onlyif:
+        - test -e /dev/vdb
+
 
 /mnt/va-backup:
   mount.mounted:
@@ -106,7 +117,9 @@ libxml-rss-perl:
     - fstype: ext4
     - mkmnt: True
     - opts: defaults,noatime
-
+    - onlyif:
+        - test -e /dev/vdb
+        
 'mv /var/lib/backuppc /mnt/va-backup/':
   cmd.run:
     - onlyif:
@@ -148,9 +161,6 @@ chmod +x /usr/bin/backuppc_servermsg:
 /etc/backuppc/archive.pl:
   file.append:
     - text: "$Conf{XferMethod} = 'archive';"
-    - user: backuppc
-    - group: backuppc
-    - mode: 0755
 
 backuppc-restart:
   service.running:
