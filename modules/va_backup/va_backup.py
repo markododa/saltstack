@@ -428,8 +428,8 @@ def panel_statistics():
                 {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
                 {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
                 {'key' : 'Nightly cleanup removed files', 'value': text['cpoolFileCntRm']},
-                {'key' : 'Pool partition used size (KB)', 'value': int(diskusage['used'])/1024},
-                {'key' : 'Pool partition free space (KB)', 'value': int(diskusage['available'])/1024},
+                {'key' : 'Pool partition used size (MB)', 'value': int(diskusage['used'])/1024/1024},
+                {'key' : 'Pool partition free space (MB)', 'value': int(diskusage['available'])/1024/1024},
                 {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
                 {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
                 {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
@@ -441,8 +441,8 @@ def panel_statistics():
                 {'key' : 'Folders in pool', 'value': 'N/A'},
                 {'key' : 'Duplicates in pool', 'value': 'N/A'},
                 {'key' : 'Nightly cleanup removed files', 'value': 'N/A'},
-                {'key' : 'Pool partition used size (KB)', 'value': int(diskusage['used'])/1024},
-                {'key' : 'Pool partition free space (KB)', 'value': int(diskusage['available'])/1024},
+                {'key' : 'Pool partition used size (MB)', 'value': int(diskusage['used'])/1024/1024},
+                {'key' : 'Pool partition free space (MB)', 'value': int(diskusage['available'])/1024/1024},
                 {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
                 {'key' : 'Pool usage now (%)', 'value': 'N/A'},
                 {'key' : 'Pool usage yesterday (%)', 'value': 'N/A'}]
