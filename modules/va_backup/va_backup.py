@@ -419,7 +419,7 @@ def append_host_status(host_list):
 
 def panel_statistics():
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
-    bash_cmd = ['/bin/su', 'backuppc', '/usr/share/backuppc/bin/BackupPC_serverMesg', 'status' ,'info']
+    bash_cmd = ['/usr/bin/sudo', '-u','backuppc', '/usr/share/backuppc/bin/BackupPC_serverMesg', 'status' ,'info']
     try:
         out = subprocess.check_output(bash_cmd)
         text = hashtodict(out)
