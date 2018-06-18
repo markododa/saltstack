@@ -711,7 +711,7 @@ panels = {
                 "reducers": ["table"],
                 "datasets": [{
                     "column": "sizeGraph",
-                    "label": "Size (MB)",
+                    "label": "Size of Full backups (MB)",
                     "backgroundColor": "#337ab788",
                     #"backgroundColor": "#fff",
                     #"borderColor": "#2e6da4",

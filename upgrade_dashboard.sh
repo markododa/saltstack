@@ -1,4 +1,5 @@
 #!/bin/bash
+#git checkout es6_dashboard
 service va-master stop
 cd /opt/va_master/
 rm /opt/va_master/va_dashboard/static/bundle.js -f

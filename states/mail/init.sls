@@ -136,14 +136,18 @@ iptables:
       - file: /etc/default/iptables
 
 {{ disk }}:
-  blockdev.formatted
+  blockdev.formatted:
+    - onlyif:
+        - test -e {{ disk }}
 
 /mnt/va-email:
   mount.mounted:
     - device: {{ disk }}
     - fstype: ext4
     - mkmnt: True
-
+    - onlyif:
+        - test -e {{ disk }}
+        
 'mv /var/vmail /mnt/va-email/':
   cmd.run:
     - onlyif:
