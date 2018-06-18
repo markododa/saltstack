@@ -36,7 +36,10 @@
         },{
             "key": "saltmaster.keys",
             "name": "Salt Keys"
-        },  {
+        }, {
+            "key": "saltmaster.pillars",
+            "name": "Pillars"
+        }, {
             "key": "saltmaster.functionality",
             "name": "Apps functionality"
         }

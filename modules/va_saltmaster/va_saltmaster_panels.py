@@ -196,6 +196,63 @@ panels = {
 
         ]
     },
+    "saltmaster.pillars": {
+        "title": "Pillars (Global variables)",
+        "tbl_source": {
+            "table": {
+                "source": "list_pillars"
+            }
+        },
+        "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
+
+                    {
+                        "type": "Filter",
+                        "name": "Filter",
+                        "reducers": ["filter"]
+                    }
+                ]
+            },  {
+                "type": "Table",
+                "name": "table",
+                "pagination": False,
+                "reducers": ["table", "panel", "alert", "filter"],
+                "columns": [{
+                        "key": "pillar",
+                        "label": "Pillar",
+                    "width": "25%"
+                }, {
+                        "key": "human_name",
+                        "label": "Description",
+                    "width": "35%"
+                }, {
+                    "key": "value",
+                    "label": "Value",
+                    "width": "35%"
+                }, {
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }],
+                "panels": {
+                    "view_graph": "saltmaster.graph",
+                    "month_history": "saltmaster.service_history_monthly",
+                    "week_history": "saltmaster.service_history_weekly",
+                },
+                "rowStyleCol": "state",
+                "actions": [{
+                    "name": "Test",
+                    "action": "none"
+                }],
+                "id": ["pillar"]
+            }
+
+        ]
+    },
     "saltmaster.functionality": {
         "title": "Functionality tests",
         "tbl_source": {},

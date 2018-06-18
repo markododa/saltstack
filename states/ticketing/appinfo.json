@@ -3,6 +3,7 @@
     "description": "Platform for managing tickets, track tasks and delagate duties.",
     "version": "1.1",
     "icon": "fa-check-circle",
+    "module" : "va_ticketing", 
     "dependency": "directory,monitoring",
     "substates": ["ticketing.ticketing"], 
     "services": [

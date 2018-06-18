@@ -118,6 +118,28 @@ def list_minions_up():
         minions.append({"minion":minion, "state": "OK", "status": "Up", "saltversion":grains[minion]["saltversion"], "os":grains[minion]["osfinger"], "role":grains[minion]["role"]})
     return minions
 
+
+def translate_pillars(pillar):
+    known_pillars = {'query_user' : 'LDAP Query user', 'domain' : 'Company Domain', 'query_password' : 'LDAP Query user password', 'shortdomain' : 'Company domain (short version)', 'proxy_ip' : 'IP Address for Proxy App', 'admin_password' : 'Administrator password', 'timezone' : 'Default Time Zone'}
+    if pillar in known_pillars:
+        pillar=known_pillars[pillar]
+    else:
+        pillar=""
+    return pillar
+        
+
+def list_pillars():
+    out = __salt__['cmd.run']('salt va-master pillar.items --output=json',runas='root', cwd = '/',python_shell=True)
+    out = json.loads(out)
+    pillars=[]
+    for pillar in out["va-master"]:
+        if type(out["va-master"][pillar]) in [str, unicode]:
+            pillars.append({"pillar":pillar, "human_name":translate_pillars(pillar), "value": out["va-master"][pillar]})
+    pillars = sorted(pillars, key = lambda x: x['pillar'], reverse = False)
+    return pillars
+
+
+
 def list_minions_details():
     minions=[]
     grains=get_all_grains()
