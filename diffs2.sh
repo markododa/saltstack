@@ -20,7 +20,7 @@ diff -ENwbur $PROD_PATH/reactor $REPO_PATH/reactor | grep --color 'diff\|$'
 
 echo ===============================
 echo ==== STATES: ==================
-diff -ENwbur $PROD_PATH/states $REPO_PATH/salt | grep --color 'diff\|$'
+diff -ENwbur $PROD_PATH/salt $REPO_PATH/states | grep --color 'diff\|$'
 
 mv $PROD_PATH/modules $PROD_PATH/salt
 mv $PROD_PATH/salt/modules $PROD_PATH/salt/_modules

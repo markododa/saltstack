@@ -32,6 +32,9 @@ base:
     - match: grain
     - openvpn
     - credentials
+    - ticketing
+    - lamp
+    - openstack
   'role:libvirt':
     - match: grain
     - credentials
