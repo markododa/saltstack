@@ -1,10 +1,14 @@
+install_mysql:
+  pkg.installed:
+    - pkgs:
+      - mysql-server
+      - mysql-client
+
 install_icinga2:
   pkg.installed:
     - pkgs:
       - nagios-nrpe-plugin
       - icinga2
-      - mysql-server
-      - mysql-client
       - icinga2-ido-mysql
       - libnumber-format-perl
       - libconfig-inifiles-perl
@@ -12,6 +16,8 @@ install_icinga2:
       - mailutils
       - ssmtp
       - libreadonly-xs-perl
+    - require:
+      - pkg: install_mysql
 
 add-checkcommands:
     file.recurse:
