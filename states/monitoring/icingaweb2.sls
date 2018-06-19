@@ -1,14 +1,14 @@
 include:
   - monitoring.icinga2
-  - monitoring.pnp4nagios
+#  - monitoring.pnp4nagios
 
 install_icingaweb2:
   pkg.installed:
     - pkgs:
       - apache2
       - icingaweb2
-      - php5-intl
-      - php5-imagick
+      - php-intl
+      - php-imagick
 
 icingaweb2-feature:
   cmd.run:
@@ -19,7 +19,7 @@ icingaweb2-feature:
 
 time_zone:
   cmd.run:
-    - name: sed -i '/;date.timezone =/ a\date.timezone = "Europe/Skopje"' /etc/php5/apache2/php.ini
+    - name: sed -i '/;date.timezone =/ a\date.timezone = "Europe/Skopje"' /etc/php/7.0/apache2/php.ini
 
 {% set dbpass = salt['grains.get_or_set_hash']('icingaweb2dbpass',chars='abcdefghijklmnopqrstuvwxyz0123456789', length=10) %}
 
