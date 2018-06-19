@@ -3,7 +3,7 @@
 {%set pubkey = salt['cmd.run']('cat /opt/backuppc-pubkey') %}
 copy:
   local.ssh.set_auth_key_from_file:
-    - tgt: fqdn:{{ data['fqdn'] }}
+    - tgt: {{ data['minion'] }}
     - expr_form: grain
     - arg:
       - root
