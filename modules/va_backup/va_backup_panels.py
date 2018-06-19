@@ -308,7 +308,7 @@ panels = {
                         "type": "Button",
                         "name": "Add backup",
                         "class": "primary",
-                        "action": "add_rsync_host"
+                        "action": "add_minion_host"
                     }
                     ],
                     "content": [{
@@ -317,7 +317,7 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "hostname",
+                            "name": "minion",
                             "value": "",
                             "label": "Minion name",
                             "required": True

@@ -27,14 +27,17 @@ def bytes_to_readable(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 default_paths = {
-    'va-monitoring' : ['/etc/icinga2', '/root/.va/backup', '/etc/ssmtp', '/usr/lib/nagios/plugins',  '/var/lib/pnp4nagios/perfdata/', '/etc/nagios/nrpe.d/'],
-    'va-directory' : ['/root/.va/backup', '/etc/openvpn', '/etc/samba', '/var/lib/samba/', '/etc/nagios/nrpe.d/'],
-    'va-backup' : ['/etc/backuppc', '/etc/nagios/nrpe.d/'],
-    'va-fileshare' : ['/home', '/etc/samba', '/etc/nagios/nrpe.d/'],
-    'va-email' : ['/etc/postfix', '/root/.va/backup', '/var/vmail/', '/etc/nagios/nrpe.d/'],
-    'va-owncloud' : ['/root/.va/backup', '/var/www/owncloud', '/etc/nagios/nrpe.d/'],
-    'va-cloudshare' : ['/root/.va/backup', '/var/www/owncloud', '/etc/nagios/nrpe.d/'],
-    'va-proxy' : ['/root/.va/backup', '/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'],    
+    'monitoring' : ['/etc/icinga2', '/root/.va/backup/', '/etc/ssmtp/', '/usr/lib/nagios/plugins/',  '/var/lib/pnp4nagios/perfdata/', '/etc/nagios/nrpe.d/'],
+    'directory' : ['/root/.va/backup/', '/etc/samba/', '/var/lib/samba/', '/etc/nagios/nrpe.d/'],
+    'backup' : ['/etc/backuppc/', '/etc/nagios/nrpe.d/'],
+    'fileshare' : ['/home/', '/etc/samba/', '/etc/nagios/nrpe.d/'],
+    'email' : ['/etc/postfix/', '/root/.va/backup/', '/var/vmail/', '/etc/nagios/nrpe.d/'],
+    'cloudshare' : ['/root/.va/backup/', '/var/www/owncloud/', '/etc/nagios/nrpe.d/'],
+    'owncloud' : ['/root/.va/backup/', '/var/www/owncloud/', '/etc/nagios/nrpe.d/'],
+    'proxy' : ['/root/.va/backup/', '/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'],    
+    'ticketing' : ['/root/.va/backup/'],
+    'objectstore' : ['/root/.va/backup/','/opt/minio/data'],
+    'va-master' : ['/opt/va_master/', '/srv/', '/etc/openvpn/']
 }
 
 def host_file(hostname):
@@ -112,20 +115,41 @@ def get_backup_pubkey():
 
 def add_default_paths(hosts = []):
     for host in hosts:
-        paths = [default_paths[x] for x in default_paths if __salt__['mine.get'](x, 'inventory')[x]['fqdn'] == host][0]
+        role= get_role(host)
+        paths = default_paths.get(role,['/root/.va/backup'])
+
         for path in paths:
             result = add_folder(host, path)
     return True
 
+
+def test_ip_ssh(ip_addr):
+    try:
+        cmd = ['nc', '-w','3','-z', ip_addr, '22']
+        subprocess.check_output(cmd)
+        return True
+    except: 
+        return False
+
+
 def get_ip(hostname):
     hostname = hostname.lower()
-    address = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
-    try:
-        address = address[address.keys()[0]][0]
-    except: #TODO proper handling and / or get it from dns
-        address = hostname
+    # addresses = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
+    addresses = __salt__['mine.get'](hostname,'address')
+    # return addresses
+    addresses = addresses[hostname]
+    result = None
+    for ip_addr in addresses: 
+        if test_ip_ssh(ip_addr):
+            return ip_addr 
+            
+    return None
 
-    return address
+def get_role(hostname):
+    hostname = hostname.lower()
+    # addresses = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
+    role = __salt__['mine.get'](hostname,'inventory')[hostname]['role']
+    return role
 
 #Temporary functions
 #TODO: remove all add_*_host wrappers and just use the original add_host() function. 
@@ -143,19 +167,43 @@ def add_smb_host(hostname, address, username, password):
     }
     return add_host(hostname, address, 'smb', backup_arguments)
 
+
+def add_minion_host(minion):
+    address = get_ip(minion)
+    if not address:
+        return {"success" : False, "message" : "Minion is unreachable from Backup app", "data" : {}}
+
+    exitcode = add_rsync_host(minion,address)
+    if exitcode:
+        return exitcode
+        # {"success" : False, "message" : "Can not add SSH key to "+hostname, "data" : {}}
+    return add_default_paths([minion])
+
+
 def add_rsync_host(hostname, address = None, password = None):
     backup_arguments = {
         'XferMethod' :'rsync',
         'RsyncShareName': []
     }
+    if not address:
+        address = get_ip(hostname) or hostname
+    
     if password: 
-        putkey_windows(hostname, password)
+        exitcode=putkey_windows(hostname, password)
+    else:
+        exitcode = __salt__['event.send']('backuppc/copykey', minion=hostname)
+    if exitcode:
+        return {"success" : False, "message" : "Can not add SSH key to "+hostname, "data" : {}}
+
+    exitcode = __salt__['cmd.retcode'](cmd=rm_key+address, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+    if exitcode:
+        return {"success" : False, "message" : "Can not remove old SSH keys for "+hostname, "data" : {}}
+
+    exitcode = __salt__['cmd.retcode'](cmd=sshcmd+address+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
+    if exitcode:
+        return {"success" : False, "message" : "Can not add "+hostname+" to the list of known hosts", "data" : {}}
 
     add_host(hostname, address, 'rsync', backup_arguments)
-
-    __salt__['event.send']('backuppc/copykey', fqdn=hostname)
-    __salt__['cmd.retcode'](cmd=rm_key+get_ip(hostname), runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
-    __salt__['cmd.retcode'](cmd=sshcmd+get_ip(hostname)+' exit', runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
 
 
 def add_archive_host(hostname):
@@ -414,7 +462,7 @@ def append_host_status(host_list):
         x['status'] = text[x['host']].get('reason', '-').capitalize()
         x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
         x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
-        x['state'] = 'Critical' if x['status']!='Nothing to do' else 'none'
+        x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
     return host_list
 
 def panel_statistics():
@@ -452,7 +500,7 @@ def panel_statistics():
 
 def panel_default_config():
     cmd = 'cat /etc/backuppc/config.pl'
-    text =  __salt__['cmd.run'](cmd)
+    # text =  __salt__['cmd.run'](cmd)
     full_period = get_global_config('FullPeriod')
     full_cnt = get_global_config('FullKeepCnt')
     incr_period = get_global_config('IncrPeriod')
@@ -751,7 +799,6 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     
     return dr
 
-#
 def write_backupinfo_json(hostname, backup):
     hostname = hostname.lower()
     contents = ''
