@@ -3,13 +3,9 @@
     "description": "Platform for managing tickets, track tasks and delagate duties.",
     "version": "1.2",
     "icon": "fa-check-circle",
-<<<<<<< HEAD
-    "module" : "va_ticketing", 
-=======
     "module" : "va_ticketing",
->>>>>>> 142886091d38737bc0a28c1bc36609abedb54c0c
     "dependency": "directory,monitoring",
-    "substates": ["ticketing.ticketing"], 
+    "substates": ["ticketing.ticketing"],
     "services": [
     {
         "name": "VAR_HOSTNAME",
