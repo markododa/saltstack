@@ -131,6 +131,17 @@ def test_ip_ssh(ip_addr):
     except: 
         return False
 
+def test_session_ssh(ip_addr, l_user=None,r_user='root'):
+    try:
+        if l_user:
+            cmd = ['ssh', '-q', r_user+'@'+ip_addr, 'exit']
+        else:
+            # '/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status info'
+            cmd = ['/bin/su', l_user, '-c', 'ssh -q '+ r_user+'@'+ip_addr+' exit']
+        subprocess.check_output(cmd)
+        return True
+    except: 
+        return False
 
 def get_ip(hostname):
     hostname = hostname.lower()
@@ -176,7 +187,6 @@ def add_minion_host(minion):
     exitcode = add_rsync_host(minion,address)
     if exitcode:
         return exitcode
-        # {"success" : False, "message" : "Can not add SSH key to "+hostname, "data" : {}}
     return add_default_paths([minion])
 
 
@@ -192,7 +202,7 @@ def add_rsync_host(hostname, address = None, password = None):
         exitcode=putkey_windows(hostname, password)
     else:
         exitcode = __salt__['event.send']('backuppc/copykey', minion=hostname)
-    if exitcode:
+    if not exitcode:
         return {"success" : False, "message" : "Can not add SSH key to "+hostname, "data" : {}}
 
     exitcode = __salt__['cmd.retcode'](cmd=rm_key+address, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
