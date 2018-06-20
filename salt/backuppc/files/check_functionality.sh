@@ -2,12 +2,14 @@
     #
 # CHECK SCRIPT FOR VA-BACKUPPC
 
+NOW=`echo $(date +"%s")`
+
 exitstate=0
 text="OK: "
 CLEAN_OUT=`backuppc_servermsg status hosts | sed 's/,/,\n/g'| sed 's/},/\n/g'`
 OLDEST=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | sed "s/.*=> //" | sed 's/,//'| sort -nr | tail -n 1 | awk '{print int($1)}'`
 if [ -z "$OLDEST" ]; then
-    OLDEST='0'
+    OLDEST=$NOW
 fi
 
 GOODBACKUPS=`echo "$CLEAN_OUT" | grep 'lastGoodBackupTime' | wc -l`
@@ -18,7 +20,6 @@ RUNNING=`echo "$CLEAN_OUT" |  grep Status_backup_in_progress | wc -l`
 EMPTYBACKUPS=`expr $TOTALBACKUPS - $GOODBACKUPS`
 SPACE=`backuppc_servermsg status info | sed 's/,/,\n/g'| sed 's/},/\n/g' | grep "DUlastValue. =" | sed "s/.*=> //" | sed 's/,//'`
 
-NOW=`echo $(date +"%s")`
 #echo $OLDEST
 #echo $NOW
 T=`expr $NOW - $OLDEST`
