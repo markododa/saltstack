@@ -1,34 +1,14 @@
-{% if grains['os'] == 'Debian' %}
-debmon_repo_required_packages:
+install_mysql:
   pkg.installed:
-    - name: python-apt
-    
-icinga_repo:
-  pkgrepo.managed:
-    - humanname: debmon
-    - name: deb http://debmon.org/debmon debmon-jessie main
-    - file: /etc/apt/sources.list.d/debmon.list
-    - key_url: http://debmon.org/debmon/repo.key
-    - require:
-      - pkg: debmon_repo_required_packages
-
-
-{% elif grains['os'] == 'Ubuntu' %}
-
-icinga_repo:
-  pkgrepo.managed:
-    - ppa: formorer/icinga
-
-
-{% endif %}
+    - pkgs:
+      - mysql-server
+      - mysql-client
 
 install_icinga2:
   pkg.installed:
     - pkgs:
       - nagios-nrpe-plugin
       - icinga2
-      - mysql-server
-      - mysql-client
       - icinga2-ido-mysql
       - libnumber-format-perl
       - libconfig-inifiles-perl
@@ -36,7 +16,8 @@ install_icinga2:
       - mailutils
       - ssmtp
       - libreadonly-xs-perl
-      - libnagios-plugin-perl
+    - require:
+      - pkg: install_mysql
 
 add-checkcommands:
     file.recurse:

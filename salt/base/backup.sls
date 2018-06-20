@@ -20,6 +20,7 @@ salt/backup/new:
   event.send:
     - data:
         name: {{ grains['id'] }} 
+        minion: {{ grains['id'] }} 
         ip: {{ salt['network.get_route'](salt['network.default_route']()[0]['gateway'])['source'] }}
         type: {{ grains['role'] }}
         fqdn: {{ grains['host'] + '.' + grains['domain'] }}

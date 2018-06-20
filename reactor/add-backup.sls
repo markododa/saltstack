@@ -19,17 +19,8 @@
 {% endif %}
 
 add_host_to_backup:
-  local.va_backup.add_rsync_host:
+  local.va_backup.add_minion_host:
     - tgt: 'role:backup'
     - expr_form: grain
     - args:
-      - hostname: {{ data['fqdn'] }}
-      - address: {{ data['ip'] }}
-
-add_folders_to_backup:
-  local.va_backup.add_folder_list:
-    - tgt: 'role:backup'
-    - expr_form: grain
-    - args:
-      - hostname: {{ data['fqdn'] }}
-      - folder_list: {{ folders }}
+      - hostname: {{ data['minion'] }}
