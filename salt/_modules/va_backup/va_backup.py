@@ -131,13 +131,14 @@ def test_ip_ssh(ip_addr):
     except: 
         return False
 
-def test_session_ssh(ip_addr, l_user=None,r_user='root'):
+def test_session_ssh(ip_addr, r_user='root', l_user=None):
     try:
-        if l_user:
+        if not l_user:
             cmd = ['ssh', '-q', r_user+'@'+ip_addr, 'exit']
         else:
             # '/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status info'
             cmd = ['/bin/su', l_user, '-c', 'ssh -q '+ r_user+'@'+ip_addr+' exit']
+        print cmd    
         subprocess.check_output(cmd)
         return True
     except: 
@@ -202,6 +203,8 @@ def add_rsync_host(hostname, address = None, password = None):
         exitcode=putkey_windows(hostname, password)
     else:
         exitcode = __salt__['event.send']('backuppc/copykey', minion=hostname)
+    #lets make real ssh test
+    exitcode = test_session_ssh(address, 'root', 'backuppc')
     if not exitcode:
         return {"success" : False, "message" : "Can not add SSH key to "+hostname, "data" : {}}
 
@@ -469,10 +472,15 @@ def append_host_status(host_list):
     text = hashtodict(text)['%Status']
 
     for x in host_list:
-        x['status'] = text[x['host']].get('reason', '-').capitalize()
-        x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
+        if text[x['host']].get('activeJob', 0) == 1:
+            x['status'] = "Backup in progress"
+            x['state'] = 'Pending' 
+        else:
+            x['status'] = text[x['host']].get('reason', '-').capitalize()
+            x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
+            x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
         x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
-        x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
+        
     return host_list
 
 def panel_statistics():
