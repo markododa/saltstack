@@ -166,6 +166,7 @@ panels = {
             "panels": {
                     "link": "backup.browse"
             },
+            "source": "panel_list_folders",
             "columns": [{
                         "key": "app",
                         "width": "20%",
@@ -474,22 +475,28 @@ panels = {
                         "key": "host",
                         "label": "Source",
                         "action": "all:link",
-                        "colClass": "link"
+                        "colClass": "link",
+                        "width": "20%"
                         }, {
                         "key": "total_backups",
                         "label": "Backups",
+                        "width": "10%"
                         }, {
                         "key": "address",
                         "label": "Address",
+                        "width": "15%"
                         }, {
                         "key": "protocol",
-                        "label": "Protocol"
+                        "label": "Protocol",
+                        "width": "10%"
                         }, {
                         "key": "status",
-                        "label": "Status"
+                        "label": "Status",
+                        "width": "20%"
                         }, {
                         "key": "error",
-                        "label": "Error"
+                        "label": "Error",
+                        "width": "20%"
                         }, {
                         "key": "action",
                         "label": "Actions",

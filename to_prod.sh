@@ -20,5 +20,4 @@ echo ===============================
 echo Differences:
 /root/saltstack/diffs.sh | grep 'diffs'
 echo ===============================
-echo Run:
-echo salt \'*\' saltutil.sync_all
+salt '*' saltutil.sync_all

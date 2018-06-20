@@ -28,16 +28,16 @@ def bytes_to_readable(num, suffix='B'):
 
 default_paths = {
     'monitoring' : ['/etc/icinga2', '/root/.va/backup/', '/etc/ssmtp/', '/usr/lib/nagios/plugins/',  '/var/lib/pnp4nagios/perfdata/', '/etc/nagios/nrpe.d/'],
-    'directory' : ['/root/.va/backup/', '/etc/samba/', '/var/lib/samba/', '/etc/nagios/nrpe.d/'],
-    'backup' : ['/etc/backuppc/', '/etc/nagios/nrpe.d/'],
-    'fileshare' : ['/home/', '/etc/samba/', '/etc/nagios/nrpe.d/'],
-    'email' : ['/etc/postfix/', '/root/.va/backup/', '/var/vmail/', '/etc/nagios/nrpe.d/'],
+    'directory'  : ['/etc/samba/', '/var/lib/samba/', '/etc/nagios/nrpe.d/'],
+    'backup'     : ['/etc/backuppc/', '/etc/nagios/nrpe.d/'],
+    'fileshare'  : ['/home/', '/etc/samba/', '/etc/nagios/nrpe.d/'],
+    'email'      : ['/etc/postfix/', '/root/.va/backup/', '/var/vmail/', '/etc/nagios/nrpe.d/'],
     'cloudshare' : ['/root/.va/backup/', '/var/www/owncloud/', '/etc/nagios/nrpe.d/'],
-    'owncloud' : ['/root/.va/backup/', '/var/www/owncloud/', '/etc/nagios/nrpe.d/'],
-    'proxy' : ['/root/.va/backup/', '/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'],    
-    'ticketing' : ['/root/.va/backup/'],
-    'objectstore' : ['/root/.va/backup/','/opt/minio/data'],
-    'va-master' : ['/opt/va_master/', '/srv/', '/etc/openvpn/']
+    'owncloud'   : ['/root/.va/backup/', '/var/www/owncloud/', '/etc/nagios/nrpe.d/'],
+    'proxy'      : ['/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'],    
+    'ticketing'  : ['/root/.va/backup/'],
+    'objectstore': ['/opt/minio/data'],
+    'va-master'  : ['/opt/va_master/', '/srv/', '/etc/openvpn/']
 }
 
 def host_file(hostname):
@@ -368,7 +368,8 @@ def rm_folder(hostname, folder):
 
         edit_conf_var(hostname, method, host_folders)
         __salt__['file.chown'](host_file(hostname), 'backuppc', 'www-data')
-        return 'Folder '+folder+' has been deleted from backup list'
+        return True
+        #return 'Folder '+folder+' has been deleted from backup list'
     else:
         return 'Folder not in backup list'
 
@@ -451,36 +452,49 @@ def calc_incr_seq(hostname):
 
 def get_full_period(hostname):
     p = conf_file_to_dict(hostname).get('FullPeriod') or pretty_global_config('FullPeriod') + ' *'
+    if type(p) == list:
+        p = ', '.join([str(x) for x in p])
     return p
 
 def get_incr_period(hostname):
     p = conf_file_to_dict(hostname).get('IncrPeriod') or pretty_global_config('IncrPeriod')+" *"
+    if type(p) == list:
+        p = ', '.join([str(x) for x in p])
     return p
 
 def get_full_max(hostname):
     p = conf_file_to_dict(hostname).get('FullKeepCnt') or pretty_global_config('FullKeepCnt')+" *"
+    if type(p) == list:
+        p = ', '.join([str(x) for x in p])
     return p
 
 def get_incr_max(hostname):
     p = conf_file_to_dict(hostname).get('IncrKeepCnt') or pretty_global_config('IncrKeepCnt')+" *"
+    if type(p) == list:
+        p = ', '.join([str(x) for x in p])
     return p
 
 def append_host_status(host_list):
-    cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg status hosts'
-    text =  __salt__['cmd.run'](cmd, runas='backuppc')
-    text = text.split('Got reply: ')[1]
-    text = hashtodict(text)['%Status']
-
-    for x in host_list:
-        if text[x['host']].get('activeJob', 0) == 1:
-            x['status'] = "Backup in progress"
-            x['state'] = 'Pending' 
-        else:
-            x['status'] = text[x['host']].get('reason', '-').capitalize()
-            x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
-            x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
-        x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
+    bash_cmd = ['/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status hosts']
+    try:
+        text = subprocess.check_output(bash_cmd)
+        text = text.split('Got reply: ')[1]
+        text = hashtodict(text)['%Status']
+        for x in host_list:
+            if text[x['host']].get('activeJob', 0) == 1:
+                x['status'] = "Backup in progress"
+                x['state'] = 'Pending' 
+            else:
+                x['status'] = text[x['host']].get('reason', '-').capitalize()
+                x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
+                x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
+            x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
         
+    except subprocess.CalledProcessError as e:
+        for x in host_list:
+            x['status'] = 'Error reading status'
+            x['state'] = 'none'
+            x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
     return host_list
 
 def panel_statistics():
@@ -509,8 +523,8 @@ def panel_statistics():
                 {'key' : 'Folders in pool', 'value': 'N/A'},
                 {'key' : 'Duplicates in pool', 'value': 'N/A'},
                 {'key' : 'Nightly cleanup removed files', 'value': 'N/A'},
-                {'key' : 'Pool partition used size (MB)', 'value': int(diskusage['used'])/1024/1024},
-                {'key' : 'Pool partition free space (MB)', 'value': int(diskusage['available'])/1024/1024},
+                {'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
+                {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
                 {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
                 {'key' : 'Pool usage now (%)', 'value': 'N/A'},
                 {'key' : 'Pool usage yesterday (%)', 'value': 'N/A'}]
