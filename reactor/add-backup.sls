@@ -23,4 +23,4 @@ add_host_to_backup:
     - tgt: 'role:backup'
     - expr_form: grain
     - args:
-      - hostname: {{ data['minion'] }}
+      - minion: {{ data['minion'] }}
