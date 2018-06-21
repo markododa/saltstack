@@ -829,7 +829,7 @@ $Conf{BlackoutPeriods} = [
 # backed up.  If you have shares that might be empty (and therefore an
 # empty backup is valid) you should set this flag to 0.
 #
-$Conf{BackupZeroFilesIsFatal} = 1;
+$Conf{BackupZeroFilesIsFatal} = 0;
 
 ###########################################################################
 # How to backup a client
@@ -898,7 +898,7 @@ $Conf{XferLogLevel} = 1;
 # is excellent, and http://czyborra.com/charsets/iso8859.html
 # provides more information on the iso-8859 charsets.
 #
-$Conf{ClientCharset} = '';
+$Conf{ClientCharset} = 'utf8';
 
 #
 # Prior to 3.x no charset conversion was done by BackupPC.  Backups were
