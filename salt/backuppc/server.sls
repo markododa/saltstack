@@ -4,6 +4,16 @@
 {% set os_family = salt['grains.get']('os_family', None) %}
 {% set backuppc_password = salt['pillar.get']('admin_password') %}
 
+us_locale:
+  locale.present:
+    - name: en_US.UTF-8
+
+default_locale:
+  locale.system:
+    - name: en_US.UTF-8
+    - require:
+      - locale: us_locale
+      
 install-pkgs:
   pkg.installed:
     - pkgs:
