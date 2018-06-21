@@ -158,6 +158,14 @@ chmod +x /usr/bin/backuppc_servermsg:
   file.append:
     - text: "nagios ALL = (backuppc) NOPASSWD: /usr/share/backuppc/bin/BackupPC_serverMesg"
 
+
+force_utf8:
+  file.line:
+    - name: /etc/init.d/backuppc
+    - mode: ensure
+    - content: LANG=en_US.UTF-8
+    - before: set -e
+    
 /etc/backuppc/archive.pl:
   file.append:
     - text: "$Conf{XferMethod} = 'archive';"
