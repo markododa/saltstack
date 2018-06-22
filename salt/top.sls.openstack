@@ -19,6 +19,9 @@ base:
   'role:backup':
     - match: grain
     - backuppc
+  'role:backup4':
+    - match: grain
+    - backup4
   'role:lamp':
     - match: grain
     - lamp.lamp
