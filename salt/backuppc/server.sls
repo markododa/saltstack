@@ -4,6 +4,16 @@
 {% set os_family = salt['grains.get']('os_family', None) %}
 {% set backuppc_password = salt['pillar.get']('admin_password') %}
 
+us_locale:
+  locale.present:
+    - name: en_US.UTF-8
+
+default_locale:
+  locale.system:
+    - name: en_US.UTF-8
+    - require:
+      - locale: us_locale
+      
 install-pkgs:
   pkg.installed:
     - pkgs:
@@ -158,6 +168,14 @@ chmod +x /usr/bin/backuppc_servermsg:
   file.append:
     - text: "nagios ALL = (backuppc) NOPASSWD: /usr/share/backuppc/bin/BackupPC_serverMesg"
 
+
+force_utf8:
+  file.line:
+    - name: /etc/init.d/backuppc
+    - mode: ensure
+    - content: LANG=en_US.UTF-8
+    - before: set -e
+    
 /etc/backuppc/archive.pl:
   file.append:
     - text: "$Conf{XferMethod} = 'archive';"
