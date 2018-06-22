@@ -4,7 +4,7 @@ from va_utils import check_functionality as panel_check_functionality
 from va_backup_panels import panels
 
 backuppc_dir = '/etc/backuppc/'
-backuppc_pc_dir = '/etc/backuppc/'
+backuppc_pc_dir = '/etc/backuppc/pc'
 backuppc_hosts = '/etc/backuppc/hosts'
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
@@ -41,7 +41,7 @@ default_paths = {
 }
 
 def host_file(hostname):
-    filename = backuppc_dir+hostname+'.pl'
+    filename = backuppc_pc_dir+'/'+hostname+'.pl'
     return filename
 
 #def get_panel(panel_name, host = '', backupNum = -1):
@@ -475,7 +475,8 @@ def get_incr_max(hostname):
     return p
 
 def append_host_status(host_list):
-    bash_cmd = ['/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status hosts']
+    bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_serverMesg status hosts']
+    #return subprocess.check_output(bash_cmd)
     try:
         text = subprocess.check_output(bash_cmd)
         text = text.split('Got reply: ')[1]
@@ -501,7 +502,7 @@ def panel_statistics():
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
     #bash_cmd = ['/usr/bin/sudo', '-u','backuppc', '/usr/share/backuppc/bin/BackupPC_serverMesg', 'status' ,'info']
     
-    bash_cmd = ['/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status info']
+    bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_serverMesg status info']
     try:
         out = subprocess.check_output(bash_cmd)
         text = hashtodict(out)
@@ -766,14 +767,14 @@ def start_backup(hostname, tip='Full'):
         tip = '0'
     elif tip == 'Full' or tip is None:
         tip = '1'
-    cmd = '/usr/share/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
+    cmd = '/usr/local/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
     return __salt__['cmd.run'](cmd, runas='backuppc')
 
 def create_archive(hostname):
     protocol = get_host_protocol(hostname)
     if protocol == 'Archive' : 
         return "Cannot create archive on host %s: Protocol for the host is archive. " % (hostname)
-    cmd = '/usr/share/backuppc/bin/BackupPC_archiveStart archive backuppc %s' % (hostname)
+    cmd = '/usr/local/backuppc/bin/BackupPC_archiveStart archive backuppc %s' % (hostname)
     result = __salt__['cmd.run'](cmd, runas = 'backuppc')
     return result
 
