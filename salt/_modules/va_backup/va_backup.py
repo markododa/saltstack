@@ -812,6 +812,9 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
             return name
 
     for path, dirs, files in struktura:
+        print path
+        print dirs
+        print files
         new_path = [filter_f(part) for part in path.split(os.sep)]
         path = os.sep.join(new_path)
         folders = path[start:].split(os.sep) # /pateka/vo/momentov

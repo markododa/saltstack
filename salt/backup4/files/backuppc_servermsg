@@ -1,0 +1,1 @@
+sudo -u backuppc /usr/share/backuppc/bin/BackupPC_serverMesg $@ 

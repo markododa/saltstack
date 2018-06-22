@@ -1,0 +1,21 @@
+# -*- coding: utf-8 -*-
+# vim: ft=yaml
+backuppc:
+
+  server:
+    debconf_utils: debconf-utils
+    pkg: backuppc
+
+    user: backuppc
+    group: www-data
+    user_home_dir: /var/lib/backuppc
+    
+    webuser: admin
+    webserver_service: apache2
+
+    configdir: /etc/backuppc
+    datadir:  /var/lib/backuppc
+
+  client:
+    pkgs:
+      - rsync
