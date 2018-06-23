@@ -636,6 +636,10 @@ panels = {
                 "key": "time",
                 "label": "Time"
             }, {
+                "key": "permissions",
+                "label": "Permissions",
+                "width": "15%"
+            },{
                 "key": "action",
                 "label": "Actions",
                 "width": "5%"

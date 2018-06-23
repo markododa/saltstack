@@ -9,8 +9,8 @@ backuppc_hosts = '/etc/backuppc/hosts'
 sshcmd='ssh -oStrictHostKeyChecking=no root@'
 rm_key='ssh-keygen -f "/var/lib/backuppc/.ssh/known_hosts" -R '
 
-#Used when converting hash to json - replaces all instances of the first char with the second one. 
-#Backslashes are a nightmare; json likes to have double backslashes. So we take any already double backslashes and reduce them by half, and then double all backslashes. 
+#Used when converting hash to json - replaces all instances of the first char with the second one.
+#Backslashes are a nightmare; json likes to have double backslashes. So we take any already double backslashes and reduce them by half, and then double all backslashes.
 hash_to_json_characters_map = [('undef', 'null'),('(', '{'), (')', '}'), ('\\\\', '\\'), ('\\', '\\\\'), ('\n', ''), ('=>', ':'), ('\'', '"'), (';', ','), ('=', ':')]
 json_to_hash_characters_map = [(':', '=>'), (':','='), ('"', '\'')]
 
@@ -34,7 +34,7 @@ default_paths = {
     'email'      : ['/etc/postfix/', '/root/.va/backup/', '/var/vmail/', '/etc/nagios/nrpe.d/'],
     'cloudshare' : ['/root/.va/backup/', '/var/www/owncloud/', '/etc/nagios/nrpe.d/'],
     'owncloud'   : ['/root/.va/backup/', '/var/www/owncloud/', '/etc/nagios/nrpe.d/'],
-    'proxy'      : ['/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'],    
+    'proxy'      : ['/etc/lighttpd/', '/etc/squid/', '/var/www/html/', '/etc/e2guardian/', '/usr/share/e2guardian/', '/etc/nagios/nrpe.d/'],
     'ticketing'  : ['/root/.va/backup/'],
     'objectstore': ['/opt/minio/data'],
     'va-master'  : ['/opt/va_master/', '/srv/', '/etc/openvpn/']
@@ -62,7 +62,7 @@ def get_panel(panel_name, server_name = '', backupNum = -1):
         return ppanel
 
 
-def dir_structure1(host, *args):
+def dir_structure1_old(host, *args):
     check = False
     if len(args) == 0:
         backupNum = last_backup(host)
@@ -85,12 +85,12 @@ def dir_structure1(host, *args):
         if key in attrib:
             a = attrib[key]
             size, time = (a['size'], a['time'])
-#        if not (siz///': 
-        if type == 'folder' or size != '...': 
+#        if not (siz///':
+        if type == 'folder' or size != '...':
             if type == 'folder':
                 sortkey = 'a'
             else:
-                sortkey = 'z' 
+                sortkey = 'z'
             result.append({'dir': key, 'type': type, 'size': size, 'time': time, 'sortkey': sortkey});
     if check:
         return {'val': backupNum, 'list': result}
@@ -98,13 +98,88 @@ def dir_structure1(host, *args):
     result = sorted(result, key = lambda x: (x['sortkey'],x['dir'].lower()), reverse = False)
     return result
 
+
+def dir_structure1(host, *args):
+    check = False
+    if len(args) == 0:
+        backupNum = last_backup(host)
+        attrib = backup_attrib(host, backupNum)
+        check = True
+    elif len(args) == 1:
+        backupNum = args[0]
+        attrib = backup_attrib(host, *args)
+        args = args[1:]
+        result = []
+        shares =  get_folders_from_config(host)
+        for share in shares:
+            result.append({'hash':'','type':'folder',"permissions": '', 'unknown' :'','size': '','dir': share, 'time': '/'})
+        return result
+
+        #return shares only
+    else:
+        backupNum = args[0]
+        # attrib = backup_attrib(host, *args)
+        args = args[1:]
+        share = args[0]
+        args = args[1:]
+        path='/'.join([str(x) for x in args])
+        path='/'+path
+        pathlen=len(path)
+        if path=='/':
+            pathlen=0
+        # return path
+        bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_ls -h ' + str(host) + ' -n ' + str(backupNum) + ' -s ' + str(share) + ' ' + path]
+        # return bash_cmd
+
+        try:
+            text = subprocess.check_output(bash_cmd)
+            text = text.split('\n')
+            text = text[1:]
+            result =[]
+            for line in text:
+                part = line.split(' ')
+                if len(part) > 6:
+                # return part
+                    perm = line[0:10]
+                    unknown = line[11:20].strip()
+
+                    timestamp = line[32:51]
+                    filename = line.split('/')[2:]
+                    filename= '/'.join(filename).rstrip()
+                    filename=filename[pathlen:]
+
+                    if line[0]=='d':
+                        ftype='folder'
+                        fhash=''
+                        filename=filename[0:len(filename)-1]
+                        sortkey='a'
+                        size=''
+                    else:
+                        ftype='file'
+                        filename=filename.split('(')
+                        fhash=filename[len(filename)-1]
+                        fhash=fhash[0:len(fhash)-1]
+                        filename=filename[0:len(filename)-1]
+                        filename= '('.join(filename).rstrip()
+                        sortkey='z'
+                        size = long(line[21:31].strip())
+
+                    result.append({'sortkey':sortkey,"hash":fhash,'type':ftype,"permissions": perm, 'unknown' :unknown,'size': size,'dir': filename, 'time': timestamp, 'zzzz_all':path})
+
+            result = sorted(result, key = lambda x: (x['sortkey'],x['dir'].lower()), reverse = False)
+            return result
+        except subprocess.CalledProcessError as e:
+            return "No files available."
+
+
+
 def get_path_from_backup_number(hostname, backupnumber):
     path = '/var/lib/backuppc/pc/'+hostname+'/'+str(backupnumber)
     return path
 
 def last_backup(host):
     result = map(int, backupNumbers(host))
-    backupNum = max(backupNumbers(host))    
+    backupNum = max(backupNumbers(host))
     return backupNum
 
 def get_backup_pubkey():
@@ -128,7 +203,7 @@ def test_ip_ssh(ip_addr):
         cmd = ['nc', '-w','3','-z', ip_addr, '22']
         subprocess.check_output(cmd)
         return True
-    except: 
+    except:
         return False
 
 def test_session_ssh(ip_addr, r_user='root', l_user=None):
@@ -138,10 +213,10 @@ def test_session_ssh(ip_addr, r_user='root', l_user=None):
         else:
             # '/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status info'
             cmd = ['/bin/su', l_user, '-c', 'ssh -q '+ r_user+'@'+ip_addr+' exit']
-        print cmd    
+        print cmd
         subprocess.check_output(cmd)
         return True
-    except: 
+    except:
         return False
 
 def get_ip(hostname):
@@ -151,10 +226,10 @@ def get_ip(hostname):
     # return addresses
     addresses = addresses[hostname]
     result = None
-    for ip_addr in addresses: 
+    for ip_addr in addresses:
         if test_ip_ssh(ip_addr):
-            return ip_addr 
-            
+            return ip_addr
+
     return None
 
 def get_role(hostname):
@@ -164,16 +239,16 @@ def get_role(hostname):
     return role
 
 #Temporary functions
-#TODO: remove all add_*_host wrappers and just use the original add_host() function. 
+#TODO: remove all add_*_host wrappers and just use the original add_host() function.
 def add_smb_host(hostname, address, username, password):
     backup_arguments = {
-        'SmbShareUserName' : username, 
-        'SmbSharePasswd' : password, 
+        'SmbShareUserName' : username,
+        'SmbSharePasswd' : password,
         'FullKeepCnt' : [15, 0, 2, 1, 2, 5, 2],
         'FullPeriod' : 0.97,
-        'IncrPeriod' : 10, 
-        'IncrKeepCnt' : 0, 
-        'PingCmd' : '/bin/nc -z $host 445', 
+        'IncrPeriod' : 10,
+        'IncrKeepCnt' : 0,
+        'PingCmd' : '/bin/nc -z $host 445',
         'XferMethod' : 'smb',
         'SmbShareName' : []
     }
@@ -198,8 +273,8 @@ def add_rsync_host(hostname, address = None, password = None):
     }
     if not address:
         address = get_ip(hostname) or hostname
-    
-    if password: 
+
+    if password:
         exitcode=putkey_windows(hostname, password)
     else:
         exitcode = __salt__['event.send']('backuppc/copykey', minion=hostname)
@@ -236,18 +311,18 @@ def add_host(hostname, address=None, method='rsync', backup_arguments = {}):
         #If the file doesn't exist, we create the full file_data dict.
         file_data = backup_arguments
 
-        file_data['ClientNameAlias'] = address 
+        file_data['ClientNameAlias'] = address
 
         #Update backuppc folders
         __salt__['file.chown'](host_file(hostname), 'backuppc', 'www-data')
         __salt__['file.append'](backuppc_hosts, hostname+'       0       backuppc')
 
-        #Finally, we convert the dict to a config file. 
+        #Finally, we convert the dict to a config file.
         write_dict_to_conf(file_data, hostname)
     else:
-        #TODO why is this even here? Looks like it should be in an edit_host function. 
+        #TODO why is this even here? Looks like it should be in an edit_host function.
         edit_conf_var(hostname, 'ClientNameAlias', str(address))
-    
+
     __salt__['service.reload']('backuppc')
 
     return True
@@ -255,7 +330,7 @@ def add_host(hostname, address=None, method='rsync', backup_arguments = {}):
 
 
 def rm_host(hostname):
-    #To completely remove a client and all its backups, you should remove its entry in the conf/hosts file, and 
+    #To completely remove a client and all its backups, you should remove its entry in the conf/hosts file, and
     #then delete the __TOPDIR__/pc/$host directory. Whenever you change the hosts file, you should send BackupPC a HUP (-1) signal
     # so that it re-reads the hosts file. If you don't do this, BackupPC will automatically re-read the hosts file at the next regular wakeup.
     hostname = hostname.lower()
@@ -286,7 +361,7 @@ def add_folder(hostname, folder, backup_filter = ""):
         else:
             return False
 
-    if backup_filter: 
+    if backup_filter:
         add_filter_to_path(hostname, folder, backup_filter)
 
     __salt__['service.reload']('backuppc')
@@ -296,7 +371,7 @@ def add_folder_list(hostname, folder_list):
         add_folder(hostname=hostname,folder=folder)
 
 def calculate_backup_periods(full_period, counters, limit):
-    if type(counters) != list: 
+    if type(counters) != list:
         counters = [counters]
     counters = [int(x) for x in counters]
     full_period = float(full_period)
@@ -333,17 +408,17 @@ def get_filters_for_host(hostname, path):
     return backup_filters
 
 def manage_host_filter(hostname, path, backup_filter, action = 'add'):
-    if not backup_filter: 
+    if not backup_filter:
         return
 
     backup_filters = get_filters_for_host(hostname, path)
 
-    if action == 'add': 
+    if action == 'add':
         path_filters = backup_filters.get(path, []) + [backup_filter]
-    elif action == 'remove' : 
+    elif action == 'remove' :
         path_filters = [x for x in backup_filters.get(path, []) if x != backup_filter]
 
-    else: 
+    else:
         raise Exception('Invalid action in manage_host_filter: ' + str(action))
 
     backup_filters[path] = path_filters
@@ -411,7 +486,7 @@ def listHosts():
 def find_matching_shares(host, share_path):
     folders = []
     shares = conf_file_to_dict(host).get('BackupFilesOnly', [])
-    for share in shares: 
+    for share in shares:
         if fnmatch.fnmatch(share_path, share):
             folders += shares[share]
     return folders
@@ -419,7 +494,7 @@ def find_matching_shares(host, share_path):
 def panel_list_hosts():
     host_list = listHosts()
     host_list = [{'host' : x, 'total_backups': backupTotals(x), 'protocol' : get_host_protocol(x).replace('ShareName', '').lower(), 'address' : conf_file_to_dict(x).get('ClientNameAlias')} for x in host_list]
-    
+
     host_list = append_host_status(host_list)
     return host_list
 
@@ -484,13 +559,13 @@ def append_host_status(host_list):
         for x in host_list:
             if text[x['host']].get('activeJob', 0) == 1:
                 x['status'] = "Backup in progress"
-                x['state'] = 'Pending' 
+                x['state'] = 'Pending'
             else:
                 x['status'] = text[x['host']].get('reason', '-').capitalize()
                 x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
                 x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
             x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
-        
+
     except subprocess.CalledProcessError as e:
         for x in host_list:
             x['status'] = 'Error reading status'
@@ -501,7 +576,7 @@ def append_host_status(host_list):
 def panel_statistics():
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
     #bash_cmd = ['/usr/bin/sudo', '-u','backuppc', '/usr/share/backuppc/bin/BackupPC_serverMesg', 'status' ,'info']
-    
+
     bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_serverMesg status info']
     try:
         out = subprocess.check_output(bash_cmd)
@@ -516,7 +591,7 @@ def panel_statistics():
                 {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
                 {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
                 {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
-    
+
     except subprocess.CalledProcessError as e:
 
         statistics = [{'key' : 'Version', 'value': 'N/A'},
@@ -570,7 +645,7 @@ def pretty_global_config(item, hostname = 'config'):
         value = ', '.join([str(x) for x in value])
     return value
 
-    
+
 def get_item_from_conf(item, hostname = 'config'):
     host_conf = host_file(hostname)
     with open(host_conf) as f:
@@ -587,7 +662,7 @@ def get_item_from_conf(item, hostname = 'config'):
     item = re.findall(item_regex, config)
     item = [x[1] for x in item if '#' not in x[0]] or [None]
 
-    if not item: 
+    if not item:
         return None
 
     item = item[0]
@@ -634,7 +709,7 @@ def file_to_dict(file_path):
     conf = conf_to_json(conf)
 
     #Some values are 0s which makes it annoying to deal with type checking
-    #So we convert all integer 0s to strings. 
+    #So we convert all integer 0s to strings.
     conf = {x : conf[x] if conf[x]!= 0 else '0' for x in conf}
     return conf
 
@@ -645,7 +720,7 @@ def conf_file_to_dict(hostname):
 def write_dict_to_conf(data, hostname):
     data = dict_to_conf(data)
     conf_file = host_file(hostname)
-    with open(conf_file, 'w') as f: 
+    with open(conf_file, 'w') as f:
         f.write(data)
 
 def edit_conf_var(hostname, var, new_data, data_type = None):
@@ -658,7 +733,7 @@ def edit_conf_var(hostname, var, new_data, data_type = None):
     else:
         if data_type and type(var) != data_type:
             try:
-                if data_type == list: 
+                if data_type == list:
                     new_data = [x.strip() for x in new_data.split(',')]
                 else:
                     new_data = data_type(new_data)
@@ -695,21 +770,21 @@ def change_incrmax(hostname, new_data, var="IncrKeepCnt"):
 def reset_schedule(hostname):
     protocol = get_host_protocol(hostname)
     default_values = (None, ) * 4
-    if protocol == 'SmbShareName': 
+    if protocol == 'SmbShareName':
         default_values = (0.97, '15, 0, 2, 1, 2, 5, 2', 10, '0')
-    if protocol == 'RsyncShareName': 
+    if protocol == 'RsyncShareName':
         pass
 #       default_values = (1, ['15', '0', '2', '1', '2', '5', '2'], 10, '0')  #Redosled e: (FullPeriod, FullMax, IncrPeriod, IncrMax)
 
-    change_fullperiod(hostname, default_values[0]) 
+    change_fullperiod(hostname, default_values[0])
     change_fullmax(hostname, default_values[1])
-    change_incrperiod(hostname, default_values[2]) 
+    change_incrperiod(hostname, default_values[2])
     change_incrmax(hostname, default_values[3])
     return "Schedule is set to recommended values for specified protocol"
 
 
 def backupTotals(hostname):
-    totalb = len(backupNumbers(hostname)) 
+    totalb = len(backupNumbers(hostname))
     return totalb
 
 
@@ -772,7 +847,7 @@ def start_backup(hostname, tip='Full'):
 
 def create_archive(hostname):
     protocol = get_host_protocol(hostname)
-    if protocol == 'Archive' : 
+    if protocol == 'Archive' :
         return "Cannot create archive on host %s: Protocol for the host is archive. " % (hostname)
     cmd = '/usr/local/backuppc/bin/BackupPC_archiveStart archive backuppc %s' % (hostname)
     result = __salt__['cmd.run'](cmd, runas = 'backuppc')
@@ -807,7 +882,7 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
 
     def filter_f(name):
         BLACKLIST = ('attrib', 'backupInfo', 'backupInfo.json')
-        if len(name) > 0 and name[0] == 'f' and name not in BLACKLIST: 
+        if len(name) > 0 and name[0] == 'f' and name not in BLACKLIST:
             return name[1:]
         else:
             return name
@@ -832,7 +907,7 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
     for key, val in dr.items():
         del dr[key]
         dr[key.replace('%2f', '/')] = val
-    
+
     return dr
 
 def write_backupinfo_json(hostname, backup):
@@ -842,9 +917,9 @@ def write_backupinfo_json(hostname, backup):
     with open(path + '/backupInfo','r+') as f:
         contents = f.read()
         contents = hashtodict(contents)
-    with open(path + '/backupInfo.json', 'w') as f: 
+    with open(path + '/backupInfo.json', 'w') as f:
         json.dumps(f.write(contents))
-    
+
 def backup_info(hostname):
     hostname = hostname.lower()
     backup_list = backupNumbers(hostname)
@@ -853,14 +928,14 @@ def backup_info(hostname):
         info = {}
 #        write_backupinfo_json(hostname, str(backup))
         json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
-    
+
         json_data = file_to_dict(json_path)['%backupInfo']
 
-        #TODO proper handling of these cases. 
-        if 'startTime' in json_data:        
+        #TODO proper handling of these cases.
+        if 'startTime' in json_data:
             info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
             # info["startTimeStamp"] = int(json_data["startTime"])
-        if 'endTime' in json_data: 
+        if 'endTime' in json_data:
             info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M'))
         if 'startTime' in json_data and 'endTime' in json_data:
             info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
@@ -895,11 +970,11 @@ def backup_info_graph_old(hostname):
     for backup in backup_list:
         info = {}
         json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
-    
+
         json_data = file_to_dict(json_path)['%backupInfo']
 
-        #TODO proper handling of these cases. 
-        if 'startTime' in json_data:        
+        #TODO proper handling of these cases.
+        if 'startTime' in json_data:
             info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
             info["startTimeStamp"] = int(json_data["startTime"])
         if json_data["type"]=="full":
@@ -923,11 +998,11 @@ def backup_info_graph(hostname):
     for backup in backup_list:
         info = {}
         json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
-    
+
         json_data = file_to_dict(json_path)['%backupInfo']
 
-        #TODO proper handling of these cases. 
-        if 'startTime' in json_data:        
+        #TODO proper handling of these cases.
+        if 'startTime' in json_data:
             info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
             info["startTimeStamp"] = int(json_data["startTime"])
             info["sizeGraph"] = (int(json_data["size"]))/1024/1024
@@ -947,11 +1022,11 @@ def tar_create(arguments, location='/usr/share', backupname='test_backup', backu
 
 def get_backuppc_url(hostname, backupnumber, share, path, action = 'RestoreFile', username = 'admin', password = '', instance_url = ''):
     kwargs = {
-        'hostname' : hostname, 
-        'backupnumber' : backupnumber, 
-        'share' : share, 
-        'path' : path, 
-        'action' : action, 
+        'hostname' : hostname,
+        'backupnumber' : backupnumber,
+        'share' : share,
+        'path' : path,
+        'action' : action,
         'username' : username,
     }
 
@@ -997,7 +1072,7 @@ def restore_backup(hostname, backupnumber = -1, share = '',  path = '.', restore
         args = ' -h '+hostname+' -n '+str(backupnumber)+' -s '+share+' '+path+' | ssh root@'+restore_host+' tar xf - -C '+share
         return __salt__['cmd.run'](tar_create_cmd+args,runas='backuppc', cwd = '/usr/lib/backuppc/',python_shell=True)
 
-#This is a temporary 'hack', until we figure out what we really want to do. 
+#This is a temporary 'hack', until we figure out what we really want to do.
 restore = restore_backup
 
 #def restore(arguments, restore_host='', backupnumber=-1):
@@ -1065,5 +1140,5 @@ def backup_attrib(hostname, number, *args):
         #info = { 'name' : name, 'time' : time, 'size' : size}
         content[name] = {'time' : time, 'size' : size}
     os.remove(start+hostname+'/'+str(number)+'/'+share+path+'/attrib.json')
-    os.remove(start+hostname+'/'+str(number)+'/'+share+path+'/attrib0') 
+    os.remove(start+hostname+'/'+str(number)+'/'+share+path+'/attrib0')
     return content
