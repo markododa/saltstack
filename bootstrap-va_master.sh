@@ -32,11 +32,10 @@ fi
 apt-get update -y
 apt-get install --no-install-recommends salt-master -y
 cd "$(dirname "$0")"
-mkdir /srv/{salt,pillar,reactor,salt/_modules}
-cp -R states/* /srv/salt
-cp -R pillars/* /srv/pillar
+mkdir /srv/{salt,pillar,reactor}
+cp -R salt/* /srv/salt
+cp -R pillar/* /srv/pillar
 cp -R reactor/* /srv/reactor
-cp -R modules/* /srv/salt/_modules
 #setup pillars
 #cp *.sls /srv/pillar
 #cp /srv/salt/salt-master/files/master /etc/salt/master 
