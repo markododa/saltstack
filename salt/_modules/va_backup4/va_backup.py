@@ -558,13 +558,14 @@ def append_host_status(host_list):
         text = hashtodict(text)['%Status']
         for x in host_list:
             if text[x['host']].get('activeJob', 0) == 1:
-                x['status'] = "Backup in progress"
+                x['status'] = "In progress since "+str(datetime.datetime.fromtimestamp(int(text[x['host']].get('startTime', '0'))).strftime('%Y-%m-%d %H:%M'))
                 x['state'] = 'Pending'
+                x['error'] = '-'
             else:
                 x['status'] = text[x['host']].get('reason', '-').capitalize()
                 x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
                 x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
-            x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
+                x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
 
     except subprocess.CalledProcessError as e:
         for x in host_list:
@@ -582,10 +583,10 @@ def panel_statistics():
         out = subprocess.check_output(bash_cmd)
         text = hashtodict(out)
         statistics = [{'key' : 'Version', 'value': text['Version']},
-                {'key' : 'Files in pool', 'value': text['cpoolFileCnt']},
-                {'key' : 'Folders in pool', 'value': text['cpoolDirCnt']},
-                {'key' : 'Duplicates in pool', 'value': text['cpoolFileCntRep']},
-                {'key' : 'Nightly cleanup removed files', 'value': text['cpoolFileCntRm']},
+                {'key' : 'Files in pool', 'value': text['cpool4FileCnt']},
+                {'key' : 'Folders in pool', 'value': text['cpool4DirCnt']},
+                {'key' : 'Duplicates in pool', 'value': text['cpool4FileCntRep']},
+                {'key' : 'Nightly cleanup removed files', 'value': text['cpool4FileCntRm']},
                 {'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
                 {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
                 {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
@@ -935,10 +936,15 @@ def backup_info(hostname):
         if 'startTime' in json_data:
             info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
             # info["startTimeStamp"] = int(json_data["startTime"])
-        if 'endTime' in json_data:
-            info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M'))
+        # if 'endTime' in json_data:
+
         if 'startTime' in json_data and 'endTime' in json_data:
-            info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
+            if int(json_data["endTime"]) > int(json_data["startTime"]):
+                info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
+                info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M'))
+            else:
+                info["duration"] = 'active'
+                info["endTime"] = 'unknown'
         if 'sizeNew' in json_data:
             info["sizeNew"] = bytes_to_readable(int(json_data["sizeNew"]))
         if 'size' in json_data:
@@ -950,8 +956,15 @@ def backup_info(hostname):
         m, s = divmod(a, 60)
         h, m = divmod(m, 60)
         d, h = divmod(h, 24)
-        info.update({
-            "age" : str("%d day(s) %d:%02d") % (d, h, m),
+        if a > 0:
+            info.update({
+                "age" : str("%d day(s) %d:%02d") % (d, h, m),
+                "backup" : str(backup),
+                # "absolute_age" : a
+            })
+        else:
+            info.update({
+            "age" : 'active',
             "backup" : str(backup),
             # "absolute_age" : a
         })

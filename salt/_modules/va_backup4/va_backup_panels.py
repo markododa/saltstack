@@ -169,16 +169,16 @@ panels = {
             "source": "panel_list_folders",
             "columns": [{
                         "key": "app",
-                        "width": "20%",
+                        "width": "15%",
                         "label": "Source"
                         }, {
                         "key": "path",
                         "label": "Path/Share to backup",
-                        "width": "30%"
+                        "width": "20%"
                         }, {
                         "key": "include",
                         "label": "Backup filter (include only)",
-                        "width": "30%"
+                        "width": "60"
                         }, {
                         "key": "action",
                         "label": "Actions",
