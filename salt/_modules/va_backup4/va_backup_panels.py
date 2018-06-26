@@ -15,6 +15,12 @@ panels = {
             },
             "table_statistics": {
                 "source": "panel_statistics"
+            },
+            "table_disk": {
+                "source": "panel_disk"
+            },
+            "table_graph": {
+                "source": "parse_pool_data"
             }
         },
         "content": [{
@@ -50,7 +56,55 @@ panels = {
             ],
             "id": ["key"],
             "source": "panel_statistics"
-        }, {
+        },  {
+            "type": "CustomChart",
+                "chartType": "line",
+                "name": "graph1",
+                "xCol": "timestamp",
+            "height": "50",
+            # "xCol": "startTimeStamp",
+            # "xColType": "date",
+                "reducers": ["table"],
+                "datasets": [{
+                    "column": "after_optimization",
+                    "label": "Pool size (GB)",
+                    "backgroundColor": "#337ab788",
+                    #"backgroundColor": "#fff",
+                    #"borderColor": "#2e6da4",
+                    "borderColor": "#337ab7",
+
+                    "data": []
+                },{
+
+                    "column": "full_size",
+                    "label": "Before compression and deduplications (GB)",
+                    "backgroundColor": "#9D002C00",
+                    #"backgroundColor": "#fff",
+                    #"borderColor": "#2e6da4",
+                    "borderColor": "#9D002C",
+
+                    "data": []
+                }
+                ],
+            "target": "table_graph"
+        } ,{
+            "type": "Table",
+            "name": "table_disk",
+            "pagination": False,
+            "reducers": ["table", "panel", "alert"],
+            "columns": [{
+                "key": "key",
+                "label": "Disk usage",
+                "width": "30%"
+            }, {
+                "key": "value",
+                "label": "Value"
+            }
+            ],
+            "id": ["key"],
+            "source": "panel_disk"
+        },
+           {
             "type": "Table",
             "name": "table_global_config",
             "pagination": False,
@@ -178,7 +232,7 @@ panels = {
                         }, {
                         "key": "include",
                         "label": "Backup filter (include only)",
-                        "width": "60"
+                        "width": "60%"
                         }, {
                         "key": "action",
                         "label": "Actions",
@@ -476,7 +530,7 @@ panels = {
                         "label": "Source",
                         "action": "all:link",
                         "colClass": "link",
-                        "width": "20%"
+                        "width": "15%"
                         }, {
                         "key": "total_backups",
                         "label": "Backups",
@@ -484,7 +538,7 @@ panels = {
                         }, {
                         "key": "address",
                         "label": "Address",
-                        "width": "15%"
+                        "width": "10%"
                         }, {
                         "key": "protocol",
                         "label": "Protocol",
@@ -492,11 +546,11 @@ panels = {
                         }, {
                         "key": "status",
                         "label": "Status",
-                        "width": "20%"
+                        "width": "25%"
                         }, {
                         "key": "error",
                         "label": "Error",
-                        "width": "20%"
+                        "width": "25%"
                         }, {
                         "key": "action",
                         "label": "Actions",
@@ -505,8 +559,11 @@ panels = {
                         ],
             "actions": [{
                         "action": "start_backup",
-                        "name": "Backup now",
+                        "name": "Full Backup now",
                         }, {
+                        "action": "start_backup_incr",
+                        "name": "Incr Backup now",
+                        },{
                         "action": "create_archive",
                         "name": "Create archive",
                         "class": "danger"
@@ -752,6 +809,7 @@ panels = {
             "columns": [{
                 "key": "host",
                 "label": "Source",
+                "width": "15%"
             }, {
                 "key": "fullperiod",
                 "label": "Days between full backups",
@@ -954,10 +1012,11 @@ panels = {
             "columns": [{
                 "key": "host",
                 "label": "Source",
-                "width": "20%"
+                "width": "15%"
             }, {
                 "key": "fullseq",
                 "label": "Expected Full backups history (days)",
+                "width": "60%"
             }, {
                 "key": "incrseq",
                 "label": "Incr. backups history (days)",

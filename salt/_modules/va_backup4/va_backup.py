@@ -2,6 +2,8 @@ import va_utils, salt, os.path, os, json, datetime, time, re, subprocess, fnmatc
 
 from va_utils import check_functionality as panel_check_functionality
 from va_backup_panels import panels
+from pool_stats import parse_pool_data
+# from pool_stats import parse_multichart
 
 backuppc_dir = '/etc/backuppc/'
 backuppc_pc_dir = '/etc/backuppc/pc'
@@ -46,10 +48,13 @@ def host_file(hostname):
 
 #def get_panel(panel_name, host = '', backupNum = -1):
 def get_panel(panel_name, server_name = '', backupNum = -1):
-    host = server_name
-    ppanel = panels[panel_name]
-    hostnames = listHosts()
+    # host = server_name
+    # ppanel = panels[panel_name]
+    # hostnames = listHosts()
     if panel_name == "backup.browse":
+        host = server_name
+        ppanel = panels[panel_name]
+        hostnames = listHosts()
         host = hostnames[0] if host == '' else host
         if backupNum == -1:
             backupNum = last_backup(host)
@@ -127,8 +132,12 @@ def dir_structure1(host, *args):
         pathlen=len(path)
         if path=='/':
             pathlen=0
+        path='"'+path+'"'
+        host ='"'+str(host)+'"'
+        backupNum = '"'+str(backupNum)+'"'
+        share = '"'+str(share)+'"'
         # return path
-        bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_ls -h ' + str(host) + ' -n ' + str(backupNum) + ' -s ' + str(share) + ' ' + path]
+        bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_ls -h ' + host + ' -n ' + backupNum + ' -s ' + share + ' ' + path]
         # return bash_cmd
 
         try:
@@ -575,7 +584,7 @@ def append_host_status(host_list):
     return host_list
 
 def panel_statistics():
-    diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
+    # diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
     #bash_cmd = ['/usr/bin/sudo', '-u','backuppc', '/usr/share/backuppc/bin/BackupPC_serverMesg', 'status' ,'info']
 
     bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_serverMesg status info']
@@ -587,24 +596,25 @@ def panel_statistics():
                 {'key' : 'Folders in pool', 'value': text['cpool4DirCnt']},
                 {'key' : 'Duplicates in pool', 'value': text['cpool4FileCntRep']},
                 {'key' : 'Nightly cleanup removed files', 'value': text['cpool4FileCntRm']},
-                {'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
-                {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
-                {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
-                {'key' : 'Pool usage now (%)', 'value': text['DUDailyMax']},
-                {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']}]
+                # {'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
+                # {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
+                # {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
+                {'key' : 'Pool usage last count (%)', 'value': text['DUDailyMax']},
+                {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']},
+                {'key' : 'Pool size (GB)', 'value': int(text['cpool4Kb'])/1024/1024}]
+
 
     except subprocess.CalledProcessError as e:
 
-        statistics = [{'key' : 'Version', 'value': 'N/A'},
-                {'key' : 'Files in pool', 'value': 'N/A'},
-                {'key' : 'Folders in pool', 'value': 'N/A'},
-                {'key' : 'Duplicates in pool', 'value': 'N/A'},
-                {'key' : 'Nightly cleanup removed files', 'value': 'N/A'},
-                {'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
-                {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
-                {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
-                {'key' : 'Pool usage now (%)', 'value': 'N/A'},
-                {'key' : 'Pool usage yesterday (%)', 'value': 'N/A'}]
+        statistics = [{'key' : 'Error reading data', 'value': 'N/A'}]
+    return statistics
+
+
+def panel_disk():
+    diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
+    statistics = [{'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
+                    {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
+                    {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']}]
     return statistics
 
 def panel_default_config():
@@ -846,6 +856,9 @@ def start_backup(hostname, tip='Full'):
     cmd = '/usr/local/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
     return __salt__['cmd.run'](cmd, runas='backuppc')
 
+def start_backup_incr(hostname, tip='Inc'):
+    start_backup(hostname, tip)
+
 def create_archive(hostname):
     protocol = get_host_protocol(hostname)
     if protocol == 'Archive' :
@@ -933,41 +946,81 @@ def backup_info(hostname):
         json_data = file_to_dict(json_path)['%backupInfo']
 
         #TODO proper handling of these cases.
+
+        # handle craziness
+
+
+        try:
+            json_data["startTime"]=int(json_data["startTime"])
+        except:
+            json_data["startTime"]=0
+
+
+        try:
+            json_data["endTime"]=int(json_data["endTime"])
+        except:
+            json_data["endTime"]=-1
+
+
+        try:
+            json_data["sizeNew"]=int(json_data["sizeNew"])
+        except:
+            json_data["sizeNew"]=0
+
+
+        try:
+            json_data["size"]=int(json_data["size"])
+        except:
+            json_data["size"]=0
+
+        # return json_data
+
         if 'startTime' in json_data:
-            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
-            # info["startTimeStamp"] = int(json_data["startTime"])
-        # if 'endTime' in json_data:
+            info["startTime"] = str(datetime.datetime.fromtimestamp(json_data["startTime"]).strftime('%Y-%m-%d %H:%M'))
+        else:
+            info["startTime"] = 'unknown'
 
         if 'startTime' in json_data and 'endTime' in json_data:
-            if int(json_data["endTime"]) > int(json_data["startTime"]):
-                info["duration"] = str(datetime.timedelta(seconds = (int(json_data["endTime"]) - int(json_data["startTime"]))))
-                info["endTime"] = str(datetime.datetime.fromtimestamp(int(json_data["endTime"])).strftime('%Y-%m-%d %H:%M'))
+            if json_data["endTime"] > json_data["startTime"]:
+                info["duration"] = str(datetime.timedelta(seconds = (json_data["endTime"] - json_data["startTime"])))
+                info["endTime"] = str(datetime.datetime.fromtimestamp(json_data["endTime"]).strftime('%Y-%m-%d %H:%M'))
             else:
                 info["duration"] = 'active'
                 info["endTime"] = 'unknown'
         if 'sizeNew' in json_data:
-            info["sizeNew"] = bytes_to_readable(int(json_data["sizeNew"]))
+            info["sizeNew"] = bytes_to_readable(json_data["sizeNew"])
+        else:
+            info["sizeNew"] = 'unknown'
+
         if 'size' in json_data:
-            info["size"] = bytes_to_readable(int(json_data["size"]))
-            # info["sizeGraph"] = int(json_data["size"])/1024/1024
+            info["size"] = bytes_to_readable(json_data["size"])
+        else:
+            info["size"] = 'unkown'
         info["type"] = json_data["type"]
 
-        a = int(time.time()) - int(json_data["endTime"])
-        m, s = divmod(a, 60)
-        h, m = divmod(m, 60)
-        d, h = divmod(h, 24)
-        if a > 0:
-            info.update({
-                "age" : str("%d day(s) %d:%02d") % (d, h, m),
+        if 'endTime' in json_data:
+            a = int(time.time()) - json_data["endTime"]
+            m, s = divmod(a, 60)
+            h, m = divmod(m, 60)
+            d, h = divmod(h, 24)
+            if a > 0 and json_data["endTime"]>-1:
+                info.update({
+                    "age" : str("%d day(s) %d:%02d") % (d, h, m),
+                    "backup" : str(backup),
+                    # "absolute_age" : a
+                })
+            else:
+                info.update({
+                "age" : 'active',
                 "backup" : str(backup),
                 # "absolute_age" : a
             })
         else:
             info.update({
-            "age" : 'active',
-            "backup" : str(backup),
-            # "absolute_age" : a
-        })
+                "age" : 'active',
+                "backup" : str(backup),
+                # "absolute_age" : a
+            })
         #NOPE #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))
         content.append(info)
     content = sorted(content, key = lambda x: x['startTime'], reverse = True)
@@ -1015,12 +1068,12 @@ def backup_info_graph(hostname):
         json_data = file_to_dict(json_path)['%backupInfo']
 
         #TODO proper handling of these cases.
-        if 'startTime' in json_data:
-            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
-            info["startTimeStamp"] = int(json_data["startTime"])
-            info["sizeGraph"] = (int(json_data["size"]))/1024/1024
         if json_data["type"]=="full":
-            content.append(info)
+            if 'startTime' in json_data:
+                info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
+                info["startTimeStamp"] = int(json_data["startTime"])
+                info["sizeGraph"] = (int(json_data["size"]))/1024/1024
+                content.append(info)
     content = sorted(content, key = lambda x: x['startTime'], reverse = False)
     return content
 
