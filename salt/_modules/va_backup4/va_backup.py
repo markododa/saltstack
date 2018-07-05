@@ -406,7 +406,7 @@ def pretty_backup_periods(full_period, counters, limit=999):
     periods = periods.replace('.0, ', ', ')
     periods = periods.rstrip(' ')
     periods = periods.rstrip(',')
-    periods = periods + " [" + str(pcount)+"]"
+    periods = periods + " [" + str(pcount)+" max]"
     return periods
 
 
@@ -479,7 +479,7 @@ def list_folders(hostnames):
 def panel_list_folders():
     hostnames = listHosts()
     data  = list_folders(hostnames)
-    data = [ {'app': key, 'path': v, 'include' : find_matching_shares(key, v)} for key in data for v in data[key] ]
+    data = [ {'app': key, 'path': v, 'include' : ', '.join(find_matching_shares(key, v))} for key in data for v in data[key] ]
     return data
 
 def listHosts():
@@ -569,12 +569,33 @@ def append_host_status(host_list):
             if text[x['host']].get('activeJob', 0) == 1:
                 x['status'] = "In progress since "+str(datetime.datetime.fromtimestamp(int(text[x['host']].get('startTime', '0'))).strftime('%Y-%m-%d %H:%M'))
                 x['state'] = 'Pending'
-                x['error'] = '-'
+
+                bash2_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_serverMesg status jobs']
+                try:
+                    text2 = subprocess.check_output(bash2_cmd)
+                    text2 = text2.split('Got reply: ')[1]
+                    #clear job output
+                    text2 = text2.replace('*::FH','null').replace('\\\"','').replace('\\$','$')
+                    # return text2
+                    text2 = hashtodict(text2)['%Jobs']
+                    filecount = text2[x['host']].get('xferFileCnt', '-')
+                    if type(filecount) != int:
+                        filecount=0
+
+                    x['error'] = 'Type: '+ text2[x['host']].get('type', '-')+', '  + str(filecount)+' files so far from: '+text2[x['host']].get('shareName', '-')
+                    # x['error'] = '-'
+                except subprocess.CalledProcessError as e:
+                    x['error'] = '-'
+
             else:
                 x['status'] = text[x['host']].get('reason', '-').capitalize()
                 x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
-                x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done') else 'none'
+                x['state'] = 'Critical' if (x['status']!='Nothing to do' and x['status']!='Backup done' and x['status']!='') else 'none'
                 x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
+                if x['error']=='-':
+                    x['error']= text[x['host']].get('lastGoodBackupTime','No good backup!')
+                    if type(x['error']) == int:
+                        x['error']= "Last good backup: " + str(datetime.datetime.fromtimestamp(x['error']).strftime('%Y-%m-%d %H:%M'))
 
     except subprocess.CalledProcessError as e:
         for x in host_list:
@@ -582,6 +603,9 @@ def append_host_status(host_list):
             x['state'] = 'none'
             x['error'] = text[x['host']].get('error', "-").replace('_', ' ').replace('\$', '$').capitalize()
     return host_list
+
+
+
 
 def panel_statistics():
     # diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
@@ -618,8 +642,14 @@ def panel_disk():
     return statistics
 
 def panel_default_config():
-    cmd = 'cat /etc/backuppc/config.pl'
-    # text =  __salt__['cmd.run'](cmd)
+    # cmd = 'cat /etc/backuppc/config.pl'
+    sshkey = 'cat /var/lib/backuppc/.ssh/id_rsa.pub'
+    text =  __salt__['cmd.run'](sshkey)
+    #possible fix for this stupid hack
+    # https://stackoverflow.com/questions/1258416/word-wrap-in-an-html-table
+    for x in range(len(text)/100):
+        y=(x+1)*100+1
+        text = text[:y] + ' ' + text[y:]
     full_period = get_global_config('FullPeriod')
     full_cnt = get_global_config('FullKeepCnt')
     incr_period = get_global_config('IncrPeriod')
@@ -634,7 +664,10 @@ def panel_default_config():
                 {'key' : 'Incremental backups to keep (max)', 'value': incr_period},
                 {'key' : 'Incremental backups to keep (min)', 'value': incr_cnt},
                 {'key' : 'Expected Incremental backups history (days)', 'value': pretty_backup_periods(incr_period, incr_cnt,int(get_global_config('IncrAgeMax')))},
-                {'key' : 'Remove incremental backups older then', 'value': get_global_config('IncrAgeMax')}]
+                {'key' : 'Remove incremental backups older then', 'value': get_global_config('IncrAgeMax')},
+                {'key' : 'SSH Public key (remove spaces)', 'value': text},
+                ]
+
     return def_config
 
 
@@ -704,6 +737,7 @@ def conf_to_json(conf):
     conf = {re.sub(r'\$Conf\{(.*)\}', r'\g<1>', x) : conf[x] for x in conf} #Replace '$Conf{var}' with 'var' to make it more readable
 
     return conf
+
 
 hashtodict = conf_to_json
 
@@ -856,6 +890,17 @@ def start_backup(hostname, tip='Full'):
     cmd = '/usr/local/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
     return __salt__['cmd.run'](cmd, runas='backuppc')
 
+
+def delete_backup(hostname, tip='Full'):
+    hostname = hostname.lower()
+    if tip == 'Inc':
+        tip = '0'
+    elif tip == 'Full' or tip is None:
+        tip = '1'
+        # /usr/bin/perl /usr/local/BackupPC/bin/BackupPC_backupDelete -h i3 -n 7 -l
+    cmd = '/usr/local/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
+    return __salt__['cmd.run'](cmd, runas='backuppc')
+
 def start_backup_incr(hostname, tip='Inc'):
     start_backup(hostname, tip)
 
@@ -902,9 +947,6 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
             return name
 
     for path, dirs, files in struktura:
-        print path
-        print dirs
-        print files
         new_path = [filter_f(part) for part in path.split(os.sep)]
         path = os.sep.join(new_path)
         folders = path[start:].split(os.sep) # /pateka/vo/momentov
@@ -985,7 +1027,7 @@ def backup_info(hostname):
                 info["duration"] = str(datetime.timedelta(seconds = (json_data["endTime"] - json_data["startTime"])))
                 info["endTime"] = str(datetime.datetime.fromtimestamp(json_data["endTime"]).strftime('%Y-%m-%d %H:%M'))
             else:
-                info["duration"] = 'active'
+                info["duration"] = '-'
                 info["endTime"] = 'unknown'
         if 'sizeNew' in json_data:
             info["sizeNew"] = bytes_to_readable(json_data["sizeNew"])
@@ -1011,7 +1053,7 @@ def backup_info(hostname):
                 })
             else:
                 info.update({
-                "age" : 'active',
+                "age" : '-',
                 "backup" : str(backup),
                 # "absolute_age" : a
             })

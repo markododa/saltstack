@@ -534,7 +534,7 @@ panels = {
                         }, {
                         "key": "total_backups",
                         "label": "Backups",
-                        "width": "10%"
+                        "width": "8%"
                         }, {
                         "key": "address",
                         "label": "Address",
@@ -542,15 +542,15 @@ panels = {
                         }, {
                         "key": "protocol",
                         "label": "Protocol",
-                        "width": "10%"
+                        "width": "8%"
                         }, {
                         "key": "status",
                         "label": "Status",
-                        "width": "25%"
+                        "width": "24%"
                         }, {
                         "key": "error",
-                        "label": "Error",
-                        "width": "25%"
+                        "label": "Details",
+                        "width": "30%"
                         }, {
                         "key": "action",
                         "label": "Actions",
