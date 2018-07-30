@@ -41,11 +41,10 @@ fi
 apt-get update -y
 apt-get install salt-minion -y
 cd "$(dirname "$0")"
-mkdir /srv/{salt,pillar,reactor,salt/_modules}
-cp -R states/* /srv/salt
-cp -R pillars/* /srv/pillar
+mkdir /srv/{pillar,reactor}
+cp -R salt /srv/
+cp -R pillar/* /srv/pillar
 cp -R reactor/* /srv/reactor
-cp -R modules/* /srv/salt/_modules
 echo "file_client: local" >> /etc/salt/minion
 echo "role: $ROLE" > /etc/salt/grains
 service salt-minion restart
