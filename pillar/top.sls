@@ -28,7 +28,10 @@ base:
   'role:email':
     - match: grain
     - credentials
-  'role:va-master':
+   'role:openvpn':
+    - match: grain
+    - openvpn
+ 'role:va-master':
     - match: grain
     - openvpn
     - credentials
