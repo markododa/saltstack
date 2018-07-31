@@ -46,4 +46,4 @@ echo "role: va-master" > /etc/salt/grains
 service salt-minion restart
 sleep 30
 salt-key -y -A
-#tail -f -q /var/log/salt/minion |GREP_COLOR='1;32' grep -o "Completed state.*$" --color=always & salt-call --local state.highstate --log-file-level all -l quiet > /dev/null && pkill -f "tail -f -q /var/log/salt/minion"
+tail -f -q /var/log/salt/minion |GREP_COLOR='1;32' grep -o "Completed state.*$" --color=always & salt-call --local state.highstate --log-file-level all -l quiet > /dev/null && pkill -f "tail -f -q /var/log/salt/minion"
