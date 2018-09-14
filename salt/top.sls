@@ -34,6 +34,9 @@ base:
   'role:proxy':
     - match: grain
     - proxy.proxy
+  'role:wordpress':
+    - match: grain
+    - wordpress
   'role:objectstore':
     - match: grain
     - objectstore
