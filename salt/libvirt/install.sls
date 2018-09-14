@@ -11,6 +11,7 @@ libvirt-bin:
   virt.keys:
     - require:
       - pkg: gnutls-bin
+      - expiration_days: 3650
   service.running:
     - name: libvirtd
     - require:
