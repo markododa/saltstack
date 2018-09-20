@@ -4,7 +4,7 @@ import salt, subprocess
 import json, re
 
 def get_config():
-    data = json.load(open('/root/.minio/config.json'))
+    data = json.load(open('/opt/minio/data/.minio.sys/config/config.json'))
     return data
 
 def get_auth():
