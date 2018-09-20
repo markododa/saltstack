@@ -134,10 +134,10 @@ def test_ip_ssh(ip_addr):
 def test_session_ssh(ip_addr, r_user='root', l_user=None):
     try:
         if not l_user:
-            cmd = ['ssh', '-q', r_user+'@'+ip_addr, 'exit']
+            cmd = ['ssh', '-oStrictHostKeyChecking=no ','-q', r_user+'@'+ip_addr, 'exit']
         else:
             # '/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status info'
-            cmd = ['/bin/su', l_user, '-c', 'ssh -q '+ r_user+'@'+ip_addr+' exit']
+            cmd = ['/bin/su', l_user, '-c', 'ssh -oStrictHostKeyChecking=no '+ r_user+'@'+ip_addr+' exit']
         print cmd    
         subprocess.check_output(cmd)
         return True
