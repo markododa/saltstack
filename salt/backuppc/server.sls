@@ -96,7 +96,7 @@ create_key:
 
 push-key:
   cmd.run:
-    - name: salt-call event.send  backuppc/pubkey pubkey="`cat /var/lib/backuppc/.ssh/id_rsa.pub`"
+    - name: salt-call event.send  backuppc/pubkey pubkey="$(cut -d ' ' -f 2 /var/lib/backuppc/.ssh/id_rsa.pub)"
     - onlyif: test -e /var/lib/backuppc/.ssh/id_rsa
 
 /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
