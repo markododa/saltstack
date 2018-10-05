@@ -188,7 +188,7 @@ postfix:
   file.managed:
     - source: salt://mail/files/panels.json
 
-{% set services = ['amavis-mc','amavis','amavisd-snmp-subagent','clamav-freshclam','fail2ban','nginx','php5-fpm','sogo'] %}
+{% set services = ['amavis-mc','amavis','amavisd-snmp-subagent','clamav-freshclam','fail2ban','nginx','php7.0-fpm'] %}
 {% for service in services %}
 {{ service }}:
   service.running:
