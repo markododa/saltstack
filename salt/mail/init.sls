@@ -1,5 +1,5 @@
 {% if salt['pillar.get']('dcip') == '' %}
-{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+{% set dcip = salt['mine.get'](tgt='role:directory',fun='address',expr_form='grain')['va-directory'][0] %}
 {% endif %}
 {% if salt['pillar.get']('dcip') != '' %}
 {% set dcip = salt['pillar.get']('dcip') %}
