@@ -10,7 +10,7 @@
 {% set ldap_field = salt['pillar.get']('ldap_field','userPrincipalName') %}
 {% set query_password = salt['pillar.get']('query_password')  %}
 {% set search_base = domain|replace(".", ",dc=") %}
-{% set iredmail_version = '0.9.7' %}
+{% set iredmail_version = '0.9.8' %}
 
 postfix-ldap:
   pkg.installed: []
