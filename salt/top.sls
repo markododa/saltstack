@@ -54,3 +54,6 @@ base:
   'role:lxd':
     - match: grain
     - lxd
+  'role:elk':
+    - match: grain
+    - elk
