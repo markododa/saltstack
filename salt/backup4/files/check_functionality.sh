@@ -1,5 +1,5 @@
 #!/bin/sh
-    #
+#
 # CHECK SCRIPT FOR VA-BACKUPPC
 
 NOW=`echo $(date +"%s")`
@@ -66,9 +66,18 @@ fi
 
 text=$text' Oldest backup is '$D' days, '$H' hours, '$M' minutes old. Currently running Jobs: '$RUNNING', Failed jobs: '$FAILEDBACKUPS', Total hosts: '$TOTALBACKUPS', Hosts without backup: '$EMPTYBACKUPS'. Used pool space: '$SPACE'%'
 if [ -z "$SPACE" ]; then
-text="Can not test functionality. Permissions issue"
-exitstate=1
+ text="Can not test functionality. Permissions issue"
+ exitstate=1
 fi
+
+service backuppc status > /dev/null
+OUT=$?
+if [ $OUT -gt 0 ];then
+ text="BackupPC service is not running"
+ exitstate=1
+fi
+
+
 echo $text" | exit_status="$exitstate
 exit $exitstate
 #604800 is one week in ms
