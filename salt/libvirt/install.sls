@@ -1,25 +1,32 @@
 install_gnutls:
   pkg.installed:
-    - pkg: gnutls
+    - name: gnutls-bin
 
-libvirt-bin:
+{% if grains['oscodename'] == "stretch" %}
+{% set libvirt_pkgs = ['libvirt-daemon-system', 'libvirt-clients'] %}
+{% else %}
+{% set libvirt_pkgs = ['libvirt-bin'] %}
+{% endif%}
+
+{% for pkg in libvirt_pkgs %}
+{{pkg}}:
   pkg.installed: []
+{% endfor %}
+
+libvirtd:
   file.managed:
     - name: /etc/default/libvirtd
     - contents: 'LIBVIRTD_ARGS="--listen"'
-    - require:
-      - pkg: libvirt-bin
   virt.keys:
     - require:
       - pkg: gnutls-bin
-      - expiration_days: 3650
+    - expiration_days: 3650
   service.running:
     - name: libvirtd
     - require:
-      - pkg: libvirt-bin
       - network: br0
     - watch:
-      - file: libvirt-bin
+      - file: /etc/default/libvirtd
 
 libguestfs:
   pkg.installed:
