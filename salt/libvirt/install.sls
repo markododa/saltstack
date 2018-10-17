@@ -1,5 +1,6 @@
-gnutls-bin:
-  pkg.installed: []
+install_gnutls:
+  pkg.installed:
+    - name: gnutls
 
 libvirt-bin:
   pkg.installed: []
