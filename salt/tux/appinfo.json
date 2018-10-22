@@ -1,0 +1,32 @@
+{
+    "name": "tux",
+    "description": "Basic Linux instance.",
+    "version": "1.0",
+    "icon": "fa-linux",
+    "dependency": "",
+    "substates": ["tux.tux"], 
+    "module": "va_tux",
+    "services": [
+    {
+        "name": "VAR_HOSTNAME",
+        "checks": [
+        {
+            "id": "ssh",
+            "name": "SSH Interface",
+            "tcp": "VAR_DNS:22",
+            "interval": "30s",
+            "timeout": "5s"
+        }
+        ]
+
+    }
+    ],
+    "panels": {
+        "admin": [{
+            "key": "tux.overview",
+            "name": "Overview"
+        }],
+        "user": []
+    },
+    "path": "-"
+}

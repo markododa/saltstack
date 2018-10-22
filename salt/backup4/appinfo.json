@@ -1,7 +1,7 @@
 {
     "name": "backup4",
-    "description": "Experimental backuppc version 4.",
-    "version": "1.1",
+    "description": "Create automatic daily and weekly backups of both Windows and Linux sources.",
+    "version": "1.2",
     "icon": "fa-database",
     "dependency": "",
     "substates": ["backup"],

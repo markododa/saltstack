@@ -1,8 +1,8 @@
-{% from "backuppc/map.jinja" import backuppc with context %}
+{% from "backuppc/map.jinja" import backup4 with context %}
 
 {% set os = salt['grains.get']('os', None) %}
 {% set os_family = salt['grains.get']('os_family', None) %}
-{% set backuppc_password = salt['pillar.get']('admin_password') %}
+{% set backup4_password = salt['pillar.get']('admin_password') %}
 
 install-pkgs:
   pkg.installed:
@@ -27,8 +27,8 @@ install-pkgs:
       - rrdtool
       - git
       - make
+      - wget
       - perl-doc
-      - libarchive-zip-perl
       - libfile-listing-perl
       - libxml-rss-perl
       - libcgi-session-perl
@@ -44,7 +44,7 @@ install-pkgs:
 /root/installbackuppc4.sh:
   file.managed:
     - source:
-      - salt://backuppc/files/installbackuppc4.sh
+      - salt://backup4/files/installbackuppc4.sh
     - user: root
     - group: root
     - mode: 755
@@ -54,12 +54,12 @@ replace_pass:
   file.replace:
     - name: /root/installbackuppc4.sh
     - pattern: "PASSWORD=.*"
-    - repl: 'PASSWORD="{{ backuppc_password }}"'
+    - repl: 'PASSWORD="{{ backup4_password }}"'
 
 run_installer:
   cmd.run:
     - name: /root/installbackuppc4.sh
-  
+
 # force_smb2:
 #   file.line:
 #     - name: /etc/samba/smb.conf
@@ -68,28 +68,29 @@ run_installer:
 #     - after: \[global\]
 
 
-# backuppc:
+# backup4:
 #   pkg.installed:
-#     - name: {{ backuppc.server.pkg }}
+#     - name: {{ backup4.server.pkg }}
 
-# {% if backuppc_password %}
-# backuppc_htpasswd:
+# {% if backup4_password %}
+# backup4_htpasswd:
 #   webutil.user_exists:
-#     - name: {{ backuppc.server.webuser }} 
-#     - htpasswd_file: {{ backuppc.server.configdir }}/htpasswd
-#     - password: {{ backuppc_password }}
+#     - name: {{ backup4.server.webuser }}
+#     - htpasswd_file: {{ backup4.server.configdir }}/htpasswd
+#     - password: {{ backup4_password }}
 #     - force: true
 #     - require:
 #       - pkg: backuppc
 # {% endif %}
 
-# backuppc_config:
-#   file.managed:
-#     - name: {{ backuppc.server.configdir }}/config.pl
-#     - template: jinja
-#     - source: salt://backuppc/files/config.pl
-#     - user: {{ backuppc.server.user }}
-#     - group: {{ backuppc.server.group }}
+backup4_config:
+  file.managed:
+    - name: {{ backup4c.server.configdir }}/config.pl
+    - template: jinja
+    - source: salt://backup4/files/config.pl
+    - user: {{ backup4.server.user }}
+    - group: {{ backup4.server.group }}
+
 
 # {% set multisite = salt['pillar.get']('multisite') %}
 
@@ -113,11 +114,6 @@ run_installer:
 # {% endif %}
 
 
-/etc/backuppc/hosts:
-  file.line:
-    - content: localhost
-    - mode: delete
-
 
 # create_key:
 #   cmd.run:
@@ -131,13 +127,14 @@ push-key:
     - name: salt-call event.send  backuppc/pubkey pubkey="`cat /var/lib/backuppc/.ssh/id_rsa.pub`"
     - onlyif: test -e /var/lib/backuppc/.ssh/id_rsa
 
-# /usr/share/backuppc/lib/BackupPC/CGI/JSON.pm:
-#   file.managed:
-#     - source: salt://backuppc/files/JSON.pm
+/usr/local/backuppc/lib/BackupPC/CGI/JSON.pm:
+  file.managed:
+    - source: salt://backup4/files/JSON.pm
 
+#Not sure about this
 /usr/local/backuppc/lib/realindex.cgi:
   file.blockreplace:
-    - marker_start: '"rss"                        => "RSS",' 
+    - marker_start: '"rss"                        => "RSS",'
     - marker_end: ');'
     - content: '    "json"                       => "JSON",'
 
@@ -155,7 +152,7 @@ push-key:
     - opts: defaults,noatime
     - onlyif:
         - test -e /dev/vdb
-        
+
 'mv /var/lib/backuppc /mnt/va-backup/':
   cmd.run:
     - onlyif:
@@ -187,6 +184,30 @@ push-key:
       - group: root
       - mode: 0755
 
+#should not overwrite just check in archive line is there
+/etc/BackupPC/hosts:
+  file.managed:
+    - source:
+      - salt://backup4/files/hosts
+      - user: backuppc
+      - group: backuppc
+      - mode: 0640
+
+
+/etc/BackupPC/pc/archive.pl:
+  file.managed:
+    - source:
+      - salt://backup4/files/archive.pl
+      - user: backuppc
+      - group: backuppc
+      - mode: 0640
+
+
+#Should be only once
+#/etc/BackupPC/archive.pl:
+#  file.append:
+#    - text: "$Conf{XferMethod} = 'archive';"
+
 #not necessary?
 chmod +x /usr/bin/backuppc_servermsg:
   cmd.run
@@ -195,11 +216,7 @@ chmod +x /usr/bin/backuppc_servermsg:
   file.append:
     - text: "nagios ALL = (backuppc) NOPASSWD: /usr/local/backuppc/bin/BackupPC_serverMesg"
 
-/etc/backuppc/archive.pl:
-  file.append:
-    - text: "$Conf{XferMethod} = 'archive';"
-
-backuppc-restart:
+backup4-restart:
   service.running:
     - name: backuppc
     - watch:
@@ -208,4 +225,4 @@ backuppc-restart:
 salt/app/new:
   event.send:
     - data:
-        sls: base.backup 
+        sls: base.backup

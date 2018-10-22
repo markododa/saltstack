@@ -47,7 +47,7 @@ panels = {
             "reducers": ["table", "panel", "alert"],
             "columns": [{
                 "key": "key",
-                "label": "Statistics",
+                "label": "Nightly statistics",
                 "width": "30%"
             }, {
                 "key": "value",

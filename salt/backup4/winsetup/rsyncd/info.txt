@@ -1,3 +1,0 @@
-TEST-PC  TEST 
-
-Microsoft Windows [Version 6.1.7600]

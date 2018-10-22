@@ -618,7 +618,7 @@ def panel_statistics():
         statistics = [{'key' : 'Version', 'value': text['Version']},
                 {'key' : 'Files in pool', 'value': text['cpool4FileCnt']},
                 {'key' : 'Folders in pool', 'value': text['cpool4DirCnt']},
-                {'key' : 'Duplicates in pool', 'value': text['cpool4FileCntRep']},
+                # Bug reported alrady {'key' : 'Duplicates in pool', 'value': text['cpool4FileCntRep']},
                 {'key' : 'Nightly cleanup removed files', 'value': text['cpool4FileCntRm']},
                 # {'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
                 # {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
