@@ -30,7 +30,7 @@ echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' >
 fi
 
 apt-get update -y
-apt-get install --no-install-recommends salt-master -y
+apt-get install salt-master -y
 cd "$(dirname "$0")"
 mkdir /srv/{salt,pillar,reactor}
 cp -R salt/* /srv/salt
