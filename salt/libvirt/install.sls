@@ -2,6 +2,7 @@ install_gnutls:
   pkg.installed:
     - name: gnutls-bin
 
+{% set interface = salt['pillar.get']('bridge_interface','eth0') %}
 {% if grains['oscodename'] == "stretch" %}
 {% set libvirt_pkgs = ['libvirt-daemon-system', 'libvirt-clients'] %}
 {% else %}
@@ -33,7 +34,7 @@ libguestfs:
     - pkgs:
       - libguestfs-tools
 
-eno1:
+{{interface}}:
   network.managed:
     - enabled: True
     - type: eth
@@ -44,6 +45,6 @@ br0:
     - enabled: True
     - type: bridge
     - proto: dhcp
-    - ports: eno1
+    - ports: {{interface}}
     - require:
-      - network: eno1
+      - network: {{interface}}
