@@ -48,3 +48,11 @@ br0:
     - ports: {{interface}}
     - require:
       - network: {{interface}}
+
+virsh net-autostart default:
+  cmd.run:
+    - onlyif: virsh net-info default|grep -q "Autostart.*no"
+
+virsh net-start default:
+  cmd.run:
+    - onlyif: virsh net-info default|grep -q "Active.*no"
