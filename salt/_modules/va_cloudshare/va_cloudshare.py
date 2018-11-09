@@ -14,6 +14,10 @@ def get_v1_url():
     url = 'http://' + admin_user + ':' + admin_pass + '@localhost/ocs/v1.php'
     return url
 
+def update_pass(new_pass):
+    global admin_pass
+    admin_pass = new_pass
+
 def owncloud_request(endpoint, data = {}, params = {}, method = 'get'):
     url = get_v1_url() + endpoint
     params['format'] = "json"
@@ -49,6 +53,7 @@ def panel_shares():
     url = get_v1_url() + '/apps/files_sharing/api/v1/shares'
     params = {"format" : "json"}
     files = requests.get(url, params = params, verify = False).text
+    print ('Files : ', json.loads(files))
     files = json.loads(files)['ocs']['data']
     if not files : return []
     files_list = []

@@ -1,4 +1,4 @@
-{% from "cloudshare/map.jinja" import owncloud with context %}
+{% from "cloudshare/map.jinja" import nextcloud with context %}
 
 install_basics:
   pkg.installed:
@@ -28,15 +28,15 @@ apache2-stuff:
     - name: apache2
     - watch:
       - pkg: apache2-stuff
-      - pkg: {{ owncloud.pkg }}
+      - pkg: {{ nextcloud.pkg }}
 
 
-install-owncloud:
+install-nextcloud:
   pkg.installed:
-    - name: {{ owncloud.pkg }}
+    - name: {{ nextcloud.pkg }}
     - refresh: True
 
-/var/www/owncloud/config/autoconfig.php:
+/var/www/nextcloud/config/autoconfig.php:
   file.managed:
     - source: salt://cloudshare/files/autoconfig.php
     - file_mode: 644
@@ -45,31 +45,31 @@ install-owncloud:
 
 dbname:
   file.replace:
-    - name: /var/www/owncloud/config/autoconfig.php
+    - name: /var/www/nextcloud/config/autoconfig.php
     - pattern: DB_NAME
-    - repl: "{{ salt['pillar.get']('owncloud_database', 'owncloud') }}"
+    - repl: "{{ salt['pillar.get']('cloudshare_database', 'cloudshare') }}"
 
 dbuser:
   file.replace:
-    - name: /var/www/owncloud/config/autoconfig.php
+    - name: /var/www/nextcloud/config/autoconfig.php
     - pattern: DB_USER
-    - repl: "{{ salt['pillar.get']('owncloud_dbuser', 'owncloud') }}"
+    - repl: "{{ salt['pillar.get']('cloudshare_dbuser', 'cloudshare') }}"
 
 dbpass:
   file.replace:
-    - name: /var/www/owncloud/config/autoconfig.php
+    - name: /var/www/nextcloud/config/autoconfig.php
     - pattern: DB_PASS
-    - repl: "{{ salt['grains.get_or_set_hash']('owncloud_dbpass',chars='abcdefghijklmnopqrstuvwxyz0123456789', length=10) }}"
+    - repl: "{{ salt['grains.get_or_set_hash']('cloudshare_dbpass',chars='abcdefghijklmnopqrstuvwxyz0123456789', length=10) }}"
 
 user:
   file.replace:
-    - name: /var/www/owncloud/config/autoconfig.php
+    - name: /var/www/nextcloud/config/autoconfig.php
     - pattern: USER
     - repl: "admin"
 
 password:
   file.replace:
-    - name: /var/www/owncloud/config/autoconfig.php
+    - name: /var/www/nextcloud/config/autoconfig.php
     - pattern: PASS
     - repl: "{{ salt['pillar.get']('admin_password', '') }}"
 
@@ -78,7 +78,7 @@ password:
     - onlyif:
         - test -e /dev/vdb
 
-/mnt/va-owncloud:
+/mnt/va-nextcloud:
   mount.mounted:
     - device: /dev/vdb
     - fstype: ext4
@@ -86,33 +86,33 @@ password:
     - onlyif:
         - test -e /dev/vdb
 
-'mv /var/www/owncloud /mnt/va-owncloud/':
+'mv /var/www/nextcloud /mnt/va-nextcloud/':
   cmd.run:
     - onlyif:
-      - test -e /mnt/va-owncloud
-      - test ! -e /mnt/va-owncloud/owncloud
-      - mount | grep -q /mnt/va-owncloud
+      - test -e /mnt/va-nextcloud
+      - test ! -e /mnt/va-nextcloud/nextcloud
+      - mount | grep -q /mnt/va-nextcloud
 
-'ln -sfn /mnt/va-owncloud/owncloud /var/www/owncloud':
+'ln -sfn /mnt/va-nextcloud/nextcloud /var/www/nextcloud':
   cmd.run:
     - onlyif:
-        - test -e /mnt/va-owncloud/owncloud
-        - mount | grep -q /mnt/va-owncloud
+        - test -e /mnt/va-nextcloud/nextcloud
+        - mount | grep -q /mnt/va-nextcloud
 
 {% set multisite = salt['pillar.get']('multisite') %}
 
 {% if multisite != True %}
-/etc/apache2/sites-available/owncloud.conf:
+/etc/apache2/sites-available/nextcloud.conf:
   file.managed:
-    - source: salt://cloudshare/files/owncloud.conf
+    - source: salt://cloudshare/files/nextcloud.conf
 
 remove_alias:
   file.replace:
-    - name: /etc/apache2/sites-available/owncloud.conf
-    - pattern: Alias /owncloud "/var/www/owncloud/"
-    - repl: Alias / "/var/www/owncloud/"
+    - name: /etc/apache2/sites-available/nextcloud.conf
+    - pattern: Alias /nextcloud "/var/www/nextcloud/"
+    - repl: Alias / "/var/www/nextcloud/"
 
-a2ensite owncloud:
+a2ensite nextcloud:
   cmd.run
 
 
@@ -120,7 +120,7 @@ apache2:
   service.running:
     - reload: True
     - watch:
-      - file: /etc/apache2/sites-available/owncloud.conf
+      - file: /etc/apache2/sites-available/nextcloud.conf
 
 {% endif %}
 
@@ -147,50 +147,50 @@ curl {{ipaddrss}} > /dev/null:
   
 # fixredirect2contactsplus:
   # file.replace:
-    # - name: /var/www/owncloud/.htaccess
+    # - name: /var/www/nextcloud/.htaccess
     # - pattern: /remote.php/carddav/
     # - repl: /remote.php/contactsplus/  
     
 # fixredirect2calendarplus:
   # file.replace:
-    # - name: /var/www/owncloud/.htaccess
+    # - name: /var/www/nextcloud/.htaccess
     # - pattern: /remote.php/caldav/
     # - repl: /remote.php/calendarplus/calendars/  
 
-# sudo -u www-data php /var/www/owncloud/occ app:disable calendar
+# sudo -u www-data php /var/www/nextcloud/occ app:disable calendar
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:disable contacts
+# sudo -u www-data php /var/www/nextcloud/occ app:disable contacts
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:disable firstrunwizard
+# sudo -u www-data php /var/www/nextcloud/occ app:disable firstrunwizard
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:disable gallery
+# sudo -u www-data php /var/www/nextcloud/occ app:disable gallery
   # cmd.run
 
 
 
-# sudo -u www-data php /var/www/owncloud/occ app:enable calendarplus
+# sudo -u www-data php /var/www/nextcloud/occ app:enable calendarplus
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:enable contactsplus
+# sudo -u www-data php /var/www/nextcloud/occ app:enable contactsplus
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:enable conversations
+# sudo -u www-data php /var/www/nextcloud/occ app:enable conversations
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:enable galleryplus
+# sudo -u www-data php /var/www/nextcloud/occ app:enable galleryplus
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:enable ocusagecharts
+# sudo -u www-data php /var/www/nextcloud/occ app:enable ocusagecharts
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:enable tasksplus
+# sudo -u www-data php /var/www/nextcloud/occ app:enable tasksplus
   # cmd.run
 
-# sudo -u www-data php /var/www/owncloud/occ app:enable files_share_qr
+# sudo -u www-data php /var/www/nextcloud/occ app:enable files_share_qr
   # cmd.run
 
 #generating sertificate/installing  
-#http://codereview.stackexchange.com/questions/117956/automated-owncloud-installation-script
+#http://codereview.stackexchange.com/questions/117956/automated-nextcloud-installation-script

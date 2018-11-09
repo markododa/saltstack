@@ -1,17 +1,13 @@
-{% from "cloudshare/map.jinja" import owncloud with context %}
+{% from "cloudshare/map.jinja" import nextcloud with context %}
 
 {% if grains['os_family'] == 'Debian' %}
-owncloud-repo:
+nextcloud-repo:
   pkgrepo.managed:
-    - name: {{ owncloud.pkg_repo }}
-    - file: {{ owncloud.repo_file }}
-    - key_url: {{ owncloud.key_url }}
+    - name: {{ nextcloud.pkg_repo }}
+    - file: {{ nextcloud.repo_file }}
+    - key_url: {{ nextcloud.key_url }}
     - gpgcheck: 1
     - require_in:
-      - pkg: {{ owncloud.pkg }}
+      - pkg: {{ nextcloud.pkg }}
 {%- endif %}
-
-     
-
-
 

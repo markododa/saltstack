@@ -8,6 +8,6 @@ $AUTOCONFIG = array(
   "dbtableprefix" => "",
   "adminlogin"    => "USER",
   "adminpass"     => "PASS",
-  "directory"     => "/var/www/owncloud/data/",
+  "directory"     => "/var/www/nextcloud/data/",
   "theme"         => "va-theme",
 );
