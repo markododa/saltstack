@@ -182,16 +182,72 @@ panels = {
                     "width": "5%"
                 }],
                 "panels": {
-                    "view_graph": "saltmaster.graph",
+                    "ssh_keys": "saltmaster.list_ssh_keys",
                     "month_history": "saltmaster.service_history_monthly",
                     "week_history": "saltmaster.service_history_weekly",
                 },
                 "rowStyleCol": "state",
                 "actions": [{
-                    "name": "Test",
-                    "action": "none"
+                    "name": "List SSH keys",
+                    "action": "ssh_keys"
                 }],
                 "id": ["minion"]
+            }
+
+        ]
+    },
+    "saltmaster.list_ssh_keys": {
+        "title": "Authorized SSH keys as root",
+        "tbl_source": {
+            "table": {
+                "source": "list_minions_ssh_keys"
+            }
+        },
+        "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
+
+                    {
+                        "type": "Filter",
+                        "name": "Filter",
+                        "reducers": ["filter"]
+                    }
+                ]
+            },  {
+                "type": "Table",
+                "name": "table",
+                "pagination": False,
+                "reducers": ["table", "panel", "alert", "filter"],
+                "columns": [{
+                        "key": "comment",
+                        "label": "User",
+                    "width": "25%"
+                }, {
+                        "key": "enc",
+                        "label": "Encryption",
+                    "width": "10%"
+                }, {
+                    "key": "key_short",
+                    "label": "SSH key (partial)",
+                    "width": "60%"
+                }, {
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }],
+                "panels": {
+                    "view_graph": "saltmaster.graph",
+                    "month_history": "saltmaster.service_history_monthly",
+                    "week_history": "saltmaster.service_history_weekly",
+                },
+                "actions": [{
+                    "name": "Remove",
+                    "action": "none"
+                }],
+                "id": ["key"]
             }
 
         ]

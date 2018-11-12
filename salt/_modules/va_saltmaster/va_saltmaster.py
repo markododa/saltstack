@@ -25,9 +25,9 @@ def get_panel(panel_name, provider='', service=''):
     #     return users_panel
     elif panel_name == 'saltmaster.details':
         data = icinga2_singlehost(provider)
-        for host in data: 
+        for host in data:
             for service in host['services']:
-                service['host_name'] = host['host_name'] 
+                service['host_name'] = host['host_name']
         data1 = {x['host_name']: x['services'] for x in data}
         users_panel['tbl_source'] = data1
         return users_panel
@@ -99,6 +99,17 @@ def salt_keys():
     return minions
 
 
+def list_minions_ssh_keys(minion):
+    out = __salt__['cmd.run']('salt '+minion+' ssh.auth_keys root --output=json',runas='root', cwd = '/',python_shell=True)
+    out = json.loads(out)
+    # return out
+    keys=[]
+    for key in out[minion]:
+        keys.append({"minion":minion, "comment": out[minion][key]["comment"], "enc": out[minion][key]["enc"], "fingerprint": out[minion][key]["fingerprint"], "key": key, "key_short": key[:40]+'.....'+key[(len(key)-40):]})
+    return keys
+
+
+
 def list_minions():
     out = __salt__['cmd.run']('salt-run manage.status --output=json',runas='root', cwd = '/',python_shell=True)
     out = json.loads(out)
@@ -108,6 +119,7 @@ def list_minions():
     for minion in out['up']:
         minions.append({"minion":minion, "state": "OK", "status": "Up"})
     return minions
+
 
 def list_minions_up():
     out = __salt__['cmd.run']('salt-run manage.up --output=json',runas='root', cwd = '/',python_shell=True)
@@ -126,7 +138,7 @@ def translate_pillars(pillar):
     else:
         pillar="_Undefined_"
     return pillar
-        
+
 
 def list_pillars():
     out = __salt__['cmd.run']('salt va-master pillar.items --output=json',runas='root', cwd = '/',python_shell=True)
