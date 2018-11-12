@@ -1,16 +1,16 @@
-{% set owncloud = salt['grains.filter_by']({
+{% set nextcloud = salt['grains.filter_by']({
     'Debian': {
-        'pkg': 'owncloud-files',
-        'repo_file': '/etc/apt/sources.list.d/owncloud.list',
+        'pkg': 'nextcloud-server',
+        'repo_file': '/etc/apt/sources.list.d/nextcloud.list',
     },
     'Ubuntu': {
-        'pkg': 'owncloud-files',
-        'repo_file': '/etc/apt/sources.list.d/owncloud.list',
+        'pkg': 'nextcloud-files',
+        'repo_file': '/etc/apt/sources.list.d/nextcloud.list',
     },
 }, merge=salt['grains.filter_by']({
     'xenial':{
-        'pkg_repo': 'deb http://download.owncloud.org/download/repositories/9.1/Ubuntu_16.04/ /',
-        'key_url': 'https://download.owncloud.org/download/repositories/9.1/Ubuntu_16.04/Release.key',
+        'pkg_repo': 'deb http://download.nextcloud.org/download/repositories/9.1/Ubuntu_16.04/ /',
+        'key_url': 'https://download.nextcloud.org/download/repositories/9.1/Ubuntu_16.04/Release.key',
 
     },
     'vivid':{
@@ -22,8 +22,8 @@
         'key_url': 'http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_14.10/Release.key',
     },
     'trusty': {
-        'pkg_repo':  'deb http://download.owncloud.org/download/repositories/8.2/xUbuntu_14.04/ /',
-        'key_url': 'https://download.owncloud.org/download/repositories/8.2/xUbuntu_14.04/Release.key',
+        'pkg_repo':  'deb http://download.nextcloud.org/download/repositories/8.2/xUbuntu_14.04/ /',
+        'key_url': 'https://download.nextcloud.org/download/repositories/8.2/xUbuntu_14.04/Release.key',
     },
     'saucy': {
         'pkg_repo': 'deb http://download.opensuse.org/repositories/isv:/ownCloud:/community/xUbuntu_13.10/ /',
@@ -34,16 +34,16 @@
         'key_url': 'http://download.opensuse.org/repositories/isv:ownCloud:community/xUbuntu_12.04/Release.key',
     },
     'jessie': {
-        'pkg_repo': 'deb http://download.owncloud.org/download/repositories/8.2/Debian_8.0/ /',
-        'key_url': 'https://download.owncloud.org/download/repositories/8.2/Debian_8.0/Release.key',
+        'pkg_repo': 'deb http://download.nextcloud.org/download/repositories/8.2/Debian_8.0/ /',
+        'key_url': 'https://download.nextcloud.org/download/repositories/8.2/Debian_8.0/Release.key',
     },
     'wheezy': {
         'pkg_repo': 'deb http://download.opensuse.org/repositories/isv:/ownCloud:/community/Debian_7.0/ /',
       'key_url': 'http://download.opensuse.org/repositories/isv:ownCloud:community/Debian_7.0/Release.key',
     },
     'stretch': {
-        'pkg_repo': 'deb http://download.owncloud.org/download/repositories/production/Debian_9.0/ /',
-      'key_url': 'https://download.owncloud.org/download/repositories/production/Debian_9.0/Release.key',
+        'pkg_repo': 'deb http://apt.jurisic.org/debian/ stretch main contrib non-free',
+      'key_url': 'http://apt.jurisic.org/Release.key',
     },
 
-}, grain='oscodename', merge=salt['pillar.get']('owncloud:lookup'))) %}
+}, grain='oscodename', merge=salt['pillar.get']('nextcloud:lookup'))) %}

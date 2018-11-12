@@ -3,6 +3,7 @@
 {% set os = salt['grains.get']('os', None) %}
 {% set os_family = salt['grains.get']('os_family', None) %}
 {% set backuppc_password = salt['pillar.get']('admin_password') %}
+{% set disk = salt['pillar.get']('disk', '/dev/vdb') %}
 
 us_locale:
   locale.present:
@@ -115,20 +116,20 @@ libxml-rss-perl:
     - marker_end: ');'
     - content: '    "json"                       => "JSON",'
 
-/dev/vdb:
+{{disk}}:
   blockdev.formatted:
     - onlyif:
-        - test -e /dev/vdb
+        - test -e {{disk}}
 
 
 /mnt/va-backup:
   mount.mounted:
-    - device: /dev/vdb
+    - device: {{disk}}
     - fstype: ext4
     - mkmnt: True
     - opts: defaults,noatime
     - onlyif:
-        - test -e /dev/vdb
+        - test -e {{disk}}
         
 'mv /var/lib/backuppc /mnt/va-backup/':
   cmd.run:

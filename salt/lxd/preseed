@@ -1,5 +1,5 @@
-config: {}
-cluster: null
+config:
+  core.https_address: '[::]:8443'
 networks:
 - config:
     ipv4.address: auto
@@ -8,7 +8,11 @@ networks:
   managed: false
   name: lxdbr0
   type: ""
-storage_pools: []
+storage_pools:
+- config: {}
+  description: ""
+  name: default
+  driver: dir
 profiles:
 - config: {}
   description: ""
@@ -18,4 +22,10 @@ profiles:
       nictype: bridged
       parent: lxdbr0
       type: nic
+    root:
+      path: /
+      pool: default
+      type: disk
   name: default
+cluster: null
+
