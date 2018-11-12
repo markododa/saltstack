@@ -99,19 +99,33 @@ def salt_keys():
     return minions
 
 
-def list_minions_ssh_keys(minion):
-    out = __salt__['cmd.run']('salt '+minion+' ssh.auth_keys root --output=json',runas='root', cwd = '/',python_shell=True)
+def list_minion_ssh_keys(minion):
+    out = __salt__['cmd.run']('salt '+minion+' ssh.auth_keys root -t 30 --output=json',runas='root', cwd = '/',python_shell=True)
     out = json.loads(out)
     # return out
     keys=[]
     for key in out[minion]:
-        keys.append({"minion":minion, "comment": out[minion][key]["comment"], "enc": out[minion][key]["enc"], "fingerprint": out[minion][key]["fingerprint"], "key": key, "key_short": key[:40]+'.....'+key[(len(key)-40):]})
+        keys.append({"minion":minion, "comment": out[minion][key]["comment"], "enc": out[minion][key]["enc"], "fingerprint": out[minion][key]["fingerprint"].replace(':', ''), "key": key, "key_short": key[:10]+'...'+key[(len(key)-20):]})
     return keys
 
-
+def list_minions_ssh_keys():
+    # out = __salt__['cmd.run']('salt-run manage.status -t 30 --output=json',runas='root', cwd = '/',python_shell=True)
+    # out = json.loads(out)
+    # out=[]
+    out={'va-master'}
+    all_keys=[]
+    # return out
+    for minion in out:
+        keys=list_minion_ssh_keys(minion)
+        # keys=[{"aaa":"sss"}]
+        for key in keys:
+            key['id']='text'
+            all_keys.append(key)
+        # minions.append({"minion":minion, "state": "OK", "status": "Up", "saltversion":grains[minion]["saltversion"], "os":grains[minion]["osfinger"], "role":grains[minion]["role"]})
+    return all_keys
 
 def list_minions():
-    out = __salt__['cmd.run']('salt-run manage.status --output=json',runas='root', cwd = '/',python_shell=True)
+    out = __salt__['cmd.run']('salt-run manage.status -t 30 --output=json',runas='root', cwd = '/',python_shell=True)
     out = json.loads(out)
     minions=[]
     for minion in out['down']:

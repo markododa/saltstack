@@ -36,6 +36,9 @@
         },{
             "key": "saltmaster.keys",
             "name": "Salt Keys"
+        },{
+            "key": "saltmaster.ssh",
+            "name": "SSH Keys"
         }, {
             "key": "saltmaster.pillars",
             "name": "Pillars"

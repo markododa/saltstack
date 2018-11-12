@@ -131,6 +131,75 @@ panels = {
 
         ]
     },
+    "saltmaster.ssh": {
+        "title": "SSH Keys",
+        "tbl_source": {
+            "table": {
+                "source": "list_minions_ssh_keys"
+            }
+        },
+        "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
+
+                    {
+                        "type": "Filter",
+                        "name": "Filter",
+                        "reducers": ["filter"]
+                    }
+                ]
+            },  {
+                "type": "Table",
+                "source":"list_minions_ssh_keys",
+                "name": "table",
+                "pagination": False,
+                "reducers": ["table", "panel", "alert", "filter"],
+                "columns": [
+                #     {
+                #         "key": "minion",
+                #         "label": "Minion name",
+                #     "width": "30%"
+                # },
+                {
+                        "key": "comment",
+                        "label": "User",
+                    "width": "25%"
+                }, {
+                        "key": "enc",
+                        "label": "Encryption",
+                    "width": "10%"
+                }, {
+                    "key": "key_short",
+                    "label": "SSH key (partial)",
+                    "width": "40%"
+                },{
+                    "key": "fingerprint",
+                    "label": "Fingerprint",
+                    "width": "40%"
+                }, {
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }],
+                "panels": {
+                    "view_graph": "saltmaster.graph"
+                },
+                "actions": [{
+                    "name": "Add to minion",
+                    "action": "minion_key_ept"
+                }, {
+                    "name": "Delete key",
+                    "action": "ssh_keey_delete",
+                    "class": "danger"
+                }],
+                "id": ["minion"]
+            }
+
+        ]
+    },
     "saltmaster.minions": {
         "title": "Minions",
         "tbl_source": {
@@ -182,14 +251,16 @@ panels = {
                     "width": "5%"
                 }],
                 "panels": {
-                    "ssh_keys": "saltmaster.list_ssh_keys",
-                    "month_history": "saltmaster.service_history_monthly",
-                    "week_history": "saltmaster.service_history_weekly",
+                    "ssh_keys": "saltmaster.list_ssh_keys"
+
                 },
                 "rowStyleCol": "state",
                 "actions": [{
                     "name": "List SSH keys",
                     "action": "ssh_keys"
+                },{
+                    "name": "Add known SSH key",
+                    "action": "add_ssh_keys_by_fingerprint"
                 }],
                 "id": ["minion"]
             }
@@ -200,26 +271,123 @@ panels = {
         "title": "Authorized SSH keys as root",
         "tbl_source": {
             "table": {
-                "source": "list_minions_ssh_keys"
+                "source": "list_minion_ssh_keys"
             }
         },
-        "content": [
-            {
-                "type": "Form",
-                "name": "form",
-                "class": "pull-right margina form-inline",
-                "elements": [
-
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
+        "content": [{
+            "type": "Form",
+            "name": "form",
+            "class": "tbl-ctrl",
+            "elements": [{
+                "type": "Button",
+                "name": "Add a known SSH key",
+                "glyph": "plus",
+                "action": "modal",
+                "reducers": ["modal"],
+                "modal": {
+                    "title": "Add a known SSH key",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Add backup",
+                        "class": "primary",
+                        "action": "add_known_key"
                     }
-                ]
-            },  {
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "text",
+                            "name": "key_code",
+                            "value": "",
+                            "label": "Fingerprint",
+                            "required": True
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form with the fingerprint of the SSH key"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "Find the SSH key fingerprint in the SSH Keys panel"
+                        }
+                        ]
+                    }
+                    ]
+                }
+            }, {
+                "type": "Button",
+                "name": "Add new SSH key",
+                "glyph": "plus",
+                "action": "modal",
+                "reducers": ["modal"],
+                "modal": {
+                    "title": "Add a new SSH key",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Add key",
+                        "class": "primary",
+                        "action": "add_ssh_key"
+                    }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "text",
+                            "name": "user",
+                            "value": "",
+                            "label": "User",
+                            "required": True
+                        }, {
+                            "type": "text",
+                            "name": "enc",
+                            "value": "",
+                            "label": "Encryption",
+                            "required": True
+                        }, {
+                            "type": "text",
+                            "name": "key",
+                            "value": "",
+                            "label": "Key",
+                            "required": True
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form to define a new SSH key"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "Enter all 3 parts of the key."
+                        }
+                        ]
+                    }
+                    ]
+                }
+            }
+            ]
+        },  {
                 "type": "Table",
                 "name": "table",
-                "pagination": False,
+                "pagination": True,
                 "reducers": ["table", "panel", "alert", "filter"],
                 "columns": [{
                         "key": "comment",
@@ -245,7 +413,7 @@ panels = {
                 },
                 "actions": [{
                     "name": "Remove",
-                    "action": "none"
+                    "action": "remove_ssh_key"
                 }],
                 "id": ["key"]
             }
