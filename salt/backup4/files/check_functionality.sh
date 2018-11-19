@@ -64,19 +64,31 @@ if [ $exitstate -lt "2" ]; then
 	fi
 fi
 
+
+
 text=$text' Oldest backup is '$D' days, '$H' hours, '$M' minutes old. Currently running Jobs: '$RUNNING', Failed jobs: '$FAILEDBACKUPS', Total hosts: '$TOTALBACKUPS', Hosts without backup: '$EMPTYBACKUPS'. Used pool space: '$SPACE'%'
 if [ -z "$SPACE" ]; then
- text="Can not test functionality. Permissions issue"
- exitstate=1
+text="Can not test functionality, permissions issue "
+exitstate=2
 fi
 
 service backuppc status > /dev/null
 OUT=$?
-if [ $OUT -gt 0 ];then
- text="BackupPC service is not running"
- exitstate=1
+if [ $OUT -eq 0 ];then
+   text=$text", service is running."
+else
+   text=$text", service is down."
+   exitstate=2
 fi
 
+OUT=`service backuppc status | grep 'Another BackupPC is running' |  wc -l`
+if [ $OUT -eq 1 ];then
+   pid=`service backuppc status | grep 'Another BackupPC is running' | sed  "s/.*(pid//" | sed  "s/); quitting.*//" `
+   text="Another instance is running with PID:"$pid". Trying to fix this..."
+   exitstate=2
+   kill -9 $pid
+   service backuppc start > /dev/null
+fi
 
 echo $text" | exit_status="$exitstate
 exit $exitstate
