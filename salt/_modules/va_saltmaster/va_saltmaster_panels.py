@@ -200,6 +200,107 @@ panels = {
 
         ]
     },
+    "saltmaster.integrations": {
+        "title": "Integrations",
+        "tbl_source": {
+            "table": {
+                "source": "list_minions_integrations"
+            }
+            # ,
+            # "down": {
+            #     "source": "list_minions_down"
+            # }
+        },
+        "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
+
+                    {
+                        "type": "Filter",
+                        "name": "Filter",
+                        "reducers": ["filter"]
+                    }
+                ]
+            },  {
+                "type": "Table",
+                "name": "table",
+                "pagination": False,
+                "reducers": ["table", "panel", "modal", "alert", "filter"],
+                "columns": [{
+                        "key": "minion",
+                        "label": "Minion",
+                    "width": "10%"
+                }, {
+                    "key": "role",
+                    "label": "Role",
+                    "width": "10%"
+                }, {
+                    "key": "integrations",
+                    "label": "Integration description",
+                    "width": "75%"
+                },{
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }],
+                "panels": {
+                    "ssh_keys": "saltmaster.list_ssh_keys"
+
+                },
+                "rowStyleCol": "state",
+                "actions": [{
+                    "name": "Apply to...",
+                    "action": "apply_integration"
+                }],
+                "id": ["minion"],
+                "modals": {
+                "apply_integration": {
+                    "title": "Apply integration",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Apply",
+                        "class": "primary",
+                        "action": "apply_integration"
+                    }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "text",
+                            "name": "new_data",
+                            "value": "",
+                            "label": "Target minion"
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form with the integration reciever"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "Operation can not be undone. Existing data will be overwritten if integration was applied before!"
+                        }
+                        ]
+                    }
+                    ]
+                }
+            }
+            }
+
+        ]
+    },
     "saltmaster.minions": {
         "title": "Minions",
         "tbl_source": {
@@ -251,11 +352,15 @@ panels = {
                     "width": "5%"
                 }],
                 "panels": {
-                    "ssh_keys": "saltmaster.list_ssh_keys"
+                    "ssh_keys": "saltmaster.list_ssh_keys",
+                    "hardware": "saltmaster.hardware"
 
                 },
                 "rowStyleCol": "state",
                 "actions": [{
+                    "name": "Hardware details",
+                    "action": "hardware"
+                },{
                     "name": "List SSH keys",
                     "action": "ssh_keys"
                 },{
@@ -263,6 +368,45 @@ panels = {
                     "action": "add_ssh_keys_by_fingerprint"
                 }],
                 "id": ["minion"]
+            }
+
+        ]
+    },
+    "saltmaster.hardware": {
+        "title": "Hardware details",
+        "tbl_source": {
+            "table": {
+                "source": "panel_minion_grains"
+            }
+        },
+        "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
+
+                    {
+                        "type": "Filter",
+                        "name": "Filter",
+                        "reducers": ["filter"]
+                    }
+                ]
+            },  {
+                "type": "Table",
+                "name": "table",
+                "pagination": False,
+                "reducers": ["table", "panel", "alert", "filter"],
+                "columns": [{
+                        "key": "item",
+                        "label": "Item",
+                    "width": "30%"
+                }, {
+                    "key": "value",
+                    "label": "Value",
+                    "width": "70%"
+                }],
+                "id": ["key"]
             }
 
         ]

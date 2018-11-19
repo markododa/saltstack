@@ -9,6 +9,15 @@ from va_utils import check_functionality as panel_check_functionality
 from va_utils import restart_functionality as restart_functionality
 from va_saltmaster_panels import panels
 
+
+integrations_text = {
+    'monitoring' : 'This will install and configure the NRPE agent on the Linux target. The agent will do local tests and return the results to the Monitoring App',
+    'directory'  : 'Does not provide out-of-the-box integration. A new user will be created in the Directory and all the details will be written in /root/integration_directory.txt on the target. Adjust the grouo membership of the user to control the permissions.',
+    'backup'     : 'SSH key will be uploaded to the target so that the user named backuppc will have access. Rsync will also be installed. Default backup paths will be imported. Manually review the Backup App panels later for adjusting other settings.',
+    'backup4'     : 'SSH key will be uploaded to the target so that the user named backuppc will have access. Rsync will also be installed. Default backup paths will be imported. Manually review the Backup4 App panels later for adjusting other settings.',
+    'email'      : 'Does not provide out-of-the-box integration. Mail server details will be written in /root/integration_email.txt. Directory integration might be required for authentication too.'
+}
+
 def get_panel(panel_name, provider='', service=''):
     users_panel = panels[panel_name]
     if panel_name == 'saltmaster.functionality':
@@ -64,6 +73,47 @@ def get_all_grains():
     grains = grains.replace('\n','').replace('}{',',').replace('Minion did not return. ','')
     grains = json.loads(grains)
     return grains
+
+def get_minion_grains(minion):
+    grains = __salt__['cmd.run']('salt '+minion+' grains.items --output=json',runas='root', cwd = '/',python_shell=True)
+    grains = grains.replace('\n','').replace('}{',',').replace('Minion did not return. ','')
+    grains = json.loads(grains)
+    return grains
+
+def panel_minion_grains(minion):
+    grains=get_minion_grains(minion)
+    keys=[]
+    # for key in grains:
+    keys.append({"item":"Hypervisor", "value" : grains[minion]["virtual"]})
+    keys.append({"item":"Cores", "value" : grains[minion]["num_cpus"]})
+    keys.append({"item":"Memory (MB)", "value" : grains[minion]["mem_total"]})
+    keys.append({"item":"Swap (MB)", "value" : grains[minion]["swap_total"]})
+
+
+    lista=grains[minion]["disks"]
+    if not lista:
+        raise Exception("Error")
+    else:
+        result = []
+        for item in lista:
+            if not "loop" in item:
+                result.append(item)
+
+    keys.append({"item":"Disks", "value" : result})
+
+
+    lista=grains[minion]["ipv4"]
+    if not lista:
+        raise Exception("Error")
+    else:
+        result = []
+        for item in lista:
+            if item != '127.0.0.1':
+                result.append(item)
+
+    keys.append({"item":"IPs", "value" : result})
+
+    return keys
 
 
 def minion_key_delete(minion):
@@ -174,6 +224,15 @@ def list_minions_details():
             minions.append({"minion":minion, "state": "Critical", "status": "Down", "saltversion":"", "os":"", "role":grains[minion]})
         else:
             minions.append({"minion":minion, "state": "OK", "status": "Up", "saltversion":grains[minion]["saltversion"], "os":grains[minion]["osfinger"], "role":grains[minion]["role"]})
+    return minions
+
+def list_minions_integrations():
+    out = __salt__['cmd.run']('salt-run manage.up --output=json',runas='root', cwd = '/',python_shell=True)
+    out = json.loads(out)
+    minions=[]
+    grains=get_all_grains()
+    for minion in out:
+        minions.append({"minion":minion, "integrations":integrations_text.get(grains[minion]["role"],"- Does not provide integration -"), "role":grains[minion]["role"]})
     return minions
 
 

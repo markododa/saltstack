@@ -43,6 +43,9 @@
             "key": "saltmaster.pillars",
             "name": "Pillars"
         }, {
+            "key": "saltmaster.integrations",
+            "name": "Integrations"
+        }, {
             "key": "saltmaster.functionality",
             "name": "Apps functionality"
         }
