@@ -38,6 +38,9 @@ base:
     - ticketing
     - lamp
     - openstack
+  'role:lxd':
+    - match: grain
+    - credentials
   'role:libvirt':
     - match: grain
     - credentials
