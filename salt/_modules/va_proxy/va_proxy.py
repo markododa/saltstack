@@ -62,6 +62,7 @@ def generate_config_line_for_cat(category):
     return line
 
 def get_groups():
+    """ api-help: Get a list of user groups. """
     e2_confs = [proxy_conf_dir + '/e2guardianf%s.conf' % (str(i)) for i in range(1, 4)]
     groups = []
     for conf in e2_confs:
@@ -103,6 +104,7 @@ def write_config_file_for_group(group, conf_type, new_data):
         f.write(new_data)
 
 def get_all_categories():
+    """ api-help: Get all categories. """
     categories=[d for d in os.listdir(proxy_conf_dir + '/lists/blacklists') if os.path.isdir(proxy_conf_dir + '/lists/blacklists/'+d)]
     return categories
 
@@ -116,6 +118,7 @@ def category_size(category):
     return total_size #/1024
 
 def get_banned_list(group):
+    """ api-help: Get a list of all banned hosts from a particular group. """
     conf_file = get_config_file_for_group(group, 'banned_site_list')
     conf_file = conf_file.split('\n')
 
@@ -228,18 +231,22 @@ def remove_exception_site(group, site):
     manage_file_remove(conf_file,site)
 
 def add_banned_site(group, site):
+    """ api-help: Get a list of banned websites. """
     manage_site_bans(group, site, 'bans')
 
 def remove_banned_site(group, site):
+    """ api-help: Remove a host from a particular category. """
     manage_site_bans(group, site, action = 'remove')
 
 def add_banned_category(group, category):
+    """ api-help: Add a category to a group of banned categories. """
     manage_site_bans(group, category, ban_type = 'included')
 
 def remove_banned_category(group, category):
     manage_site_bans(group, category, ban_type = 'included', action = 'remove')
 
 def get_exceptions_list(group):
+    """ api-help: Get a list of exceptions for a particular group. """
     conf_file = get_config_file_for_group(group, 'exception_site_list')
     conf_file = conf_file.split('\n')
 

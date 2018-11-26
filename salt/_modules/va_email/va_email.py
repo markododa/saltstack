@@ -4,6 +4,7 @@ from va_email_panels import panels
 
 
 def dovecot_quota():
+    """ api-help: Get used quota for all users. """
     return __salt__['cmd.run']('/usr/bin/doveconf plugin/quota_rule -h').split('=')[1:]
 
 def get_panel(panel_name, user = ''):
@@ -132,6 +133,7 @@ def get_conf_vars_file(vars, path):
     return get_conf_vars(vars, conf)
 
 def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
+    """ api-help: Lists all users from the ldap database. """
     schema_filter = __salt__['pillar.get']('schema_filter',default='')
     vars = ['hosts', 'dn', 'dnpass', 'base']
     vars = get_conf_vars_file(vars, path)
@@ -152,6 +154,7 @@ def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
 
 
 def list_users(email_domain=''):
+    """ api-help: Lists all users. """
     return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
     if email_domain == '':
         email_domain = email_domains()[0]
@@ -167,9 +170,11 @@ def get_wblist(ruleset, direction='inbound', account='@.'):
     return result
 
 def get_whitelist(ruleset='whitelist',direction='inbound', account='@.'):
+    """ api-help: Get whitelisted hosts. """
     return get_wblist(ruleset)
 
 def get_blacklist(ruleset='blacklist',direction='inbound', account='@.'):
+    """ api-help: Get blacklisted hosts. """
     return get_wblist(ruleset)
 
 def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
@@ -186,15 +191,20 @@ def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
 
 
 def add_filter_whitelist(filter=''):
+    """ api-help: Add whitelist rule. """
     return wbmanage('add','whitelist',filter)
 
 def add_filter_blacklist(filter=''):
+    """ api-help: Add blacklist rule. """
     return wbmanage('add','blacklist',filter)
 
 def delete_filter_whitelist(filter=''):
+    """ api-help: Delete whitelist rule. """
     return wbmanage('delete','whitelist',filter)
 
 def delete_filter_blacklist(filter=''):
+    """ api-help: Delete blacklist rule. """
+
     return wbmanage('delete','blacklist',filter)
 
 def panel_get_dns_config():
@@ -250,6 +260,7 @@ def get_dns_config():
     return domains
 
 def email_domains():
+    """ api-help: Get provisioned e-mail domains on the mail server. """
     return open('/etc/postfix/transport', 'r').read().lower().split(' dovecot\n')
 
 
@@ -257,6 +268,7 @@ def str_is_error(s):
     return re.search(r'^\(.*\)$', s) is not None
 
 def mail_queue():
+    """ api-help: Get the current mail queue. """
     output =  __salt__['cmd.run']('mailq')
 #    output = __salt__['cmd.run']('cat /root/testq.txt')
     output_lines = output.split('\n')[1:-2]
@@ -302,6 +314,7 @@ def force_mail_queue():
 
 
 def delete_mail_queue():
+    """ api-help: Delete the entire email queue. """
     x = subprocess.call(['/usr/sbin/postsuper', '-d' , 'ALL'])
 
     if x :
@@ -314,6 +327,7 @@ def delete_mail_queue():
     return {"data" : {}, "success" : is_success, "message" : return_message}
 
 def force_mail_queue_id(message_id):
+    """ api-help: Forces a resend of all e-mails in the queue. """
 #    return __salt__['cmd.run']('postqueue -i '+message_id)
     x = subprocess.call(['/usr/sbin/postqueue', '-i' , message_id])
 
@@ -327,6 +341,7 @@ def force_mail_queue_id(message_id):
     return {"data" : {}, "success" : is_success, "message" : return_message}
 
 def delete_mail_queue_id(message_id):
+    """ api-help: Deletes a single email of the queue by id. """
 # postsuper -d 5642B4D8647 
     x = subprocess.call(['/usr/sbin/postsuper', '-d' , message_id])
     #x = __salt__['cmd.run']('postsuper -d '+message_id)

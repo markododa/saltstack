@@ -103,6 +103,8 @@ def get_path_from_backup_number(hostname, backupnumber):
     return path
 
 def last_backup(host):
+    """ api-help: Get last backup. """
+
     result = map(int, backupNumbers(host))
     backupNum = max(backupNumbers(host))    
     return backupNum
@@ -227,6 +229,7 @@ def add_archive_host(hostname):
 
 #backup_arguments is a list of whatever other arugments we want, for instance {"SmbSharePasswd" : "pass", "SmbShareUserName" : "backuppc", "DumpPreUserCmd" : "arg", "DumpPostUserCmd" : "arg"}}
 def add_host(hostname, address=None, method='rsync', backup_arguments = {}):
+    """ api-help: Add new server for backup. """
 
     hostname = hostname.lower()
     if not address:
@@ -266,6 +269,8 @@ def rm_host(hostname):
     return retcode
 
 def add_folder(hostname, folder, backup_filter = ""):
+    """ api-help: Add new backup folder for an existing server. """
+
     host_conf = conf_file_to_dict(hostname)
     hostname = hostname.lower()
 
@@ -384,6 +389,8 @@ def get_folders_from_config(hostname):
     return folders
 
 def list_folders(hostnames):
+    """ api-help: List folders. """
+
     folders_list = dict()
     if type(hostnames) == str:
         hostnames = [hostnames]
@@ -399,6 +406,8 @@ def panel_list_folders():
     return data
 
 def listHosts():
+    """ api-help: List servers which are added to the backup system. """
+
     host_list = []
     with open(backuppc_hosts, "r") as h:
         for line in h:
@@ -708,6 +717,8 @@ def reset_schedule(hostname):
 
 
 def backupTotals(hostname):
+    """ api-help: Get backup statistics. """
+
     totalb = len(backupNumbers(hostname)) 
     return totalb
 
@@ -845,6 +856,8 @@ def write_backupinfo_json(hostname, backup):
         json.dumps(f.write(contents))
     
 def backup_info(hostname):
+    """ api-help: Get info for particular backup. """
+
     hostname = hostname.lower()
     backup_list = backupNumbers(hostname)
     content = []
@@ -978,6 +991,8 @@ def download_zip(hostname, backupnumber = -1, share = '', path = '.', range_from
             return curr_out[range_from % BLOCK_SIZE:]
 
 def restore_backup(hostname, backupnumber = -1, share = '',  path = '.', restore_host=''):
+    """ api-help: Restore a backup. """
+
     if restore_host == '':
         restore_host=hostname
     protocol = get_host_protocol(hostname)
