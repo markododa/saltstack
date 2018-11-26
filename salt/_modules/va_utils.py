@@ -1,4 +1,4 @@
-import salt, subprocess, json, importlib, sys, os, random, string
+import salt, subprocess, json, importlib, sys, os, random, string, inspect
 from va_salt_utils.va_pdf_utils import get_pdf
 from salt.client import LocalClient
 
@@ -18,6 +18,16 @@ def __init__(opts):
     global salt_panels
     salt_panels = __salt__
 
+def get_module_functions():
+    all_functions = {}
+    modules = ['va_backup', 'va_email', 'va_proxy']
+    for module in modules: 
+        imported_module = importlib.import_module(module)
+        module_functions = inspect.getmembers(imported_module, inspect.isfunction)
+        module_functions = [x for x in module_functions if 'api-help' in str(x[1].__doc__)]
+        all_functions[module] = module_functions
+
+    return all_functions
 
 def get_all_roles():
     cl = LocalClient()
@@ -147,7 +157,10 @@ def get_panel(module_name, panel_name, *args, **kwargs):
     else:
         panel = getattr(module, 'panels')
     panel = panel.get(panel_name)
-    temp_data = []
+    panel = parse_panel(panel, module_name, args, kwargs)
+    return panel
+
+def parse_panel(panel, module_name, args, kwargs):
     for t in panel['tbl_source']:
         table = panel['tbl_source'][t]
         panel_data = get_panel_data_for_table(table, module_name, *args, **kwargs)
@@ -163,5 +176,5 @@ def get_panel(module_name, panel_name, *args, **kwargs):
 #                    for element in content: 
 #                        element['value'] = content_data.get(element['name'], 'key not found')
             
-
     return panel
+
