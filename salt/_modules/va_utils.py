@@ -1,4 +1,4 @@
-import salt, subprocess, json, importlib, sys, os, random, string, inspect
+import salt, subprocess, json, importlib, sys, os, random, string, inspect, yaml
 from va_salt_utils.va_pdf_utils import get_pdf
 from salt.client import LocalClient
 
@@ -18,13 +18,52 @@ def __init__(opts):
     global salt_panels
     salt_panels = __salt__
 
-def get_module_functions():
+#Checks if a function is documented according to the VA standard
+#Basically, if you want a function to show up when calling get_module_functions(), it needs to: 
+#1. Have a __doc__ string
+#2. Said doc string needs to be yaml-formatted
+#3. It needs to be a dict
+#4. It needs to have the 'description', 'output' and 'arguments' keys, alongside any other keys you want. 
+#5. 'description' and 'output' are just strings, 'arguments' is a list of dictionaries, each dictionary having the name of the argument as a key and the description as a value. 
+#You can check out the functions we've written to see how it should look. 
+
+def function_is_documented(f):
+    """
+        description: Checks if a function is documented properly. In order for it to be so, it needs to have a __doc__ string which is yaml formatted, and it should be a dictionary with 'description', 'output' and 'arguments' keys, plus any others you want, where 'description' and 'output' are strings, and 'arguments' is a list of dictionaries where the key is the name of the argument, and the value is its description. 
+        arguments: 
+          - f: The function for whih the check is done
+        output: Boolean, whether the function is formatted. 
+        
+    """
+    doc = f.__doc__
+    #Make sure doc is not empty
+    if doc: 
+        #Check if doc is yaml
+        try: 
+            doc = yaml.load(doc)
+            #And dict
+            if type(doc) == dict: 
+                #It needs to have the 'description', 'output' and 'arguments' keys
+                if all([x in doc.keys() for x in ['description', 'output', 'arguments']]):
+                    #description and output should be strings, arguments should be a list of dictionaries. 
+                    if type(doc['description']) == str and type(doc['output']) == str and type(doc['arguments']) == list and all([type(x) == dict for x in doc['arguments']]):
+                        return True
+        except yaml.parser.ParserError: 
+            pass 
+    return False
+
+def get_documented_module_functions():
+    """
+        description: Returns all documented module functions. Documented functions are subject to some rules which can be seen in the function_is_documented() function documentation. 
+        arguments: []
+        output: A dictionary with module names as keys, and the value is a dictionary of all documented functions. Example: {"va_email" : {"list_users" : {"description" : "...", "output" : "...", "arguments" : [...]}, "add_user_ruls" : {...}}, ...}
+    """
     all_functions = {}
     modules = ['va_backup', 'va_email', 'va_proxy']
     for module in modules: 
         imported_module = importlib.import_module(module)
         module_functions = inspect.getmembers(imported_module, inspect.isfunction)
-        module_functions = [x for x in module_functions if 'api-help' in str(x[1].__doc__)]
+        module_functions = [[x[0], yaml.load(x[1].__doc__)] for x in module_functions if function_is_documented(x[1])]
         all_functions[module] = module_functions
 
     return all_functions
