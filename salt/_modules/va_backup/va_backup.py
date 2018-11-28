@@ -103,7 +103,13 @@ def get_path_from_backup_number(hostname, backupnumber):
     return path
 
 def last_backup(host):
-    """ api-help: Get last backup. """
+    """
+        "description": Get the last backup for the host. This works by looking in the /var/lib/backuppc/pc/host/ directory and finding all backups there. . 
+        "output": "An integer id of the last backup for the specified host. "
+        "arguments": 
+          - host: The hostname of the server. 
+    """
+
 
     result = map(int, backupNumbers(host))
     backupNum = max(backupNumbers(host))    
