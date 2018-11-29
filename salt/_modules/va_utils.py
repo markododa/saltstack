@@ -52,6 +52,8 @@ def function_is_documented(f):
             pass 
     return False
 
+
+
 def get_documented_module_functions():
     """
         description: Returns all documented module functions. Documented functions are subject to some rules which can be seen in the function_is_documented() function documentation. 
@@ -59,11 +61,11 @@ def get_documented_module_functions():
         output: A dictionary with module names as keys, and the value is a dictionary of all documented functions. Example: {"va_email" : {"list_users" : {"description" : "...", "output" : "...", "arguments" : [...]}, "add_user_ruls" : {...}}, ...}
     """
     all_functions = {}
-    modules = ['va_backup', 'va_email', 'va_proxy']
+    modules = ['va_backup', 'va_email', 'va_proxy', 'va_monitoring']
     for module in modules: 
         imported_module = importlib.import_module(module)
         module_functions = inspect.getmembers(imported_module, inspect.isfunction)
-        module_functions = [[x[0], yaml.load(x[1].__doc__)] for x in module_functions if function_is_documented(x[1])]
+        module_functions = [[x[0], x[1].__doc__] for x in module_functions if x[1].__doc__]
         all_functions[module] = module_functions
 
     return all_functions
