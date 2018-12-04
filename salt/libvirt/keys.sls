@@ -12,4 +12,5 @@ python-libvirt:
   file.directory
 
 libvirt_keys:
-  virt.keys
+  virt.keys:
+    - expiration_days: 3650
