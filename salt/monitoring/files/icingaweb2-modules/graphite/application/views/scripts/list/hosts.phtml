@@ -1,0 +1,64 @@
+<?php
+
+use Icinga\Module\Graphite\Web\Widget\Graphs\Host;
+use Icinga\Web\Url;
+
+/** @var \Icinga\Web\View $this */
+/** @var \Icinga\Web\Widget\FilterEditor $filterEditor */
+/** @var \Icinga\Module\Monitoring\Object\Host[] $hosts */
+/** @var bool $hasMoreHosts */
+/** @var \Icinga\Web\Url $baseUrl */
+
+if (! $compact): ?>
+<div class="controls">
+    <?= $tabs ?>
+    <?= $paginator ?>
+    <div class="sort-controls-container">
+        <?= $limiter ?>
+        <?= $sortBox ?>
+    </div>
+    <?= $filterEditor ?>
+    <?= $timeRangePicker ?>
+</div>
+<?php endif ?>
+<div class="content">
+<?php
+if (! empty($hosts)) {
+    foreach ($hosts as $host) {
+        $hostGraphs = (string) (new Host($host))->handleRequest();
+
+        if ($hostGraphs !== '') {
+            echo '<div class="grid-item">'
+                . '<h2>'
+                . $this->qlink(
+                    $host->host_name === $host->host_display_name
+                        ? $host->host_display_name
+                        : $host->host_display_name . ' (' . $this->escape($host->host_name) . ')',
+                    $baseUrl->with(['host' => $host->host_name]),
+                    null,
+                    ['data-base-target' => '_next']
+                )
+                . '</h2>'
+                . $hostGraphs
+                . '</div>';
+        }
+    }
+
+    if ($hasMoreHosts) {
+        echo '<div class="action-links">'
+            . $this->qlink(
+                mt('monitoring', 'Show More'),
+                $this->url()->without(array('view', 'limit')),
+                null,
+                [
+                    'class'             => 'action-link',
+                    'data-base-target'  => '_next'
+                ]
+            )
+            . '</div>';
+    }
+} else {
+    echo '<p>' . $this->escape(mt('monitoring', 'No hosts found matching the filter.')) . '</p>';
+}
+?>
+</div>

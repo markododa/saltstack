@@ -1,0 +1,121 @@
+div.images {
+    h3 {
+        clear: both;
+    }
+
+    img.svg {
+        float: left;
+        border: none;
+    }
+
+}
+
+div.images.monitored-object-detail-view {
+  display: block;
+
+  img.graphiteImg {
+    width: 100%;
+    display: block;
+  }
+}
+
+ul.legend {
+  background: #eee;
+  list-style-type: none;
+  margin: 0;
+  padding: 1em;
+  border: 1px solid #aaa;
+  max-width: 40em;
+
+  li {
+    display: inline-block;
+    width: 13em;
+  }
+
+  li div.color {
+    width: 1em;
+    height: 1em;
+    border: 1px solid #666;
+    margin-right: 0.5em;
+    float: left;
+  }
+
+  li a {
+    color: inherit;
+  }
+
+  li.disabled {
+    div.color {
+      border-style: dotted;
+    }
+
+    a {
+      font-style: italic;
+      text-decoration: line-through;
+    }
+  }
+}
+
+form[name=form_timerangepickercommon_graphite] {
+  display: inline;
+
+  select {
+    width: 7.5em;
+    margin-right: 0.25em;
+  }
+}
+
+form[name=form_timerangepickercustom_graphite] {
+  input[type=date] {
+    width: 12.5em;
+  }
+
+  input[type=time] {
+    width: 7.5em;
+  }
+}
+
+.flyover[id^="graphite-customrange-"] {
+  display: inline-block;
+  margin-left: 0.5em;
+}
+
+.grid-item {
+  display: inline-block;
+  border-radius: .25em;
+  border: 1px solid @gray-lighter;
+  min-width: 302px;
+  vertical-align: top;
+  margin-right: 1em;
+  margin-bottom: 1em;
+}
+
+.grid-item  h2 {
+  margin-top: 0;
+  background: @gray-lightest;
+  border-bottom: 1px solid @gray-lighter;
+  padding:.25em .5em;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.grid-item > .images:not(:last-child) {
+  margin-right: 1em;
+  display: inline-block;
+}
+
+.grid-item .graphiteImg {
+  margin-right: 1px;
+}
+
+.grid-item > p {
+  padding: .5em;
+  margin-bottom: 0;
+}
+
+p.load-more {
+  margin-right: 1em;
+  text-align: right;
+}
