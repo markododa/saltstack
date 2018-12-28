@@ -8,17 +8,17 @@
 {% set query_user = salt['pillar.get']('query_user') %}
 {% set query_password = salt['pillar.get']('query_password')  %}
 {% set search_base = domain|replace(".", ",dc=") %}
-{% set ldap_conf = 'va-ldap' %}
+{% set ldap_conf = 's01' %}
 
 setup:
   cmd.run:
     - runas: www-data
-    - cwd: /var/www/owncloud/
+    - cwd: /var/www/nextcloud/
     - name: |
         ./occ market:install user_ldap
         ./occ app:enable 'user_ldap'
         ./occ ldap:delete-config {{ ldap_conf }}
-        ./occ ldap:create-empty-config {{ ldap_conf }}
+        ./occ ldap:create-empty-config
         ./occ ldap:set-config {{ ldap_conf }} ldapAgentName '{{ salt['pillar.get']('query_user', '') }}@{{domain}}'
         ./occ ldap:set-config {{ ldap_conf }} ldapAgentPassword '{{ salt['pillar.get']('query_password', '') }}'
         ./occ ldap:set-config {{ ldap_conf }} ldapBase 'dc={{ search_base }}'

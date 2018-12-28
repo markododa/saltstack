@@ -1,15 +1,15 @@
 #!/bin/bash
 #
 # CHECK SCRIPT FOR VA-OWNCLOUD
-
+name=nextcloud
 exitstate=0
 text=""
 
 
-#OUT=`sudo -u www-data /var/www/owncloud/occ --version`
+#OUT=`sudo -u www-data /var/www/$name/occ --version`
 #text=$OUT":"
 
-OUT=`sudo -u www-data /var/www/owncloud/occ ldap:show-remnants | grep '^|'| wc -l`
+OUT=`sudo -u www-data /var/www/$name/occ ldap:show-remnants | grep '^|'| wc -l`
 OUT=$(($OUT-1))
 if [ $OUT -eq 0 ];then
     text="No ghost profiles"
@@ -41,10 +41,10 @@ else
 	#', '"Groups: $OUT"
 fi
 
-DIS=`sudo -u www-data /var/www/owncloud/occ app:list | grep '^Disabled:$' -A 1000 | wc -l`
+DIS=`sudo -u www-data /var/www/$name/occ app:list | grep '^Disabled:$' -A 1000 | wc -l`
 DIS=$(($DIS-1))
 
-OUT=`sudo -u www-data /var/www/owncloud/occ app:list | wc -l`
+OUT=`sudo -u www-data /var/www/$name/occ app:list | wc -l`
 OUT=$(($OUT-2))
 ENA=$(($OUT-$DIS))
 text=$text', '"Active apps: "$ENA'/'$OUT
