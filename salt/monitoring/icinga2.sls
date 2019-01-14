@@ -92,7 +92,7 @@ add-notifications-scripts:
       
 icinga2-feature:
   cmd.run:
-    - name: icinga2 feature enable api livestatus perfdata ido-mysql
+    - name: icinga2 feature enable api livestatus ido-mysql
 
 configure-icinga2:
   file.recurse:
