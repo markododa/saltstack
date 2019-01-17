@@ -84,11 +84,11 @@ panels = {
                 "class": "pull-right margina form-inline",
                 "elements": [
 
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
-                    }
+                    # {
+                    #     "type": "Filter",
+                    #     "name": "Filter",
+                    #     "reducers": ["filter"]
+                    # }
                 ]
             },  {
                 "type": "Table",
@@ -135,6 +135,9 @@ panels = {
         "title": "SSH Keys",
         "tbl_source": {
             "table": {
+                "source": "list_store_ssh_keys"
+            },
+            "root_keys": {
                 "source": "list_minions_ssh_keys"
             }
         },
@@ -142,19 +145,163 @@ panels = {
             {
                 "type": "Form",
                 "name": "form",
-                "class": "pull-right margina form-inline",
-                "elements": [
-
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
+                "class": "tbl-ctrl",
+                "elements": [{
+                "type": "Button",
+                "name": "Add new SSH key",
+                "glyph": "plus",
+                "action": "modal",
+                "reducers": ["modal"],
+                "modal": {
+                    "title": "Add a new SSH key",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Add key",
+                        "class": "primary",
+                        "action": "add_ssh_key_store"
                     }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "text",
+                            "name": "comment",
+                            "value": "",
+                            "label": "User",
+                            "required": True
+                        }, {
+                            "type": "text",
+                            "name": "enc",
+                            "value": "",
+                            "label": "Encryption",
+                            "required": True
+                        }, {
+                            "type": "text",
+                            "name": "key",
+                            "value": "",
+                            "label": "Key",
+                            "required": True
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form to define a new SSH key"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "Enter all 3 parts of the key."
+                        }
+                        ]
+                    }
+                    ]
+                }
+            }
+            # ,
+            #         {
+            #             "type": "Filter",
+            #             "name": "Filter",
+            #             "reducers": ["filter"]
+            #         }
                 ]
             },  {
                 "type": "Table",
-                "source":"list_minions_ssh_keys",
+                "source":"list_store_ssh_keys",
                 "name": "table",
+                "pagination": True,
+                "reducers": ["table", "panel", "alert", "filter"],
+                "columns": [
+                #     {
+                #         "key": "minion",
+                #         "label": "Minion name",
+                #     "width": "30%"
+                # },
+                {
+                        "key": "comment",
+                        "label": "Known key in SSH store",
+                    "width": "25%"
+                }, {
+                        "key": "enc",
+                        "label": "Encryption",
+                    "width": "10%"
+                }, {
+                    "key": "key_short",
+                    "label": "SSH key (partial)",
+                    "width": "25%"
+                },{
+                    "key": "fingerprint",
+                    "label": "Fingerprint",
+                    "width": "30%"
+                }, {
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }],
+                "panels": {
+                    "view_graph": "saltmaster.graph"
+                },
+                "actions": [{
+                    "name": "Upload to a minion",
+                    "action": "key_to_minion"
+                }, {
+                    "name": "Delete key from store",
+                    "action": "ssh_key_delete_store",
+                    "class": "danger"
+                }],
+                "id": ["comment","enc","key"],
+                "modals": {
+                "key_to_minion": {
+                    "title": "Upload the public key to a minion",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Apply",
+                        "class": "primary",
+                        "action": "upload_ssh_key_minion"
+                    }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "text",
+                            "name": "minion",
+                            "value": "",
+                            "label": "Target minion"
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Fill the form with the target minion name"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "You can remove the key later from the Minion panel."
+                        }
+                        ]
+                    }
+                    ]
+                }
+            }},
+            {
+                "type": "Table",
+                "source":"list_minions_ssh_keys",
+                "name": "root_keys",
                 "pagination": False,
                 "reducers": ["table", "panel", "alert", "filter"],
                 "columns": [
@@ -165,7 +312,7 @@ panels = {
                 # },
                 {
                         "key": "comment",
-                        "label": "User",
+                        "label": "Root access to va-master",
                     "width": "25%"
                 }, {
                         "key": "enc",
@@ -174,11 +321,11 @@ panels = {
                 }, {
                     "key": "key_short",
                     "label": "SSH key (partial)",
-                    "width": "40%"
+                    "width": "25%"
                 },{
                     "key": "fingerprint",
                     "label": "Fingerprint",
-                    "width": "40%"
+                    "width": "30%"
                 }, {
                     "key": "action",
                     "label": "Actions",
@@ -188,14 +335,13 @@ panels = {
                     "view_graph": "saltmaster.graph"
                 },
                 "actions": [{
-                    "name": "Add to minion",
-                    "action": "minion_key_ept"
-                }, {
-                    "name": "Delete key",
-                    "action": "ssh_keey_delete",
-                    "class": "danger"
+                    "name": "Copy to SSH store",
+                    "action": "key_to_store"
+                },{
+                    "name": "Download public key*",
+                    "action": "download_pubkey"
                 }],
-                "id": ["minion"]
+                "id": ["comment","enc","key"],
             }
 
         ]
@@ -206,10 +352,6 @@ panels = {
             "table": {
                 "source": "list_minions_integrations"
             }
-            # ,
-            # "down": {
-            #     "source": "list_minions_down"
-            # }
         },
         "content": [
             {
@@ -217,12 +359,6 @@ panels = {
                 "name": "form",
                 "class": "pull-right margina form-inline",
                 "elements": [
-
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
-                    }
                 ]
             },  {
                 "type": "Table",
@@ -247,56 +383,61 @@ panels = {
                     "width": "5%"
                 }],
                 "panels": {
-                    "ssh_keys": "saltmaster.list_ssh_keys"
+                    "apply_integration": "saltmaster.apply_integrations"
 
                 },
-                "rowStyleCol": "state",
                 "actions": [{
                     "name": "Apply to...",
                     "action": "apply_integration"
                 }],
-                "id": ["minion"],
-                "modals": {
-                "apply_integration": {
-                    "title": "Apply integration",
-                    "buttons": [{
-                        "type": "Button",
-                        "name": "Cancel",
-                        "action": "cancel"
-                    }, {
-                        "type": "Button",
-                        "name": "Apply",
-                        "class": "primary",
-                        "action": "apply_integration"
-                    }
-                    ],
-                    "content": [{
-                        "type": "Form",
-                        "name": "form",
-                        "class": "left",
-                        "elements": [{
-                            "type": "text",
-                            "name": "new_data",
-                            "value": "",
-                            "label": "Target minion"
-                        }
-                        ]
-                    }, {
-                        "type": "Div",
-                        "name": "div",
-                        "class": "right",
-                        "elements": [{
-                            "type": "Heading",
-                            "name": "Fill the form with the integration reciever"
-                        }, {
-                            "type": "Paragraph",
-                            "name": "Operation can not be undone. Existing data will be overwritten if integration was applied before!"
-                        }
-                        ]
-                    }
-                    ]
-                }
+                "id": ["minion","role"],
+
             }
+
+        ]
+    },
+    "saltmaster.apply_integrations": {
+        "title": "Integrations available",
+        "tbl_source": {
+            "table": {
+                "source": "apply_minions_integrations"
+            }
+        },
+        "content": [
+            {
+                "type": "Form",
+                "name": "form",
+                "class": "pull-right margina form-inline",
+                "elements": [
+                ]
+            },  {
+                "type": "Table",
+                "name": "table",
+                "pagination": False,
+                "reducers": ["table", "panel", "modal", "alert", "filter"],
+                "columns": [{
+                        "key": "from",
+                        "label": "Integrator (role)",
+                    "width": "15%"
+                }, {
+                    "key": "to",
+                    "label": "Target (role)",
+                    "width": "15%"
+                },{
+                    "key": "integrations",
+                    "label": "Integration description",
+                    "width": "65%"
+                },{
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }],
+                "actions": [{
+                    "name": "Integrate*",
+                    "action": "apply_integration_state"
+                }],
+                "id": ["minion","role","lookfor","target","target_role"],
+
             }
 
         ]
@@ -307,32 +448,108 @@ panels = {
             "table": {
                 "source": "list_minions_details"
             }
-            # ,
-            # "down": {
-            #     "source": "list_minions_down"
-            # }
         },
         "content": [
             {
                 "type": "Form",
                 "name": "form",
-                "class": "pull-right margina form-inline",
-                "elements": [
-
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
+                # "class": "pull-right margina form-inline",
+                "elements": [{
+                "type": "Button",
+                "name": "Bulk Updates",
+                "glyph": "refresh",
+                "action": "modal",
+                "reducers": ["modal"],
+                "modal": {
+                    "title": "Perform upgrade action",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Run action",
+                        "class": "primary",
+                        "action": "bulk_update_minions"
                     }
+                    ],
+                    "content": [{
+                        "type": "Form",
+                        "name": "form",
+                        "class": "left",
+                        "elements": [{
+                            "type": "dropdown",
+                            "name": "bulk_update_command",
+                            "values": ["Check for updates", "Upgrade all"],
+                            "label": "Type",
+                            "required": True
+                        }, {
+                            "type": "checkbox",
+                            "name": "distro",
+                            "value": False,
+                            "label": "Latest distro",
+                            "required": False
+                        }
+                        ]
+                    }, {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Pick a command to be run on all online minions"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "It takes time for the command to complete. Please wait after pressing the action."
+                        }
+                        ]
+                    }
+                    ]
+                }
+            },{
+                "type": "Button",
+                "name": "Sync Salt",
+                "glyph": "transfer",
+                "action": "modal",
+                "reducers": ["modal"],
+                "modal": {
+                    "title": "Sync minions",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Sync all",
+                        "class": "primary",
+                        "action": "salt_sync_all"
+                    }
+                    ],
+                    "content": [{
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Sync down all of the dynamic modules"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "This function synchronizes custom modules, states, beacons, grains, returners, output modules, renderers and utils."
+                        }
+                        ]
+                    }
+                    ]
+                }
+            }
                 ]
             },  {
                 "type": "Table",
                 "name": "table",
-                "pagination": False,
+                "source": "list_minions_details",
                 "reducers": ["table", "panel", "alert", "filter"],
                 "columns": [{
-                        "key": "minion",
-                        "label": "Minion name",
+                    "key": "minion",
+                    "label": "Minion name",
                     "width": "20%"
                 }, {
                     "key": "role",
@@ -353,22 +570,66 @@ panels = {
                 }],
                 "panels": {
                     "ssh_keys": "saltmaster.list_ssh_keys",
-                    "hardware": "saltmaster.hardware"
-
+                    "hardware": "saltmaster.hardware",
+                    "minion_upgrades": "saltmaster.minion_upgrades"
                 },
                 "rowStyleCol": "state",
                 "actions": [{
                     "name": "Hardware details",
                     "action": "hardware"
                 },{
-                    "name": "List SSH keys",
+                    "name": "Manage SSH access",
                     "action": "ssh_keys"
                 },{
-                    "name": "Add known SSH key",
-                    "action": "add_ssh_keys_by_fingerprint"
+                    "name": "List updates",
+                    "action": "minion_upgrades"
+                },{
+                    "name": "Update'n'upgrade all packages",
+                    "action": "upgrade_all_packages",
+                        "class": "danger",
                 }],
-                "id": ["minion"]
+                "id": ["minion"],
+            "modals": {
+                "upgrade_all_packages": {
+                    "title": "Upgrade all packages",
+                    "buttons": [{
+                        "type": "Button",
+                        "name": "Cancel",
+                        "action": "cancel"
+                    }, {
+                        "type": "Button",
+                        "name": "Upgrade all",
+                        "class": "primary",
+                        "action": "minion_upgrade_all"
+                    }
+                    ],
+                    "content": [
+                    #     {
+                    #     "type": "Form",
+                    #     "name": "form",
+                    #     "class": "left",
+                    #     "elements": [
+                    #         #Confirmation?
+                    #     ]
+                    # },
+                    {
+                        "type": "Div",
+                        "name": "div",
+                        "class": "right",
+                        "elements": [{
+                            "type": "Heading",
+                            "name": "Install all avaiable upgrades"
+                        }, {
+                            "type": "Paragraph",
+                            "name": "Upgrade can take some time. This dialog will be closed at the end of the process. Please wait."
+                        }
+                        ]
+                    }
+                    ]
+                }
             }
+
+                }
 
         ]
     },
@@ -386,11 +647,11 @@ panels = {
                 "class": "pull-right margina form-inline",
                 "elements": [
 
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
-                    }
+                    # {
+                    #     "type": "Filter",
+                    #     "name": "Filter",
+                    #     "reducers": ["filter"]
+                    # }
                 ]
             },  {
                 "type": "Table",
@@ -459,68 +720,10 @@ panels = {
                         "class": "right",
                         "elements": [{
                             "type": "Heading",
-                            "name": "Fill the form with the fingerprint of the SSH key"
+                            "name": "Fill the form with the SSH key fingerprint without colon signs"
                         }, {
                             "type": "Paragraph",
-                            "name": "Find the SSH key fingerprint in the SSH Keys panel"
-                        }
-                        ]
-                    }
-                    ]
-                }
-            }, {
-                "type": "Button",
-                "name": "Add new SSH key",
-                "glyph": "plus",
-                "action": "modal",
-                "reducers": ["modal"],
-                "modal": {
-                    "title": "Add a new SSH key",
-                    "buttons": [{
-                        "type": "Button",
-                        "name": "Cancel",
-                        "action": "cancel"
-                    }, {
-                        "type": "Button",
-                        "name": "Add key",
-                        "class": "primary",
-                        "action": "add_ssh_key"
-                    }
-                    ],
-                    "content": [{
-                        "type": "Form",
-                        "name": "form",
-                        "class": "left",
-                        "elements": [{
-                            "type": "text",
-                            "name": "user",
-                            "value": "",
-                            "label": "User",
-                            "required": True
-                        }, {
-                            "type": "text",
-                            "name": "enc",
-                            "value": "",
-                            "label": "Encryption",
-                            "required": True
-                        }, {
-                            "type": "text",
-                            "name": "key",
-                            "value": "",
-                            "label": "Key",
-                            "required": True
-                        }
-                        ]
-                    }, {
-                        "type": "Div",
-                        "name": "div",
-                        "class": "right",
-                        "elements": [{
-                            "type": "Heading",
-                            "name": "Fill the form to define a new SSH key"
-                        }, {
-                            "type": "Paragraph",
-                            "name": "Enter all 3 parts of the key."
+                            "name": "Fingerprint can be copied form the SSH Keys panel. Only keys from the SSH store can be used. This will allow root access to the minion instance."
                         }
                         ]
                     }
@@ -532,6 +735,7 @@ panels = {
                 "type": "Table",
                 "name": "table",
                 "pagination": True,
+
                 "reducers": ["table", "panel", "alert", "filter"],
                 "columns": [{
                         "key": "comment",
@@ -557,9 +761,52 @@ panels = {
                 },
                 "actions": [{
                     "name": "Remove",
-                    "action": "remove_ssh_key"
+                    "action": "remove_ssh_key_minion"
                 }],
-                "id": ["key"]
+                "id": ["comment","enc","key","minion"],
+                "source": "list_minion_ssh_keys",
+            }
+
+        ]
+    },
+    "saltmaster.minion_upgrades": {
+        "title": "Available upgrades",
+        "tbl_source": {
+            "table": {
+                "source": "list_minion_upgrades"
+            }
+        },
+        "content": [{
+            "type": "Form",
+            "name": "form",
+            "class": "tbl-ctrl",
+            "elements": [
+
+            ]
+        },  {
+                "type": "Table",
+                "name": "table",
+                # "source": "list_minions_details",
+                "pagination": True,
+                "reducers": ["table", "panel", "alert", "filter"],
+                "columns": [{
+                        "key": "package",
+                        "label": "Package",
+                    "width": "55%"
+                }, {
+                        "key": "ver",
+                        "label": "Version",
+                    "width": "40%"
+                }, {
+                    "key": "action",
+                    "label": "Actions",
+                    "width": "5%"
+                }],
+                "actions": [{
+                    "name": "Upgrade",
+                    "action": "minion_upgrade"
+                }],
+                "id": ["package"]
             }
 
         ]
@@ -578,16 +825,16 @@ panels = {
                 "class": "pull-right margina form-inline",
                 "elements": [
 
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
-                    }
+                    # {
+                    #     "type": "Filter",
+                    #     "name": "Filter",
+                    #     "reducers": ["filter"]
+                    # }
                 ]
             },  {
                 "type": "Table",
                 "name": "table",
-                "pagination": False,
+                "pagination": True,
                 "reducers": ["table", "panel", "alert", "filter"],
                 "columns": [{
                         "key": "pillar",
@@ -625,19 +872,20 @@ panels = {
         "title": "Functionality tests",
         "tbl_source": {},
         "content": [
-            {
-                "type": "Form",
-                "name": "form",
-                "class": "pull-right margina form-inline",
-                "elements": [
+            # {
+            #     "type": "Form",
+            #     "name": "form",
+            #     "class": "pull-right margina form-inline",
+            #     "elements": [
 
-                    {
-                        "type": "Filter",
-                        "name": "Filter",
-                        "reducers": ["filter"]
-                    }
-                ]
-            }, {
+            #         {
+            #             "type": "Filter",
+            #             "name": "Filter",
+            #             "reducers": ["filter"]
+            #         }
+            #     ]
+            # },
+             {
                 "type": "MultiTable",
                 "name": "div",
                 "reducers": ["table"],
@@ -650,13 +898,13 @@ panels = {
                     "columns": [{
                         "key": "state",
                         "label": "State",
-                        "width": "8%"
+                        "width": "10%"
                     },{
                         "key": "output",
                         "label": "Output",
-                        "width": "70%"
+                        "width": "90%"
                     }
-                    # , {
+                    #, {
                     #     "key": "action",
                     #     "label": "Actions",
                     #     "width": "5%"
@@ -664,12 +912,6 @@ panels = {
                     ],
                     "panels": {
                         "view_graph": "monitoring.graph",
-                        "view_multi_graph": "monitoring.multi_charts",
-                        "view_multi_graph_1h": "monitoring.multi_charts_1h",
-                        "view_multi_graph_1d": "monitoring.multi_charts_1d",
-                        "view_multi_graph_1w": "monitoring.multi_charts_1w",
-                        "month_history": "monitoring.service_history_monthly",
-                        "week_history": "monitoring.service_history_weekly",
                     },
                     "rowStyleCol": "state",
                     "actions": [
