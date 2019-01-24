@@ -48,11 +48,16 @@ wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip
   file.managed:
     - source: salt://va-master/consul.service
 
+mv /usr/share/consul /var/lib/:
+  cmd.run:
+    - unless: test -d /var/lib/consul
+
 consul:
   service.running:
     - enable: True
+    - restart: True
     - watch:
-      - file: /etc/systemd/system/consul.service
+      - file: /etc/consul.d/consul.json
 
 pip install --upgrade setuptools :
   cmd.run
@@ -121,3 +126,4 @@ check_functionality_va_master:
     - content: /var/log/vapourapps/va-master.log
     - after: /var/log/syslog
     - mode: ensure
+
