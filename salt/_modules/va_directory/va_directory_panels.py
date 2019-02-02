@@ -326,7 +326,6 @@ panels = {
             },
             "panels": {
                 "list_logins": "directory.list_logins",
-                #"manage_user_membership": "directory.manage_user_membership",
                 "manage_user_membership_mixed": "directory.manage_user_membership_mixed",
                 "edit_user_details": "directory.edit_user_details"
             },
@@ -350,10 +349,6 @@ panels = {
                         }, {
                         "name": "Unlock user",
                         "action": "unlock_user"
-                        # }, {
-                        # "name": "List logins",
-                        # "action": "list_logins"
-                        #
                         }, {
                         "name": "Manage groups",
                         "action": "manage_user_membership_mixed"

@@ -10,7 +10,8 @@ panels = {
                 "module": "va_utils"
             }
         },
-        "content": [{
+        "content": [
+            {
                 "type": "Table",
                 "name": "table_chkf",
                 "pagination": False,
