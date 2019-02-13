@@ -46,11 +46,7 @@ def host_file(hostname):
     filename = backuppc_pc_dir+'/'+hostname+'.pl'
     return filename
 
-#def get_panel(panel_name, host = '', backupNum = -1):
 def get_panel(panel_name, server_name = '', backupNum = -1):
-    # host = server_name
-    # ppanel = panels[panel_name]
-    # hostnames = listHosts()
     if panel_name == "backup.browse":
         host = server_name
         ppanel = panels[panel_name]
@@ -90,7 +86,6 @@ def dir_structure1_old(host, *args):
         if key in attrib:
             a = attrib[key]
             size, time = (a['size'], a['time'])
-#        if not (siz///':
         if type == 'folder' or size != '...':
             if type == 'folder':
                 sortkey = 'a'
@@ -119,8 +114,6 @@ def dir_structure1(host, *args):
         for share in shares:
             result.append({'hash':'','type':'folder',"permissions": '', 'unknown' :'','size': '','dir': share, 'time': '/'})
         return result
-
-        #return shares only
     else:
         backupNum = args[0]
         # attrib = backup_attrib(host, *args)
@@ -136,9 +129,7 @@ def dir_structure1(host, *args):
         host ='"'+str(host)+'"'
         backupNum = '"'+str(backupNum)+'"'
         share = '"'+str(share)+'"'
-        # return path
         bash_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_ls -h ' + host + ' -n ' + backupNum + ' -s ' + share + ' ' + path]
-        # return bash_cmd
 
         try:
             text = subprocess.check_output(bash_cmd)
@@ -206,25 +197,29 @@ def add_default_paths(hosts = []):
             result = add_folder(host, path)
     return True
 
-
 def test_ip_ssh(ip_addr):
     try:
         cmd = ['nc', '-w','3','-z', ip_addr, '22']
-        subprocess.check_output(cmd)
-        return True
+        x=subprocess.call(cmd)
+        if x:
+            return False
+        else:
+            return True
     except:
         return False
 
 def test_session_ssh(ip_addr, r_user='root', l_user=None):
+    # return True
     try:
         if not l_user:
-            cmd = ['ssh', '-q', r_user+'@'+ip_addr, 'exit']
+            cmd = ['ssh', '-q', r_user+'@'+ip_addr, ' exit']
         else:
-            # '/bin/su', 'backuppc', '-c','/usr/share/backuppc/bin/BackupPC_serverMesg status info'
-            cmd = ['/bin/su', l_user, '-c', 'ssh -q '+ r_user+'@'+ip_addr+' exit']
-        print cmd
-        subprocess.check_output(cmd)
-        return True
+            cmd = ['/bin/su','-s', '/bin/sh', l_user, '-c', 'ssh -q '+ r_user+'@'+ip_addr+' exit']
+        x=subprocess.call(cmd)
+        if x:
+            return False
+        else:
+            return True
     except:
         return False
 
@@ -286,11 +281,12 @@ def add_rsync_host(hostname, address = None, password = None):
     if password:
         exitcode=putkey_windows(hostname, password)
     else:
-        exitcode = __salt__['event.send']('backuppc/copykey', minion=hostname)
+        exitcode = __salt__['event.send']('backup4/copykey', minion=hostname)
+        #return exitcode (always true)
     #lets make real ssh test
     exitcode = test_session_ssh(address, 'root', 'backuppc')
     if not exitcode:
-        return {"success" : False, "message" : "Can not add SSH key to "+hostname, "data" : {}}
+        return {"success" : False, "message" : "Adding SSH key to "+hostname+" failed!", "data" : {}}
 
     exitcode = __salt__['cmd.retcode'](cmd=rm_key+address, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
     if exitcode:
@@ -625,7 +621,7 @@ def panel_statistics():
                 # {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
                 {'key' : 'Pool usage last count (%)', 'value': text['DUDailyMax']},
                 {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']},
-                {'key' : 'Pool size (GB)', 'value': int(text['cpool4Kb'])/1024/1024}]
+                {'key' : 'Pool size (GB)', 'value': round(int(text['cpool4Kb'])*1.073741824/1024/1024)}] #GiB to GB
 
 
     except subprocess.CalledProcessError as e:
