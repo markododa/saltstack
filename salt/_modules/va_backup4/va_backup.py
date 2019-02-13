@@ -279,14 +279,16 @@ def add_rsync_host(hostname, address = None, password = None):
         address = get_ip(hostname) or hostname
 
     if password:
+        #will use the password to upload ssh key
         exitcode=putkey_windows(hostname, password)
     else:
+        #will try to push the key from the master if it is a minion
         exitcode = __salt__['event.send']('backup4/copykey', minion=hostname)
         #return exitcode (always true)
     #lets make real ssh test
     exitcode = test_session_ssh(address, 'root', 'backuppc')
     if not exitcode:
-        return {"success" : False, "message" : "Adding SSH key to "+hostname+" failed!", "data" : {}}
+        return {"success" : False, "message" : "Adding SSH key to "+hostname+"("+address+") failed!", "data" : {}}
 
     exitcode = __salt__['cmd.retcode'](cmd=rm_key+address, runas='backuppc', shell='/bin/bash',cwd='/var/lib/backuppc')
     if exitcode:
