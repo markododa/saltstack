@@ -627,14 +627,18 @@ panels = {
             "columns": [{
                 "key": "dir",
                 "label": "Files/Folders",
-                "width": "30%",
+                "width": "40%",
                 "action": "folder:dir_structure1",
                 "colClass": "type"
             }, {
                 "key": "size",
-                "label": "Size",
+                "label": "Size (bytes)",
                 "width": "10%",
             }, {
+                "key": "msize",
+                "label": "Size (MB)",
+                "width": "10%",
+            },{
                 "key": "time",
                 "label": "Time"
             }, {
@@ -718,7 +722,7 @@ panels = {
                 "reducers": ["table"],
                 "datasets": [{
                     "column": "sizeGraph",
-                    "label": "Size of Full backups (MiB)",
+                    "label": "Size of the full backups (MB)",
                     "backgroundColor": "#337ab788",
                     "borderColor": "#337ab7",
 
@@ -944,3 +948,4 @@ panels = {
         }]
     }
 }
+

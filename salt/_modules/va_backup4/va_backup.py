@@ -112,7 +112,7 @@ def dir_structure1(host, *args):
         result = []
         shares =  get_folders_from_config(host)
         for share in shares:
-            result.append({'hash':'','type':'folder',"permissions": '', 'unknown' :'','size': '','dir': share, 'time': '/'})
+            result.append({'hash':'','type':'folder',"permissions": '', 'unknown' :'','size': '','msize': '','dir': share, 'time': '/'})
         return result
     else:
         backupNum = args[0]
@@ -143,7 +143,7 @@ def dir_structure1(host, *args):
                     perm = line[0:10]
                     unknown = line[11:20].strip()
 
-                    timestamp = line[32:51]
+                    timestamp = line[32:52]
                     filename = line.split('/')[2:]
                     filename= '/'.join(filename).rstrip()
                     filename=filename[pathlen:]
@@ -154,6 +154,7 @@ def dir_structure1(host, *args):
                         filename=filename[0:len(filename)-1]
                         sortkey='a'
                         size=''
+                        msize=''
                     else:
                         ftype='file'
                         filename=filename.split('(')
@@ -162,9 +163,11 @@ def dir_structure1(host, *args):
                         filename=filename[0:len(filename)-1]
                         filename= '('.join(filename).rstrip()
                         sortkey='z'
-                        size = long(line[21:31].strip())
-
-                    result.append({'sortkey':sortkey,"hash":fhash,'type':ftype,"permissions": perm, 'unknown' :unknown,'size': size,'dir': filename, 'time': timestamp, 'zzzz_all':path})
+                        size = long(line[21:32].strip())
+                        msize = ''
+                        msize = round(float(size)/1024/1024,2)
+#unknown is most likely uid/guid
+                    result.append({'sortkey':sortkey,"hash":fhash,'type':ftype,"permissions": perm, 'unknown' :unknown,'size': size,'msize': msize,'dir': filename, 'time': timestamp, 'zzzz_all':path})
 
             result = sorted(result, key = lambda x: (x['sortkey'],x['dir'].lower()), reverse = False)
             return result
@@ -623,7 +626,7 @@ def panel_statistics():
                 # {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']},
                 {'key' : 'Pool usage last count (%)', 'value': text['DUDailyMax']},
                 {'key' : 'Pool usage yesterday (%)', 'value': text['DUDailyMaxPrev']},
-                {'key' : 'Pool size (GB)', 'value': round(int(text['cpool4Kb'])*1.073741824/1024/1024)}] #GiB to GB
+                {'key' : 'Pool size (GB)', 'value': round(int(text['cpool4Kb'])/1024/1024)}] #GiB to GB *1.073741824 ?
 
 
     except subprocess.CalledProcessError as e:
@@ -1046,19 +1049,19 @@ def backup_info(hostname):
             if a > 0 and json_data["endTime"]>-1:
                 info.update({
                     "age" : str("%d day(s) %d:%02d") % (d, h, m),
-                    "backup" : str(backup),
+                    "backup" : int(backup),
                     # "absolute_age" : a
                 })
             else:
                 info.update({
                 "age" : '-',
-                "backup" : str(backup),
+                "backup" : int(backup),
                 # "absolute_age" : a
             })
         else:
             info.update({
                 "age" : 'active',
-                "backup" : str(backup),
+                "backup" : int(backup),
                 # "absolute_age" : a
             })
         #NOPE #info["age"] = str(datetime.timedelta(seconds = (int(time.time()) - int(f["endTime"]))))

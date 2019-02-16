@@ -17,7 +17,7 @@ def parse_pool_data(start = '-120d', interval = '60'):
         y1= row[1]
         y2= row[4]
         if not y1 is None:
-            result.append({'timestamp': x, 'full_size': round(y1/1024/1024*1.073741824), 'after_optimization':round(y2/1024/1024*1.073741824)})
+            result.append({'timestamp': x, 'full_size': round(y1/1024/1024), 'after_optimization':round(y2/1024/1024)})
         timestamp+= resolution
 
     return result
