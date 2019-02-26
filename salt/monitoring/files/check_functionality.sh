@@ -14,6 +14,7 @@ else
     text=$text""
 fi
 
+if [ -d /var/lib/pnp4nagios/perfdata/ ]; then
 grep '<RC>' /var/lib/pnp4nagios/perfdata/* -R > /dev/null
 if [ $? -eq 0 ];then
 
@@ -40,6 +41,7 @@ if [ $OUT -eq 0 ];then
 else
    text=$text"Chart service is DOWN. "
    exitstate=2
+fi
 fi
 
 service icinga2 status > /dev/null
