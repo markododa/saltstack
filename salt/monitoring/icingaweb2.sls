@@ -1,6 +1,6 @@
 include:
   - monitoring.icinga2
-#  - monitoring.pnp4nagios
+  - monitoring.graphite
 
 install_icingaweb2:
   pkg.installed:

@@ -4,6 +4,9 @@ add-backports:
      - name: deb http://ftp.debian.org/debian stretch-backports main
      - file: /etc/apt/sources.list.d/backports.list
 
+apt install -t stretch-backports icingaweb2:
+  cmd.run
+
 install_graphite:
   pkg.installed:
     - pkgs:
@@ -17,7 +20,7 @@ icinga2 feature enable graphite:
 graphite-manage migrate --settings=graphite.settings --run-syncdb:
   cmd.run
 
-chown -R _graphite:_graphite /var/lib/graphite/graphite.db:
+chown -R _graphite:_graphite /var/lib/graphite/graphite.db /var/log/graphite:
   cmd.run
 
 cp /usr/share/graphite-web/apache2-graphite.conf /etc/apache2/sites-available/:

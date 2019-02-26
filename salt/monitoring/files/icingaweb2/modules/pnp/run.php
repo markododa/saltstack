@@ -1,4 +1,0 @@
-<?php
-
-$this->provideHook('grapher');
-
