@@ -39,10 +39,11 @@ a2enmod wsgi; a2ensite apache2-graphite.conf:
     - after: Listen 80$
     - mode: ensure
 
-apache2:
+apache2-graphite:
   service.running:
     - enable: True
     - reload: True
+    - name: apache2
     - watch:
       - pkg: install_graphite
 
@@ -50,7 +51,7 @@ apache2:
   file.recurse:
       - source: salt://monitoring/files/icingaweb2-modules/
 
-enable-module-monitoring:
+enable-module-graphite:
   cmd.run:
     - name: ln -s /usr/share/icingaweb2/modules/graphite /etc/icingaweb2/enabledModules/graphite
     - onlyif: test ! -e /etc/icingaweb2/enabledModules/graphite
