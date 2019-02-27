@@ -17,7 +17,7 @@ install_gnutls:
 libvirtd:
   file.managed:
     - name: /etc/default/libvirtd
-    - contents: 'LIBVIRTD_ARGS="--listen"'
+    - contents: 'libvirtd_opts="--listen"'
   virt.keys:
     - require:
       - pkg: gnutls-bin
