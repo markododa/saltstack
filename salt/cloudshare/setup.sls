@@ -191,6 +191,10 @@ curl {{ipaddrss}} > /dev/null:
 
 # sudo -u www-data php /var/www/nextcloud/occ app:enable files_share_qr
   # cmd.run
+{% for app in ['tasks','calendar','contacts'] %}
+sudo -u www-data php /var/www/nextcloud/occ app:install {{ app }}:
+  cmd.run
+{% endfor %}
 
 #generating sertificate/installing  
 #http://codereview.stackexchange.com/questions/117956/automated-nextcloud-installation-script
