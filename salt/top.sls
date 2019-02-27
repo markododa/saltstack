@@ -6,7 +6,7 @@ base:
     - base.dns
   'role:monitoring':
     - match: grain
-    - monitoring.icingaweb2
+    - monitoring
   'role:directory':
     - match: grain
     - directory
