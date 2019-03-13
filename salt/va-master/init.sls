@@ -1,3 +1,3 @@
 include:
-  - consul
-  - va-master
+  - va-master.consul
+  - va-master.va-master

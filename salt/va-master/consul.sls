@@ -8,14 +8,14 @@ wget -q https://releases.hashicorp.com/consul/1.4.3/consul_1.4.3_linux_amd64.zip
   cmd.run:
     - creates: /root/consul_1.4.3_linux_amd64.zip
     - require:
-      - pkg: wget
+      - pkg: install_consul_pkgs
 
 /usr/bin:
   archive.extracted:
     - source: /root/consul_1.4.3_linux_amd64.zip
     - enforce_toplevel: False
     - require:
-      - pkg: unzip
+      - pkg: install_consul_pkgs
 
 /etc/consul.d:
   file.directory
