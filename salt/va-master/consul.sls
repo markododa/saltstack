@@ -1,11 +1,21 @@
+install_consul_pkgs:
+  pkg.installed:
+    - pkgs:
+      - wget
+      - unzip
+
 wget -q https://releases.hashicorp.com/consul/1.4.3/consul_1.4.3_linux_amd64.zip:
   cmd.run:
     - creates: /root/consul_1.4.3_linux_amd64.zip
+    - require:
+      - pkg: wget
 
 /usr/bin:
   archive.extracted:
     - source: /root/consul_1.4.3_linux_amd64.zip
     - enforce_toplevel: False
+    - require:
+      - pkg: unzip
 
 /etc/consul.d:
   file.directory
@@ -23,9 +33,6 @@ mv /usr/share/consul /var/lib/:
     - unless: test -d /var/lib/consul
     - onlyif: test -d /usr/share/consul
 
-consul:
-  service.running:
-    - enable: True
-    - restart: True
-    - watch:
-      - file: /etc/consul.d/consul.json
+systemctl enable consul --now:
+ cmd.run:
+      - unless: test -f  /.dockerenv
