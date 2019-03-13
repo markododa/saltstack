@@ -21,6 +21,7 @@ wget -q https://releases.hashicorp.com/consul/1.4.3/consul_1.4.3_linux_amd64.zip
 mv /usr/share/consul /var/lib/:
   cmd.run:
     - unless: test -d /var/lib/consul
+    - onlyif: test -d /usr/share/consul
 
 consul:
   service.running:
