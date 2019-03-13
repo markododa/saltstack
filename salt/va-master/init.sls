@@ -1,3 +1,6 @@
+include:
+  - consul
+
 salt://va-master/node-repo.sh:
   cmd.script:
     - onlyif: test ! -e /etc/apt/sources.list.d/nodesource.list
@@ -27,37 +30,6 @@ install_pkgs:
 python-libvirt:
   pkg.installed:
     - install_recommends: False
-    
-wget -q https://releases.hashicorp.com/consul/0.7.4/consul_0.7.4_linux_amd64.zip:
-  cmd.run:
-    - creates: /root/consul_0.7.4_linux_amd64.zip
-
-/usr/bin:
-  archive.extracted:
-    - source: /root/consul_0.7.4_linux_amd64.zip
-    - enforce_toplevel: False
-
-/etc/consul.d:
-  file.directory
-
-/etc/consul.d/consul.json:
-  file.managed:
-    - source: salt://va-master/consul.json
-
-/etc/systemd/system/consul.service:
-  file.managed:
-    - source: salt://va-master/consul.service
-
-mv /usr/share/consul /var/lib/:
-  cmd.run:
-    - unless: test -d /var/lib/consul
-
-consul:
-  service.running:
-    - enable: True
-    - restart: True
-    - watch:
-      - file: /etc/consul.d/consul.json
 
 pip install --upgrade setuptools :
   cmd.run
