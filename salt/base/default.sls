@@ -1,8 +1,9 @@
+{% if salt['pillar.get']('timezone') != '' %}
 timedatectl set-timezone {{ pillar['timezone'] }}:
   cmd.run:
     - require:
       - pkg: install_packages
-
+{% endif %}
 
 install_packages:
   pkg.installed:

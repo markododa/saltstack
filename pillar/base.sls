@@ -17,4 +17,3 @@ mine_functions:
     - fqdn
   address:
     mine_function: network.ipaddrs
-timezone: 'Europe/Skopje'
