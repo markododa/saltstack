@@ -53,10 +53,10 @@ service salt-minion restart
 sleep 30
 salt-key -y -A
 #tail -f -q /var/log/salt/minion |GREP_COLOR='1;32' grep -o "Completed state.*$" --color=always & salt-call --local state.highstate --log-file-level all -l quiet > /dev/null && pkill -f "tail -f -q /var/log/salt/minion"
-salt-call --local state.highstate
+salt-call state.highstate
 if [ $INIT == 1 ]
 then
 cd /opt/va_master/;python -m va_master init $INIT_OPTS
 systemctl restart va-master
-salt-call --local state.apply openvpn.config
+salt-call state.apply openvpn.config
 fi
