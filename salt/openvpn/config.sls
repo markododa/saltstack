@@ -5,10 +5,6 @@ include:
     - openvpn
     - openvpn.easyrsa
 
-/etc/systemd/system/openvpn@.service:
-  file.managed:
-    - source: salt://openvpn/files/openvpn@.service
-
 systemctl mask openvpn@client.service:
   cmd.run
 
@@ -31,9 +27,6 @@ openvpn_config_{{ type }}_{{ name }}:
 
 # Ensure openvpn service is running and autostart is enabled
 {% if type == 'server' %}
-
-systemctl daemon-reload:
- cmd.run
 
 openvpn_service:
   service.running:

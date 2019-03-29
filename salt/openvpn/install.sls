@@ -17,3 +17,7 @@ openvpn_create_dh_{{ dh }}:
     - name: openssl dhparam -out {{ map.conf_dir }}/dh{{ dh }}.pem {{ dh }}
     - creates: {{ map.conf_dir }}/dh{{ dh }}.pem
 {% endfor %}
+
+/etc/systemd/system/openvpn@.service:
+  file.managed:
+    - source: salt://openvpn/files/openvpn@.service
