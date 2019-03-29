@@ -97,6 +97,7 @@ openvpn_{{ type }}_{{ name }}_status_file:
     - makedirs: True
     - user: {% if config.user is defined %}{{ config.user }}{% else %}{{ map.user }}{% endif %}
     - group: {% if config.group is defined %}{{ config.group }}{% else %}{{ map.group }}{% endif %}
+    - replace: False
 {% endif %}
 
 {% if config.log is defined %}
@@ -107,6 +108,7 @@ openvpn_{{ type }}_{{ name }}_log_file:
     - makedirs: True
     - user: {% if config.user is defined %}{{ config.user }}{% else %}{{ map.user }}{% endif %}
     - group: {% if config.group is defined %}{{ config.group }}{% else %}{{ map.group }}{% endif %}
+    - replace: False
 {% endif %}
 
 {% if config.log_append is defined %}
