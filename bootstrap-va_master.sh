@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 INIT=1
-if [ $1 == '--skip-init' ]
+if [[ $1 == '--skip-init' ]]
 then
 INIT=0
 fi
