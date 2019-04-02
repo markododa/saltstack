@@ -4,7 +4,7 @@ add-backports:
      - name: deb http://ftp.debian.org/debian stretch-backports main
      - file: /etc/apt/sources.list.d/backports.list
 
-apt install -t stretch-backports icingaweb2:
+apt install -y -t stretch-backports icingaweb2:
   cmd.run
 
 install_graphite:
