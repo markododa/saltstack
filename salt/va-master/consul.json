@@ -1,1 +1,1 @@
-{"data_dir": "/var/lib/consul", "advertise_addr": "127.0.0.1", "bootstrap_expect": 1, "server": true}
+{"data_dir": "/var/lib/consul", "advertise_addr": "127.0.0.1", "bootstrap_expect": 1, "server": true, "enable_local_script_checks": true}
