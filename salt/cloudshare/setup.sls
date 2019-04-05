@@ -39,7 +39,7 @@ install-nextcloud:
 /var/www/nextcloud/config/autoconfig.php:
   file.managed:
     - source: salt://cloudshare/files/autoconfig.php
-    - file_mode: 644
+    - _mode: 644
     - user: www-data
     - group: www-data
 
@@ -193,7 +193,8 @@ curl {{ipaddrss}} > /dev/null:
   # cmd.run
 {% for app in ['tasks','calendar','contacts'] %}
 sudo -u www-data php /var/www/nextcloud/occ app:install {{ app }}:
-  cmd.run
+  cmd.run:
+    - unless: sudo -u www-data php /var/www/nextcloud/occ app:list|grep {{ app }}
 {% endfor %}
 
 #generating sertificate/installing  
