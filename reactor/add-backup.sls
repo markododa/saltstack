@@ -21,6 +21,6 @@
 add_host_to_backup:
   local.va_backup.add_minion_host:
     - tgt: 'role:backup'
-    - expr_form: grain
+    - tgt_type: grain
     - args:
       - minion: {{ data['minion'] }}

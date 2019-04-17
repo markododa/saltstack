@@ -71,7 +71,7 @@ cd ..
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set host_name = grains['id'] %}
-{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',tgt_type='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
 
 /root/redmine.tar.gz:
   file.managed:

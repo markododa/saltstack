@@ -20,7 +20,7 @@ install_samba:
 {% set admin_password = salt['pillar.get']('admin_password') %}
 # {% set dcipfix = '192.168.5.99' %}
 
-{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',tgt_type='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
 {% set shortdomain = salt['pillar.get']('shortdomain') %}
 {% set myip = salt['grains.get']('ipv4')[0] %}
 {% set host_name = grains['id'] %}

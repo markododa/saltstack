@@ -4,7 +4,7 @@
 sendmail:
   local.cmd.shell:
     - tgt: 'role:va-master'
-    - expr_form: grain
+    - tgt_type: grain
     - arg:
       - "(echo Subject:{{data['subject']}}; echo {{data['body']}} )| sendmail -v {{data['recipient']}}"
       - shell='/bin/bash'

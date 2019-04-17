@@ -11,7 +11,7 @@ install_proxy:
 
 {% set domain = salt['pillar.get']('domain') %}
 {% set host_name = grains['id'] %}
-{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',expr_form='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
+{% set dcip = salt['mine.get'](tgt='role:directory',fun='inventory',tgt_type='grain')['va-directory']['ip4_interfaces']['eth0'][0] %}
 {% set my_ip = salt['pillar.get']('proxy_ip') %}
 
 # SET IP IN PILLARS TO FORCE DESIRED IP ADDRESS FOR PROXY SERVICE

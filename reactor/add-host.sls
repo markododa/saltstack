@@ -17,7 +17,7 @@ add_host:
 restart_icinga2:
   local.service.reload:
     - tgt: 'role:monitoring'
-    - expr_form: grain
+    - tgt_type: grain
     - arg:
       - icinga2
       - watch:

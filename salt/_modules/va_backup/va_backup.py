@@ -154,7 +154,7 @@ def test_session_ssh(ip_addr, r_user='root', l_user=None):
 
 def get_ip(hostname):
     hostname = hostname.lower()
-    # addresses = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
+    # addresses = __salt__['mine.get']('fqdn:'+hostname,'address',tgt_type='grain')
     addresses = __salt__['mine.get'](hostname,'address')
     # return addresses
     addresses = addresses[hostname]
@@ -167,7 +167,7 @@ def get_ip(hostname):
 
 def get_role(hostname):
     hostname = hostname.lower()
-    # addresses = __salt__['mine.get']('fqdn:'+hostname,'address',expr_form='grain')
+    # addresses = __salt__['mine.get']('fqdn:'+hostname,'address',tgt_type='grain')
     role = __salt__['mine.get'](hostname,'inventory')[hostname]['role']
     return role
 

@@ -3,7 +3,7 @@
 add_dns:
   local.va_directory.add_dns:
     - tgt: 'role:directory' 
-    - expr_form: grain
+    - tgt_type: grain
     - arg:
       - "{{ data['name'] }}"
       - "A"

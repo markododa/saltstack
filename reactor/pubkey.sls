@@ -3,7 +3,7 @@
 copypubkey:
   local.file.write:
     - tgt: 'role:va-master'
-    - expr_form: grain
+    - tgt_type: grain
     - arg:
       - /opt/backuppc-pubkey
       - '{{data['pubkey']}}'
