@@ -1,5 +1,5 @@
-admin_password: test
-#Domain name in UPPERCASE!
-domain: DOMEJN.MK
-shortdomain: DOMEJN
-proxy_ip: 10.10.10.10
+admin_password: password
+domain: default.domain
+shortdomain: default
+query_user: password
+query_password: password
