@@ -27,6 +27,12 @@ cp /usr/share/graphite-web/apache2-graphite.conf /etc/apache2/sites-available/:
   cmd.run:
     - unless: test -e /etc/apache2/sites-available/apache2-graphite.conf
 
+
+/etc/apache2/sites-available/apache2-graphite.conf:
+  file.replace:
+    - pattern: 80>
+    - repl: 8000>    
+
 libapache2-mod-wsgi:
   pkg.installed
 
