@@ -26,6 +26,8 @@ def bytes_to_readable(num, suffix='B'):
         num /= 1024.0
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
+
+#do we need '/var/lib/pnp4nagios/perfdata/' from monitoring?
 default_paths = {
     'monitoring' : ['/etc/icinga2', '/root/.va/backup/', '/etc/ssmtp/', '/usr/lib/nagios/plugins/', '/etc/nagios/nrpe.d/'],
     'directory'  : ['/etc/samba/', '/var/lib/samba/', '/etc/nagios/nrpe.d/'],

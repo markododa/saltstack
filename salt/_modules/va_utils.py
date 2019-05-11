@@ -40,7 +40,7 @@ def check_functionality():
             else:
                 returncode = [{"state":"Critical", "output":e.output.split('|')[0]}]
     else:
-        returncode = [{"state":"Unknown", "output":"No check_functinality script found"}]
+        returncode = [{"state":"Unknown", "output":"Check_functionality script NOT found."}]
 
     return returncode
 

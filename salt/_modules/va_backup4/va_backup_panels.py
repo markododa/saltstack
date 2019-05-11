@@ -60,6 +60,17 @@ panels = {
                 "name": "graph1",
                 "xCol": "timestamp",
                 "height": "50",
+                "options": {
+                    "scales": {
+                        "yAxes": [{
+                                "type": "logarithmic"
+                                #, "ticks": {
+                                #         "callback": "function(value, index, values) {return Number(value.toString());}"
+                                #         }
+                        }]
+
+                        }
+                },
                 "reducers": ["table"],
                 "datasets": [{
                     "column": "after_optimization",
@@ -98,7 +109,7 @@ panels = {
                 "reducers": ["table", "panel", "alert"],
                 "columns": [{
                     "key": "key",
-                    "label": "Global Config",
+                    "label": "Global Config / Defaults",
                     "width": "30%"
                 }, {
                     "key": "value",

@@ -62,43 +62,6 @@ def get_panel(panel_name, server_name = '', backupNum = -1):
         ppanel['tbl_source']['path'] = [host, backupNum]
         return ppanel
 
-
-def dir_structure1_old(host, *args):
-    check = False
-    if len(args) == 0:
-        backupNum = last_backup(host)
-        attrib = backup_attrib(host, backupNum)
-        check = True
-    else:
-        backupNum = args[0]
-        attrib = backup_attrib(host, *args)
-        args = args[1:]
-    data = dir_structure(host, backupNum)
-    if data == "No files available.":
-        return []
-    for x in args:
-        data = data[x]
-    result = []
-    for key,val in data.items():
-        type = 'folder' if val is not None else 'file'
-        time = '/'
-        size = '...'
-        if key in attrib:
-            a = attrib[key]
-            size, time = (a['size'], a['time'])
-        if type == 'folder' or size != '...':
-            if type == 'folder':
-                sortkey = 'a'
-            else:
-                sortkey = 'z'
-            result.append({'dir': key, 'type': type, 'size': size, 'time': time, 'sortkey': sortkey});
-    if check:
-        return {'val': backupNum, 'list': result}
-    [d.update({'size' : ''}) for d in result if d['type'] == 'folder']
-    result = sorted(result, key = lambda x: (x['sortkey'],x['dir'].lower()), reverse = False)
-    return result
-
-
 def dir_structure1(host, *args):
     check = False
     if len(args) == 0:
@@ -110,9 +73,11 @@ def dir_structure1(host, *args):
         attrib = backup_attrib(host, *args)
         args = args[1:]
         result = []
-        shares =  get_folders_from_config(host)
+        #TODO Should take the folders at the time of the backup not the last one
+        # shares =  get_folders_from_config(host)
+        shares =  backupShares(host,backupNum)
         for share in shares:
-            result.append({'hash':'','type':'folder',"permissions": '', 'unknown' :'','size': '','msize': '','dir': share, 'time': '/'})
+            result.append({'hash':'','type':'folder',"permissions": '', 'unknown' :'','size': '3','msize': '','dir': share, 'time': '/'})
         return result
     else:
         backupNum = args[0]
@@ -336,8 +301,6 @@ def add_host(hostname, address=None, method='rsync', backup_arguments = {}):
     __salt__['service.reload']('backuppc')
 
     return True
-
-
 
 def rm_host(hostname):
     #To completely remove a client and all its backups, you should remove its entry in the conf/hosts file, and
@@ -570,7 +533,6 @@ def append_host_status(host_list):
             if text[x['host']].get('activeJob', 0) == 1:
                 x['status'] = "In progress since "+str(datetime.datetime.fromtimestamp(int(text[x['host']].get('startTime', '0'))).strftime('%Y-%m-%d %H:%M'))
                 x['state'] = 'Pending'
-
                 bash2_cmd = ['/bin/su','-s', '/bin/sh', 'backuppc', '-c','/usr/local/backuppc/bin/BackupPC_serverMesg status jobs']
                 try:
                     text2 = subprocess.check_output(bash2_cmd)
@@ -582,12 +544,10 @@ def append_host_status(host_list):
                     filecount = text2[x['host']].get('xferFileCnt', '-')
                     if type(filecount) != int:
                         filecount=0
-
                     x['error'] = 'Type: '+ text2[x['host']].get('type', '-')+', '  + str(filecount)+' files so far from: '+text2[x['host']].get('shareName', '-')
                     # x['error'] = '-'
                 except subprocess.CalledProcessError as e:
                     x['error'] = '-'
-
             else:
                 x['status'] = text[x['host']].get('reason', '-').capitalize()
                 x['status'] = x['status'].replace('_', ' ').replace('Reason ','').capitalize()
@@ -597,7 +557,6 @@ def append_host_status(host_list):
                     x['error']= text[x['host']].get('lastGoodBackupTime','No good backup!')
                     if type(x['error']) == int:
                         x['error']= "Last good backup: " + str(datetime.datetime.fromtimestamp(x['error']).strftime('%Y-%m-%d %H:%M'))
-
     except subprocess.CalledProcessError as e:
         for x in host_list:
             x['status'] = 'Error reading status'
@@ -637,7 +596,7 @@ def panel_statistics():
 
 def panel_disk():
     diskusage =__salt__['disk.usage']()[__salt__['cmd.run']('findmnt --target /var/lib/backuppc/ -o TARGET').split()[1]]
-    statistics = [{'key' : 'Pool partition used size (GB)', 'value': int(diskusage['used'])/1024/1024},
+    statistics = [{'key' : 'Pool partition used space (GB)', 'value': int(diskusage['used'])/1024/1024},
                     {'key' : 'Pool partition free space (GB)', 'value': int(diskusage['available'])/1024/1024},
                     {'key' : 'Pool partition mountpoint', 'value': diskusage['filesystem']}]
     return statistics
@@ -659,12 +618,12 @@ def panel_default_config():
     def_config = [{'key' : 'Full backups interval (days)', 'value': full_period},
                 {'key' : 'Full backups to keep (max)', 'value': full_cnt},
                 {'key' : 'Full backups to keep (min)', 'value': get_global_config('FullKeepCntMin')},
-                {'key' : 'Expected Full backups history (days)', 'value': pretty_backup_periods(full_period, full_cnt,int(get_global_config('FullAgeMax')))},
+                {'key' : 'Expected history for full backups (days)', 'value': pretty_backup_periods(full_period, full_cnt,int(get_global_config('FullAgeMax')))},
                 {'key' : 'Remove full backups older then', 'value': get_global_config('FullAgeMax')},
                 {'key' : 'Incremental backups interval (days)', 'value': get_global_config('IncrPeriod')},
                 {'key' : 'Incremental backups to keep (max)', 'value': incr_period},
                 {'key' : 'Incremental backups to keep (min)', 'value': incr_cnt},
-                {'key' : 'Expected Incremental backups history (days)', 'value': pretty_backup_periods(incr_period, incr_cnt,int(get_global_config('IncrAgeMax')))},
+                {'key' : 'Expected history for incremental backups (days)', 'value': pretty_backup_periods(incr_period, incr_cnt,int(get_global_config('IncrAgeMax')))},
                 {'key' : 'Remove incremental backups older then', 'value': get_global_config('IncrAgeMax')},
                 {'key' : 'SSH Public key (remove spaces)', 'value': text},
                 ]
@@ -796,14 +755,11 @@ def change_address(hostname, new_data, var="ClientNameAlias"):
 def change_password(hostname, new_data, var="SmbSharePasswd"):
     return edit_conf_var(hostname, var, new_data, data_type = str)
 
-
-
 def change_fullperiod(hostname, new_data, var="FullPeriod"):
     return edit_conf_var(hostname, var, new_data, data_type = float)
 
 def change_fullmax(hostname, new_data, var="FullKeepCnt"):
     return edit_conf_var(hostname, var, new_data, data_type = list)
-
 
 #edit_conf_var hostname "FullKeepCnt" ['15', '0', '2', '1', '2', '5', '2'] data_type = list
 
@@ -874,12 +830,29 @@ def backupFiles(hostname, number = -1):
             # We're currently two directories in, so all subdirs have depth 3
             subfolders += [os.path.join(root, d) for d in dirs]
             dirs[:] = [] # Don't recurse any deeper or comment this line for deeper
-            # depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
-            # if depth == 3:
-            #   subfolders += [os.path.join(root, d) for d in dirs]
-            #   dirs[:] = []
     for value in subfolders:
         ffolders.append(value.replace('%2f','/'))
+    return ffolders
+
+
+def backupShares(hostname, number = -1):
+    hostname = hostname.lower()
+    if number == -1:
+        result = map(int, backupNumbers(hostname))
+        number = max(result)
+    path = '/var/lib/backuppc/pc/'+hostname+'/'+ str(number) + '/'
+    path = os.path.normpath(path)
+    ffolders = []
+    subfolders = []
+    for root,dirs,files in os.walk(path, topdown=True):
+        depth = root[len(path) + len(os.path.sep):].count(os.path.sep)
+        if depth == 0:
+            # We're currently two directories in, so all subdirs have depth 3
+            subfolders += [d for d in dirs]
+            dirs[:] = [] # Don't recurse any deeper or comment this line for deeper
+    for value in subfolders:
+        if value[0:1]=='f':
+            ffolders.append(value[1:])
     return ffolders
 
 def start_backup(hostname, tip='Full'):
@@ -890,7 +863,6 @@ def start_backup(hostname, tip='Full'):
         tip = '1'
     cmd = '/usr/local/backuppc/bin/BackupPC_serverMesg backup '+hostname+' '+hostname+' backuppc '+tip
     return __salt__['cmd.run'](cmd, runas='backuppc')
-
 
 def delete_backup(hostname, tip='Full'):
     hostname = hostname.lower()
@@ -926,7 +898,7 @@ def dir_structure(hostname, number = -1, rootdir = '/var/lib/backuppc/pc/'):
         len(backupNumbers(hostname)) > 0
     except:
         return "No files available."
-    hostname = hostname.lower()
+    # hostname = hostname.lower()
     if len(backupNumbers(hostname)) == 0:
         rootdir = '/var/lib/backuppc/pc/'+hostname+'/'
     elif number == -1:
@@ -1068,34 +1040,6 @@ def backup_info(hostname):
         content.append(info)
     content = sorted(content, key = lambda x: x['startTime'], reverse = True)
     return content
-
-def backup_info_graph_old(hostname):
-    #try to calculate size for incr backups
-    hostname = hostname.lower()
-    backup_list = backupNumbers(hostname)
-    content = []
-    last_full_size = 0
-    backup_list = sorted(backup_list) #, key = lambda x: x['startTime'], reverse = False)
-    for backup in backup_list:
-        info = {}
-        json_path = get_path_from_backup_number(hostname, backup) + '/backupInfo'
-
-        json_data = file_to_dict(json_path)['%backupInfo']
-
-        #TODO proper handling of these cases.
-        if 'startTime' in json_data:
-            info["startTime"] = str(datetime.datetime.fromtimestamp(int(json_data["startTime"])).strftime('%Y-%m-%d %H:%M'))
-            info["startTimeStamp"] = int(json_data["startTime"])
-        if json_data["type"]=="full":
-            last_full_size=int(json_data["size"])
-            info["sizeGraph"] = last_full_size/1024/1024
-        else:
-            last_full_size = last_full_size+int(json_data["sizeNew"])
-            info["sizeGraph"] = (last_full_size)/1024/1024
-        content.append(info)
-    #content = sorted(content, key = lambda x: x['startTime'], reverse = False)
-    return content
-
 
 def backup_info_graph(hostname):
     #make graphs from full backups only
