@@ -852,7 +852,7 @@ def backupShares(hostname, number = -1):
             dirs[:] = [] # Don't recurse any deeper or comment this line for deeper
     for value in subfolders:
         if value[0:1]=='f':
-            ffolders.append(value[1:])
+            ffolders.append(value[1:].replace('%2f', '/'))
     return ffolders
 
 def start_backup(hostname, tip='Full'):
