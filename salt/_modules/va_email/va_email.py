@@ -154,7 +154,12 @@ def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
 
 
 def list_users(email_domain=''):
-    """ api-help: Lists all users. """
+    """ 
+        description: "Lists all users from an LDAP db. In order to list_users, the function uses a return_field, retrieved from the `return_field` pillar key, with userPrincipalName as a default. Then it makes a list of dictionaries with values based on the returnfield and the sAMAccountName value from LDAP, for instance [{'user' : 'username', 'samaccountname' : 'sAMAccountName'}, ...]. To get these values, we use the `get_ldap_users` function. "
+        arguments: 
+          email_domain: When the users are retrieved from LDAP, we filter them by this argument. If it is empty, we use the first email_domain returned by the email_domains() function, which reads from '/etc/postfix/transport'
+        output: "A list of dictionaries as follows: [{'user' : 'test_user@email_domain', 'samaccountname' : 'test_user'}, {'user' : 'test_user2@email_domain', 'samaccountname' : 'test_user2'}, ...]"
+    """
     return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
     if email_domain == '':
         email_domain = email_domains()[0]
