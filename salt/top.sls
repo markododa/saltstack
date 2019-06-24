@@ -57,3 +57,7 @@ base:
   'role:elk':
     - match: grain
     - elk
+  'role:openpvpn':
+    - match: grain
+    - openvpn
+    - openvpn.config
