@@ -1,2 +1,2 @@
-$VMS = Get-VM
-echo $VMS
+Get-VM > vm-list
+type vm-list
