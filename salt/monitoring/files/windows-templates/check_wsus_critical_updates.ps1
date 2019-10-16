@@ -9,9 +9,9 @@
 #
 # Written by: Alexandre Beauclair
 # Date: April 12th 2012
-
+Import-Module -Name UpdateServices
 #Declaring base variables. You can change the $wsusserver value if needed.
-$wsusserver = "localhost"
+$wsusserver = "depsec"
 $securityCritical = 0
 $criticalUpdates = 0
 
@@ -21,16 +21,16 @@ $criticalUpdates = 0
 
 #Create necessary objects
 
-$wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusserver,$False)
+$wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusserver,$False,8530)
 $updatescope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
 
 #Specify we are looking for updates which are Not Approved, and Not Installed.
 
 $updatescope.ApprovedStates = [Microsoft.UpdateServices.Administration.ApprovedStates]::NotApproved
 $updatescope.IncludedInstallationStates = [Microsoft.UpdateServices.Administration.UpdateInstallationStates]::NotInstalled
-
-#Find how many updates are available.
-
+$computerscope = New-Object Microsoft.UpdateServices.Administration.ComputerTargetScope
+$failedupdates = Get-WsusUpdate -Approval Approved -Status Failed -Classification All
+echo $failedupdates
 $checkSecurityCritical = $wsus.GetUpdates($updatescope) | where {$_.UpdateClassificationTitle -eq "Security Updates"} | ft MsrcSeverity -AutoSize | FIND /c " Critical"
 $checkCriticalUpdates = $wsus.GetUpdates($updatescope) | where {$_.UpdateClassificationTitle -eq "Critical Updates"} | ft UpdateClassificationTitle | FIND /c "Critical Updates"
 
@@ -39,10 +39,13 @@ $criticalUpdates += $checkCriticalUpdates
 
 
 #Return message and exit code accordingly.
-
-if(($securityCritical -gt 0) -or ($criticalUpdates -gt 0)){
-	Write-Host "CRITICAL - There are updates waiting to be applied. Critical Updates: $criticalUpdates   Critical Security Updates: $securityCritical"
-	exit 2
+if(($securityCritical -gt 0) -or ($criticalUpdates -gt 0) -or ($failedupdates -ne '')){
+	Write-Host "There are updates waiting to be applied. Critical Updates: $criticalUpdates   Critical Security Updates: $securityCritical"
+	exit 0
+}
+elseif(($securityCritical -gt 0) -or ($criticalUpdates -gt 0)){
+	Write-Host "There are updates waiting to be applied. Critical Updates: $criticalUpdates   Critical Security Updates: $securityCritical"
+	exit 0
 }else{
 	Write-Host "OK - There are no critical updates waiting to be applied."
 	exit 0
