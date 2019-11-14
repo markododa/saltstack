@@ -4,7 +4,7 @@ Get-VM | ForEach { $Vm = $_; $_.HardDrives } | ForEach {
     $ProvisionedGB = ($GetVhd.Size / 1GB)
     $CommittedGB = ($GetVhd.FileSize / 1GB)
     $UsedPercentage = ((100/($GetVhd.Size / 1GB))*($GetVhd.FileSize / 1GB))
-if(  $UsedPercentage -gt 99)
+if(  $UsedPercentage -gt 99 -and $usedPercentage -lt 101)
 	{
 		echo "CRITICAL: DISK IS FULL!!!"
 		$returnCode=2
@@ -19,7 +19,7 @@ if(  $UsedPercentage -gt 99)
     }
 
         }
-elseif(  $UsedPercentage -gt 95)
+elseif(  $UsedPercentage -gt 95 -and $usedPercentage -lt 101 )
 	{
 		echo "WARNING: DISK IS ALMOST FULL!!!"
 		if ($returnCode -ne 2){

@@ -62,9 +62,9 @@ else
 
      if ($available_machines -gt $wlevel) {
             $NagiosStatus = $returnStateOK
-        } elseif ($available_machines -lt $clevel) {
+        } elseif ($available_machines -le $clevel) {
             $NagiosStatus = $returnStateCritical
-        } elseif ($available_machines -lt $wlevel) {
+        } elseif ($available_machines -le $wlevel) {
             $NagiosStatus = $returnStateWarning
         } else {
 
