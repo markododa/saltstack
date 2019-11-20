@@ -60,7 +60,7 @@ else
     #Get available machines 
     $available_machines = (get-brokermachine -SummaryState Available -DesktopGroupName "$DesktopGroupName").count    
 
-     if ($available_machines -gt $wlevel) {
+     if ($available_machines -ge $wlevel) {
             $NagiosStatus = $returnStateOK
         } elseif ($available_machines -le $clevel) {
             $NagiosStatus = $returnStateCritical
