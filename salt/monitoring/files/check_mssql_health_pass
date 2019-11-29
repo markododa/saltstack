@@ -1,6 +1,7 @@
 #!/bin/bash
-pass_arg="${@:1:1}"
-username=$(grep domain $pass_arg |cut -d = -f 2)\\$(grep username $pass_arg |cut -d = -f 2)
-password=$(grep password $pass_arg |cut -d = -f 2)
+set -e
+creds=$(<"${@:1:1}")
+eval $creds
+username=$domain\\$username
 mssql_args=${@:2}
 eval /usr/lib/nagios/plugins/libexec/check_mssql_health '--username' \'$username\' '--password' \'$password\' $mssql_args

@@ -1,0 +1,6 @@
+#!/bin/bash
+read -p 'Внеси нова лозинка за CR_ICINGA_MONITOR: ' PASSWORD
+sed -i "s/AuthPass=.*$/AuthPass=${PASSWORD}/g" /etc/ssmtp/ssmtp.conf
+sed -i "s/password.*/password       ${PASSWORD}/g" /etc/msmtprc
+#sed "s/password.*/password       ${PASSWORD}/g" /etc/icinga2/conf.d/cred_win_standalone.txt
+sed -i "s/password=.*/password=${PASSWORD}/g" /etc/icinga2/conf.d/cred_win_domain.txt
