@@ -1,12 +1,3 @@
-add-backports:
-  pkgrepo.managed:
-     - humanname: jessie backports
-     - name: deb http://ftp.debian.org/debian stretch-backports main
-     - file: /etc/apt/sources.list.d/backports.list
-
-apt install -y -t stretch-backports icingaweb2:
-  cmd.run
-
 install_graphite:
   pkg.installed:
     - pkgs:
@@ -67,3 +58,12 @@ enable-module-graphite:
     - content: charset = "latin1"
     - after: \[icinga_ido\]
     - mode: ensure
+
+/etc/icingaweb2/modules/graphite/config.ini:
+  file.managed:
+    - template: jinja
+    - source: salt://monitoring/files/graphite-config.ini
+    - user: www-data
+    - group: www-data
+    - context:
+        fqdn: {{salt['mine.get'](tgt='*',fun='address')['va-monitoring'][0]}}
