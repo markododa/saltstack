@@ -51,14 +51,14 @@ add-wmicpresets:
         - file_mode: 755
         - dir_mode: 755
 
-#add-notifications-scripts:
-#    file.recurse:
-#        - name: /etc/icinga2/scripts/
-#        - source: salt://monitoring/files/icinga2mail/
-#        - user: root
-#        - group: root
-#        - file_mode: 755
-#        - dir_mode: 755
+add-notifications-scripts:
+    file.recurse:
+        - name: /etc/icinga2/scripts/
+        - source: salt://monitoring/files/icinga2mail/
+        - user: root
+        - group: root
+        - file_mode: 755
+        - dir_mode: 755
         
         
 /usr/bin/wmic:
