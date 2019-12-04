@@ -107,10 +107,15 @@ icinga2-feature:
   cmd.run:
     - name: icinga2 feature enable api livestatus ido-mysql
 
-#configure-icinga2:
-#  file.recurse:
-#      - name: /etc/icinga2/conf.d/
-#      - source: salt://monitoring/files/icinga2
+configure-icinga2:
+  file.recurse:
+      - name: /etc/icinga2/conf.d/
+      - source: salt://monitoring/files/icinga2
+
+configure-template:
+  file.recurse:
+      - name: /etc/icinga2/zones.d/global-templates/
+      - source: salt://monitoring/files/windows-templates
 
 create-ca:
   cmd.run:
