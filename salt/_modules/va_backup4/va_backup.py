@@ -29,7 +29,7 @@ def bytes_to_readable(num, suffix='B'):
     return "%.1f%s%s" % (num, 'Yi', suffix)
 
 default_paths = {
-    'monitoring' : ['/etc/icinga2', '/root/.va/backup/', '/etc/ssmtp/', '/usr/lib/nagios/plugins/',  '/var/lib/pnp4nagios/perfdata/', '/etc/nagios/nrpe.d/'],
+    'monitoring' : ['/etc/icinga2', '/etc/icingaweb2/', '/root/.va/backup/', '/etc/ssmtp/', '/usr/lib/nagios/plugins/',  '/var/lib/pnp4nagios/perfdata/', '/etc/nagios/nrpe.d/'],
     'directory'  : ['/etc/samba/', '/var/lib/samba/', '/etc/nagios/nrpe.d/'],
     'backup'     : ['/etc/backuppc/', '/etc/nagios/nrpe.d/'],
     'fileshare'  : ['/home/', '/etc/samba/', '/etc/nagios/nrpe.d/'],
