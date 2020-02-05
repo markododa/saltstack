@@ -44,6 +44,7 @@ base:
     - match: grain
     - va-master
     - openvpn
+    - libvirt.keys
     - salt-master.salt
   'role:libvirt':
     - match: grain
