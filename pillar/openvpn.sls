@@ -13,7 +13,7 @@ openvpn:
       server: '10.18.0.0 255.255.255.0'
       port: 8443
       status: /run/openvpn/openvpn-status.log
-      crl: /etc/openvpn/crl.pem
+      crl: /etc/openvpn/easyrsa/pki/crl.pem
       log: /var/log/openvpn.log
       ccd_dir: /etc/openvpn/ccd
       client_to_client: True
