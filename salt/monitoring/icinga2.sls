@@ -21,6 +21,7 @@ install_icinga2:
   pkg.installed:
     - pkgs:
       - nagios-nrpe-plugin
+      - monitoring-plugins
       - icinga2
       - icinga2-ido-mysql
       - libnumber-format-perl

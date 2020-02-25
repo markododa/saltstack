@@ -6,10 +6,12 @@ python-libvirt:
 
 
 /etc/pki/CA:
-  file.directory
+  file.directory:
+   - makedirs: True
 
 /etc/pki/libvirt:
-  file.directory
+  file.directory:
+    - makedirs: True
 
 libvirt_keys:
   virt.keys:

@@ -44,6 +44,7 @@ base:
     - match: grain
     - va-master
     - openvpn
+    - libvirt.keys
     - salt-master.salt
   'role:libvirt':
     - match: grain
@@ -57,7 +58,7 @@ base:
   'role:elk':
     - match: grain
     - elk
-  'role:openpvpn':
+  'role:openvpn':
     - match: grain
     - openvpn
     - openvpn.config
