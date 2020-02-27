@@ -267,7 +267,7 @@ def add_user(username, password, name, surname, email, organizational_unit = Non
 #        sam_ldb.newuser(username = username, password = password, surname = surname, givenname = name, mailaddress = email, useusernameascn = False, userou = 'OU=' + organizational_unit)
     # Using the SamDB api is weird because it sets the display name to be givenname.surname, instead of the proper display name. This is why we (temporarily?) use samba_tool. 
 
-    samba_args = ['user', 'add', username, password] + name + surname + email + organizational_unit + change_pass
+    samba_args = ['user', 'create', username, password] + name + surname + email + organizational_unit + change_pass
     result = samba_tool(samba_args)
     user_data = get_pdb_details(username)
 #        raise SambaProcessError(exc)
