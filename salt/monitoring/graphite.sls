@@ -65,5 +65,6 @@ enable-module-graphite:
     - source: salt://monitoring/files/graphite-config.ini
     - user: www-data
     - group: www-data
+    - makedirs: True
     - context:
-        fqdn: {{salt['mine.get'](tgt='*',fun='address')['va-monitoring'][0]}}
+        fqdn: {{salt['network.ip_addrs']()[0]}}

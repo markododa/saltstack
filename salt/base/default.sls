@@ -68,7 +68,8 @@ fqdn:
       - {{ grains['host'] }}
 
 saltutil.sync_grains:
-  module.run
+  module.run:    
+    - saltutil.sync_grains:
 
 /etc/salt/minion:
   file.line:
