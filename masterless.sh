@@ -45,7 +45,8 @@ echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' >
 fi
 
 apt-get update -y
-apt-get install salt-minion -y
+apt-get install python-pip --no-install-recommends -y
+apt-get install salt-minion python-pip -y
 cd "$(dirname "$0")"
 mkdir /srv/{pillar,reactor}
 cp -R salt /srv/

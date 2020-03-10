@@ -62,6 +62,7 @@ echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' >
 fi
 
 apt-get update -y
+apt-get install python-pip --no-install-recommends -y
 apt-get install salt-minion -y
 touch /etc/salt/grains
 sed -i 's/^role:/#role:/g' /etc/salt/grains
