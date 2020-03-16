@@ -49,12 +49,15 @@ def create_ccd(user):
     if not os.path.isfile('/etc/openvpn/ccd/'+user):
     	broj = int(open('/etc/openvpn/nextip','r').read())
     	open('/etc/openvpn/nextip', 'w').write(str(broj+4))
-    	subnet = __salt__['pillar.get']('openvpn:server:srvr:server')
-        if subnet == '':
-            return 'Subnet not set'
-        subnet = str(re.split("[.]0 ", str(subnet))[0])+'.'
-    	open('/etc/openvpn/ccd/'+user, 'w+').write(str('ifconfig-push ' + subnet+str(broj) + ' '  + subnet+str(broj-1)+'\n'))
-	return True
+        if subnet := __salt__['pillar.get']('openvpn:server:srvr:server'):
+            if subnet == '':
+                return 'Subnet not set'
+            subnet = str(re.split("[.]0 ", str(subnet))[0])+'.'
+    	    open('/etc/openvpn/ccd/'+user, 'w+').write(str('ifconfig-push ' + subnet+str(broj) + ' '  + subnet+str(broj-1)+'\n'))
+	    return True
+        else:
+            print('No subnet in pillar')
+            return False
     else:
 	return False
 
