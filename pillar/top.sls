@@ -46,3 +46,4 @@ base:
     - credentials
   '*':
     - base
+    - ssmtp

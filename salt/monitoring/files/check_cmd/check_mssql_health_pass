@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+creds=$(<"${@:1:1}")
+eval $creds
+username=$domain\\$username
+mssql_args=${@:2}
+eval /usr/lib/nagios/plugins/libexec/check_mssql_health '--username' \'$username\' '--password' \'$password\' $mssql_args

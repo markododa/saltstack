@@ -1,0 +1,13 @@
+object Host "SQLSERVER" {
+    import "generic-host"
+
+    display_name = "MSSQLSRV"
+    address = "192.168.1.10"
+    vars.mssql = "True"
+    vars.mssql_server = "True"
+    vars.mssql_password = "aaa"
+    vars.mssql_username = "sa"
+    vars.mssql_instance = "SQLEXPRESS"
+
+}
+

@@ -18,10 +18,16 @@ fi
 
 version=$(lsb_release -cs)
 
-if [ $version != "jessie" ] && [ $version != "xenial" ] && [ $version != "stretch" ]; then
+if [ $version != "jessie" ] && [ $version != "xenial" ] && [ $version != "stretch" ] && [ $version != "buster" ]; then
         echo "OS not supported"
         false
 fi
+
+if [ $version == "buster" ]; then
+wget -O - https://repo.saltstack.com/py3/debian/10/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
+echo 'deb http://repo.saltstack.com/py3/debian/10/amd64/latest buster main' > /etc/apt/sources.list.d/salt.list
+fi
+
 
 if [ $version == "jessie" ]; then
 wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
@@ -39,7 +45,8 @@ echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' >
 fi
 
 apt-get update -y
-apt-get install salt-minion -y
+apt-get install python-pip --no-install-recommends -y
+apt-get install salt-minion python-pip -y
 cd "$(dirname "$0")"
 mkdir /srv/{pillar,reactor}
 cp -R salt /srv/

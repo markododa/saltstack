@@ -1,9 +1,9 @@
-#!/usr/bin/env bash
-#
-# Copyright (C) 2012-2017 Icinga Development Team (https://www.icinga.com/)
-MAILFROM="`cat /etc/ssmtp/ssmtp.conf  | grep 'AuthUser=' | sed -e 's/AuthUser=//'`"
+#!/bin/bash
+# Icinga 2 | (c) 2012 Icinga GmbH | GPLv2+
+# Except of function urlencode which is Copyright (C) by Brian White (brian@aljex.com) used under MIT license
+
 PROG="`basename $0`"
-HOSTNAME="`hostname`"
+ICINGA2HOST="`hostname`"
 MAILBIN="mail"
 
 if [ -z "`which $MAILBIN`" ] ; then
@@ -16,7 +16,6 @@ Usage() {
 cat << EOF
 
 Required parameters:
-  -4 HOSTADDRESS (\$address\$)
   -d LONGDATETIME (\$icinga.long_date_time\$)
   -e SERVICENAME (\$service.name\$)
   -l HOSTNAME (\$host.name\$)
@@ -28,6 +27,7 @@ Required parameters:
   -u SERVICEDISPLAYNAME (\$service.display_name\$)
 
 Optional parameters:
+  -4 HOSTADDRESS (\$address\$)
   -6 HOSTADDRESS6 (\$address6\$)
   -b NOTIFICATIONAUTHORNAME (\$notification.author\$)
   -c NOTIFICATIONCOMMENT (\$notification.comment\$)
@@ -51,11 +51,24 @@ Error() {
   exit 1;
 }
 
+urlencode() {
+  local LANG=C i=0 c e s="$1"
+
+  while [ $i -lt ${#1} ]; do
+    [ "$i" -eq 0 ] || s="${s#?}"
+    c=${s%"${s#?}"}
+    [ -z "${c#[[:alnum:].~_-]}" ] || c=$(printf '%%%02X' "'$c")
+    e="${e}${c}"
+    i=$((i + 1))
+  done
+  echo "$e"
+}
+
 ## Main
 while getopts 4:6:b:c:d:e:f:hi:l:n:o:r:s:t:u:v: opt
 do
   case "$opt" in
-    4) HOSTADDRESS=$OPTARG ;; # required
+    4) HOSTADDRESS=$OPTARG ;;
     6) HOSTADDRESS6=$OPTARG ;;
     b) NOTIFICATIONAUTHORNAME=$OPTARG ;;
     c) NOTIFICATIONCOMMENT=$OPTARG ;;
@@ -83,33 +96,37 @@ done
 
 shift $((OPTIND - 1))
 
-## Check required parameters (TODO: better error message)
 ## Keep formatting in sync with mail-host-notification.sh
-if [ ! "$HOSTADDRESS" ] || [ ! "$LONGDATETIME" ] \
-|| [ ! "$HOSTNAME" ] || [ ! "$HOSTDISPLAYNAME" ] \
-|| [ ! "$SERVICENAME" ] || [ ! "$SERVICEDISPLAYNAME" ] \
-|| [ ! "$SERVICEOUTPUT" ] || [ ! "$SERVICESTATE" ] \
-|| [ ! "$USEREMAIL" ] || [ ! "$NOTIFICATIONTYPE" ]; then
-  Error "Requirement parameters are missing."
-fi
+for P in LONGDATETIME HOSTNAME HOSTDISPLAYNAME SERVICENAME SERVICEDISPLAYNAME SERVICEOUTPUT SERVICESTATE USEREMAIL NOTIFICATIONTYPE ; do
+        eval "PAR=\$${P}"
+
+        if [ ! "$PAR" ] ; then
+                Error "Required parameter '$P' is missing."
+        fi
+done
 
 ## Build the message's subject
-SUBJECT="$NOTIFICATIONTYPE - $SERVICEDISPLAYNAME on $HOSTDISPLAYNAME is $SERVICESTATE"
+SUBJECT="[$NOTIFICATIONTYPE] $SERVICEDISPLAYNAME on $HOSTDISPLAYNAME is $SERVICESTATE!"
 
 ## Build the notification message
 NOTIFICATION_MESSAGE=`cat << EOF
-*** Monitoring ***
+***** Service Monitoring on $ICINGA2HOST *****
 
-$SERVICEDISPLAYNAME on $HOSTDISPLAYNAME is $SERVICESTATE
+$SERVICEDISPLAYNAME on $HOSTDISPLAYNAME is $SERVICESTATE!
 
 Info:    $SERVICEOUTPUT
 
 When:    $LONGDATETIME
-Service: $SERVICENAME (Display Name: "$SERVICEDISPLAYNAME")
-Host:    $HOSTNAME (Display Name: "$HOSTDISPLAYNAME")
-IPv4:    $HOSTADDRESS
+Service: $SERVICENAME
+Host:    $HOSTNAME
 EOF
 `
+
+## Check whether IPv4 was specified.
+if [ -n "$HOSTADDRESS" ] ; then
+  NOTIFICATION_MESSAGE="$NOTIFICATION_MESSAGE
+IPv4:    $HOSTADDRESS"
+fi
 
 ## Check whether IPv6 was specified.
 if [ -n "$HOSTADDRESS6" ] ; then
@@ -129,8 +146,7 @@ fi
 if [ -n "$ICINGAWEB2URL" ] ; then
   NOTIFICATION_MESSAGE="$NOTIFICATION_MESSAGE
 
-URL:
-  $ICINGAWEB2URL/monitoring/service/show?host=$HOSTNAME&service=$SERVICENAME"
+$ICINGAWEB2URL/monitoring/service/show?host=$(urlencode "$HOSTNAME")&service=$(urlencode "$SERVICENAME")"
 fi
 
 ## Check whether verbose mode was enabled and log to syslog.
@@ -146,13 +162,15 @@ if [ -n "$MAILFROM" ] ; then
 
   ## Debian/Ubuntu use mailutils which requires `-a` to append the header
   if [ -f /etc/debian_version ]; then
-    /usr/bin/printf "%b" "$NOTIFICATION_MESSAGE" | $MAILBIN -a "From: $MAILFROM" -s "$SUBJECT" $USEREMAIL
+    /usr/bin/printf "%b" "$NOTIFICATION_MESSAGE" | tr -d '\015' \
+    | $MAILBIN -a "From: $MAILFROM" -s "$SUBJECT" $USEREMAIL
   ## Other distributions (RHEL/SUSE/etc.) prefer mailx which sets a sender address with `-r`
   else
-    /usr/bin/printf "%b" "$NOTIFICATION_MESSAGE" | $MAILBIN -r "$MAILFROM" -s "$SUBJECT" $USEREMAIL
+    /usr/bin/printf "%b" "$NOTIFICATION_MESSAGE" | tr -d '\015' \
+    | $MAILBIN -r "$MAILFROM" -s "$SUBJECT" $USEREMAIL
   fi
 
 else
-  /usr/bin/printf "%b" "$NOTIFICATION_MESSAGE" \
+  /usr/bin/printf "%b" "$NOTIFICATION_MESSAGE" | tr -d '\015' \
   | $MAILBIN -s "$SUBJECT" $USEREMAIL
 fi

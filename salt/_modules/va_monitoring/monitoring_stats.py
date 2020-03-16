@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import xml.etree.ElementTree as ET
-import rrdtool, datetime, time
+import datetime, time
 from os import path
 
 PERF_PATH = '/var/lib/pnp4nagios/perfdata'

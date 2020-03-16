@@ -1,3 +1,16 @@
+add-backports:
+  pkgrepo.managed:
+     - humanname: stretch backports
+     - name: deb http://ftp.debian.org/debian stretch-backports main
+     - file: /etc/apt/sources.list.d/backports.list
+
+icinga_repo:
+  pkgrepo.managed:
+     - humanname: icinga2 repo
+     - name: deb http://packages.icinga.com/debian icinga-stretch main
+     - file: /etc/apt/sources.list.d/icinga2.list
+     - key_url: https://packages.icinga.com/icinga.key
+
 install_mysql:
   pkg.installed:
     - pkgs:
@@ -8,6 +21,7 @@ install_icinga2:
   pkg.installed:
     - pkgs:
       - nagios-nrpe-plugin
+      - monitoring-plugins
       - icinga2
       - icinga2-ido-mysql
       - libnumber-format-perl
@@ -99,24 +113,32 @@ configure-icinga2:
       - name: /etc/icinga2/conf.d/
       - source: salt://monitoring/files/icinga2
 
+configure-template:
+  file.recurse:
+      - name: /etc/icinga2/zones.d/global-templates/
+      - source: salt://monitoring/files/windows-templates
+
 create-ca:
   cmd.run:
     - name: icinga2 pki new-ca
     - onlyif: test ! -e /var/lib/icinga2/ca/
 
+/var/lib/icinga2/certs/:
+  file.directory
+
 create-cert:
   cmd.run:
-    - name: chown nagios:nagios /etc/icinga2/pki/ && icinga2 pki new-cert --cn `hostname -f` --csr /etc/icinga2/pki/`hostname -f`.csr --key /etc/icinga2/pki/` hostname -f`.key
-    - onlyif: test ! -e /etc/icinga2/pki/`hostname -f`.csr -a /etc/icinga2/pki/`hostname -f`.key
+    - name: chown nagios:nagios /var/lib/icinga2/certs/ && icinga2 pki new-cert --cn `hostname -f` --csr /var/lib/icinga2/certs/`hostname -f`.csr --key /var/lib/icinga2/certs/` hostname -f`.key
+    - onlyif: test ! -e /var/lib/icinga2/certs/`hostname -f`.csr -a /var/lib/icinga2/certs/`hostname -f`.key
 
 create-crt:
   cmd.run:
-    - name: icinga2 pki sign-csr --csr /etc/icinga2/pki/`hostname -f`.csr --cert /etc/icinga2/pki/`hostname -f`.crt
-    - onlyif: test ! -e /etc/icinga2/pki/`hostname -f`.crt
+    - name: icinga2 pki sign-csr --csr /var/lib/icinga2/certs/`hostname -f`.csr --cert /var/lib/icinga2/certs/`hostname -f`.crt
+    - onlyif: test ! -e /var/lib/icinga2/certs/`hostname -f`.crt
 
-cp /var/lib/icinga2/ca/ca.crt /etc/icinga2/pki/ && chown nagios:nagios /etc/icinga2/pki/ca.crt && service icinga2 stop:
+cp /var/lib/icinga2/ca/ca.crt /var/lib/icinga2/certs/ && chown nagios:nagios /var/lib/icinga2/certs/ca.crt && service icinga2 stop:
   cmd.run:
-  - onlyif: test ! -e /etc/icinga2/pki/ca.crt
+  - onlyif: test ! -e /var/lib/icinga2/certs/ca.crt
 
 #### functionality script
 /usr/lib/nagios/plugins/:

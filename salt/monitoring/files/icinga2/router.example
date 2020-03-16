@@ -3,30 +3,10 @@ display_name = "Router"
   import "generic-host"
   address = "10.0.0.1"
   vars.os = "Linux"
+  vars.community = "$host.vars.snmp_community$"
+  vars.snmp_interface = "$host.vars.snmp_interface$"
   vars.type = "router"
   vars.notification["mail"] = { groups = [ "icingaadmins" ]}
   vars.http_vhosts["Web GUI"] = { http_uri = "/" }
 }
 	
-
-apply Service "DHCP" {
-  import "generic-service"
-  check_interval = 5m
-  retry_interval = 1m
-  max_check_attempts = 2
-  check_command = "dhcp"
-  vars.dhcp_serverip = "10.0.0.1"
-  assign where host.name == "Router"
-}
-
-apply Service "DNS" {
-  import "generic-service"
-  check_interval = 5m
-  retry_interval = 1m
-  max_check_attempts = 2
-  check_command = "dig"
-  vars.dig_server = "10.0.0.1"
-  vars.dig_lookup = "google.com"
-  assign where host.name == "Router"
-}
-
