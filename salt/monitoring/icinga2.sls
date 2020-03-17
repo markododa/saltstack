@@ -162,8 +162,24 @@ restart_functionality_monitoring:
     - group: root
     - mode: 755
 
+/etc/icinga2/conf.d/templates.conf:
+  file.line:
+    - content: '  enable_flapping = true'
+    - after: template Host "generic-host" {
+    - mode: ensure
+
+{% for service in ['mail-host-notification', 'mail-service-notification'] %}
+{{ service }}:
+  file.line:
+    - name: /etc/icinga2/conf.d/notifications.conf
+    - content: '  interval = 0'
+    - after: {{ service }}
+    - mode: ensure
+{% endfor %}
+
 icinga2:
-  service.running: []
+  service.running:
+    - reload: True
   
 #Weekly report cron job   
 /etc/icinga2/scripts/mail-report.sh:

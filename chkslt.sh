@@ -4,5 +4,5 @@ declare -a git_folders=(salt reactor)
 declare -a folders=(/srv/salt /srv/reactor)
 
 for i in $(seq 0 1)
-	do diff --brief -r ${git_folders[i]} ${folders[i]}
+	do diff -ru ${git_folders[i]} ${folders[i]}| grep -E '\-\-\- |\+\+\+ '
 done
