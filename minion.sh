@@ -70,5 +70,6 @@ echo "role: "$ROLE > /etc/salt/grains
 
 sed -i 's/^master:/#master:/g' /etc/salt/minion
 echo "master: "$MASTER > /etc/salt/minion
+echo $(hostname) > /etc/salt/minion_id
 service salt-minion restart
 
