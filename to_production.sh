@@ -14,7 +14,7 @@ rsync -auvrh --progress $REPO_PATH/salt/ $PROD_PATH/salt/
 
 echo ===============================
 echo ==== REACTORS: ================
-rsync -auvrh --progress $REPO_PATH/reactor/ $PROD_PATH/reactor/
+#rsync -auvrh --progress $REPO_PATH/reactor/ $PROD_PATH/reactor/
 
 echo ===============================
 echo Differences:
