@@ -20,7 +20,7 @@ fi
         apt-get -y install wget curl
 
 if ! (  command lsb_release );then
-        apt-get -y install lsb-release lsb-core gnupg
+        apt-get -y install lsb-release gnupg
 fi
 
 
