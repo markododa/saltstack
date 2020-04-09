@@ -1,7 +1,7 @@
 {% from "openvpn/map.jinja" import map with context %}
 
 # deploy ifconfig_pool_persist files
-{%- for filename, config in  salt['pillar.get']('openvpn', {}).get('ifconfig_pool_persist', {}).iteritems() %}
+{%- for filename, config in  salt['pillar.get']('openvpn', {}).get('ifconfig_pool_persist', {}).items() %}
 openvpn_config_ifconfig_pool_persist_{{ filename }}:
   file.managed:
     - name: {{ map.conf_dir }}/{{filename}}

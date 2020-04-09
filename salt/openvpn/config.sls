@@ -8,9 +8,9 @@ include:
 systemctl mask openvpn@client.service:
   cmd.run
 
-{% for type, names in salt['pillar.get']('openvpn', {}).iteritems() %}
+{% for type, names in salt['pillar.get']('openvpn', {}).items() %}
 {% if type == 'server' or type == 'client' %}
-{% for name, config in names.iteritems() %}
+{% for name, config in names.items() %}
 # Deploy {{ type }} {{ name }} config files
 openvpn_config_{{ type }}_{{ name }}:
   file.managed:
@@ -121,7 +121,7 @@ openvpn_config_{{ type }}_{{ name }}_client_config_dir:
     - name: {{ map.conf_dir }}/{{ config.client_config_dir}}
     - makedirs: True
 
-{% for client, client_config in salt['pillar.get']('openvpn:'+type+':'+name+':client_config', {}).iteritems() %}
+{% for client, client_config in salt['pillar.get']('openvpn:'+type+':'+name+':client_config', {}).items() %}
 # Client config for {{ client }}
 openvpn_config_{{ type }}_{{ name }}_{{ client }}_client_config:
   file.managed:
