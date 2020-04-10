@@ -37,7 +37,7 @@ def get_logins_for_user(username, log_file = '/var/log/openvpn.log'):
 
 def main():
     log_file = sys.argv[1]
-    print open_and_parse_log(log_file)
+    print(open_and_parse_log(log_file))
 
 if __name__ == "__main__":
     main()

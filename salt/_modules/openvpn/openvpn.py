@@ -1,4 +1,6 @@
 import salt, vpn_parser, re, os
+def __virtual__():
+    return True
 
 def add_user(username, ccd=True):
     if ccd:
@@ -47,23 +49,21 @@ def subnet():
 
 def create_ccd(user):
     if not os.path.isfile('/etc/openvpn/ccd/'+user):
-    	broj = int(open('/etc/openvpn/nextip','r').read())
-    	open('/etc/openvpn/nextip', 'w').write(str(broj+4))
-        if subnet := __salt__['pillar.get']('openvpn:server:srvr:server'):
-            if subnet == '':
-                return 'Subnet not set'
-            subnet = str(re.split("[.]0 ", str(subnet))[0])+'.'
-    	    open('/etc/openvpn/ccd/'+user, 'w+').write(str('ifconfig-push ' + subnet+str(broj) + ' '  + subnet+str(broj-1)+'\n'))
-	    return True
+        subnet = __salt__['pillar.get']('openvpn:server:srvr:server')
+        if subnet == '' or None:
+            return 'Subnet not set or openvpn pillar missing'
         else:
-            print('No subnet in pillar')
-            return False
+            broj = int(open('/etc/openvpn/nextip','r').read())
+            open('/etc/openvpn/nextip', 'w').write(str(broj+4))
+            subnet = str(re.split("[.]0 ", str(subnet))[0])+'.'
+            open('/etc/openvpn/ccd/'+user, 'w+').write(str('ifconfig-push ' + subnet+str(broj) + ' '  + subnet+str(broj-1)+'\n'))
+            return True
     else:
-	return False
+       return False
 
 def create_vpn(user):
     add_user(user)
     return get_config(user)
 
 def get_vpn_ip(user):
-	return open('/etc/openvpn/ccd/'+user,'r').read().split()[1]
+       return open('/etc/openvpn/ccd/'+user,'r').read().split()[1]
