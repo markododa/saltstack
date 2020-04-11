@@ -65,5 +65,13 @@ def create_vpn(user):
     add_user(user)
     return get_config(user)
 
+def add_route(user, route, netmask):
+    if os.path.isfile('/etc/openvpn/ccd/'+user):
+        line = 'push "route '+route+' '+netmask+'"\n'
+        open('/etc/openvpn/ccd/'+user, 'a').write(line)
+        return True
+    else:
+        return False
+
 def get_vpn_ip(user):
        return open('/etc/openvpn/ccd/'+user,'r').read().split()[1]
