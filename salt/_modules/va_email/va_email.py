@@ -9,8 +9,8 @@ def dovecot_quota():
 
 def get_panel(panel_name, user = ''):
     ppanel = panels[panel_name]
-    if panel_name == "email.rules":
-        data = get_user_rules(user)
+    if panel_name == "get_allowed_recipients":
+        data = get_allowed_recipients(user)
         ppanel['tbl_source']['table'] = data
         checkboxes = [ {"type":"checkbox","name":val['user'],"value":False,"label":val['user'],"required":True} for key,val in enumerate(list_users()) if val['user'] != user]
         ppanel['content'][0]['elements'][1]['modal']['content'][0]['elements'] = checkboxes
@@ -133,22 +133,24 @@ def get_conf_vars_file(vars, path):
     return get_conf_vars(vars, conf)
 
 def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
+    #return_field = return_field.encode("ascii")
     """ api-help: Lists all users from the ldap database. """
     schema_filter = __salt__['pillar.get']('schema_filter',default='')
+    filter = __salt__['pillar.get']('schema_filter',default='')
     vars = ['hosts', 'dn', 'dnpass', 'base']
     vars = get_conf_vars_file(vars, path)
-    if schema_filter != '':
-        filter = schema_filter+vars['base']+'))'
-    else:
-        filter = ''
+#    if schema_filter != '':
+#        filter = schema_filter+vars['base']+'))'
+#    else:
+#        filter = ''
     cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], filter, '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', return_field, '-S', 'sAMAccountName']
 #    cmd = "ldapsearch '-x' '-h' '{hosts}' '-D' '{dn}' '{filter}' '-b' '{base}' '-w' '{dnpass}' 'sAMAccountName' '{return_field}' '-S' 'sAMAccountName'".format(
 #        hosts = vars['hosts'], dn = vars['dn'], filter = filter, base = vars['base'], dnpass = vars['dnpass'], return_field = return_field
 #    )
 #    return subprocess.list2cmdline([cmd])
     result = subprocess.check_output(cmd)
-    result = [x for x in result.split('#')]
-    result = [[i for i in x.split('\n') if ':' in i] for x in result]
+    result = [x for x in result.split('#') if x is not '' and ': ' in x]
+    result = [[i for i in x.split('\n') if ': ' in i] for x in result]
     result = [dict([i.split(': ') for i in x]) for x in result]
     return result
 
@@ -168,9 +170,9 @@ def list_users(email_domain=''):
     return result
 
 def get_wblist(ruleset, direction='inbound', account='@.'):
-    array = __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --list --'+ruleset).split("\n")
-    result = [{"filter_id" : x} for x in array[2:]]
-    if len(result) == 1 and result[0]['filter_id'] == '* No whitelist/blacklist.':
+    array = __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --account '+account+' --list --'+ruleset).split("\n")
+    result = [{"address" : x} for x in array[2:]]
+    if len(result) == 1 and result[0]['address'] == '* No whitelist/blacklist.':
         return []
     return result
 
@@ -182,6 +184,11 @@ def get_blacklist(ruleset='blacklist',direction='inbound', account='@.'):
     """ api-help: Get blacklisted hosts. """
     return get_wblist(ruleset)
 
+def get_allowed_recipients(account):
+    """ api-help: Get allowed recipents for account """
+    return get_wblist(ruleset='whitelist',  direction='outbound', account=account)
+
+
 def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
 # python /opt/iredapd/tools/wblist_admin.py --delete --blacklist 172.16.1.10
 # --add --blacklist baduser@example.com
@@ -192,7 +199,17 @@ def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
         elif '@' not in array[i]:
             array[i] = '@'+array[i]
     address = ' '.join(array)
-    return __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --'+account+' --'+action+' --'+ruleset+' '+address)
+    return __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --account '+account+' --'+action+' --'+ruleset+' '+address)
+
+def remove_allowed_recipient(account, recipient):
+    return wbmanage(action='delete', ruleset='whitelist', address=recipient, direction='outbound', account=account)
+
+def add_allowed_recipient(account, recipient):
+    return wbmanage(action='add', ruleset='whitelist', address=recipient, direction='outbound', account=account)
+
+def add_allowed_recipients(account, **recipients):
+    recipients=' '.join([ recipient for recipient in recipients if recipients[recipient] == True ])
+    return wbmanage(action='add', ruleset='whitelist', address=recipients, direction='outbound', account=account)
 
 
 def add_filter_whitelist(filter=''):
