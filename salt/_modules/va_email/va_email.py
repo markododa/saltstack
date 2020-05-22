@@ -1,7 +1,6 @@
-import subprocess, requests, json, re, netaddr
+import subprocess, requests, json, re, netaddr, vcards
 from va_utils import check_functionality as panel_check_functionality
 from va_email_panels import panels
-
 
 def dovecot_quota():
     """ api-help: Get used quota for all users. """
@@ -133,7 +132,7 @@ def get_conf_vars_file(vars, path):
     return get_conf_vars(vars, conf)
 
 def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
-    #return_field = return_field.encode("ascii")
+    return_field = return_field.split(" ")
     """ api-help: Lists all users from the ldap database. """
     schema_filter = __salt__['pillar.get']('schema_filter',default='')
     filter = __salt__['pillar.get']('schema_filter',default='')
@@ -143,7 +142,7 @@ def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
 #        filter = schema_filter+vars['base']+'))'
 #    else:
 #        filter = ''
-    cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], filter, '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName', return_field, '-S', 'sAMAccountName']
+    cmd = ['ldapsearch', '-x', '-h', vars['hosts'], '-D', vars['dn'], filter, '-b', vars['base'], '-w', vars['dnpass'], 'sAMAccountName']+return_field+['-S', 'sAMAccountName']
 #    cmd = "ldapsearch '-x' '-h' '{hosts}' '-D' '{dn}' '{filter}' '-b' '{base}' '-w' '{dnpass}' 'sAMAccountName' '{return_field}' '-S' 'sAMAccountName'".format(
 #        hosts = vars['hosts'], dn = vars['dn'], filter = filter, base = vars['base'], dnpass = vars['dnpass'], return_field = return_field
 #    )
@@ -165,9 +164,21 @@ def list_users(email_domain=''):
     return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
     if email_domain == '':
         email_domain = email_domains()[0]
-    users = get_ldap_users(return_field=return_field) #NINO treba da gi vraka i grupite vo slucaj koga return_field e userPrincipalName
-    result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName')} for x in users if email_domain in x.get(return_field, '')] 
+    users = get_ldap_users(return_field=return_field+' cn') #NINO treba da gi vraka i grupite vo slucaj koga return_field e userPrincipalName
+    result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName'), 'name': x.get('cn')} for x in users if email_domain in x.get(return_field, '')] 
     return result
+
+def users_in_dict(email_domain=''):
+    return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
+    if email_domain == '':
+        email_domain = email_domains()[0]
+    users = get_ldap_users(return_field=return_field+' cn')
+    result = {}
+    for x in users:
+        if x.get(return_field):
+            result[x[return_field]]={'Name': x.get('cn'), 'samaccountname': x.get('sAMAccountName')}
+    return result
+
 
 def get_wblist(ruleset, direction='inbound', account='@.'):
     array = __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --account '+account+' --list --'+ruleset).split("\n")
@@ -186,7 +197,17 @@ def get_blacklist(ruleset='blacklist',direction='inbound', account='@.'):
 
 def get_allowed_recipients(account):
     """ api-help: Get allowed recipents for account """
-    return get_wblist(ruleset='whitelist',  direction='outbound', account=account)
+    recipients = get_wblist(ruleset='whitelist',  direction='outbound', account=account)
+    users_in_dict=__salt__['mine.get']('va-email.kam.com.mk', 'email_accounts')['va-email.kam.com.mk']
+    result = []
+    for x in recipients:
+        if type(users_in_dict.get(x["address"])) == dict:
+            name=users_in_dict.get(x["address"]).get("Name","")
+        else:
+            name=vcards.get_vcard(account,x["address"]).get("FN","")
+        result.append({"address": x.get("address"), "Name": name})
+    return result
+
 
 
 def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
@@ -202,13 +223,19 @@ def wbmanage(action, ruleset, address, direction='inbound', account='@.'):
     return __salt__['cmd.run']('python /opt/iredapd/tools/wblist_admin.py --'+direction+' --account '+account+' --'+action+' --'+ruleset+' '+address)
 
 def remove_allowed_recipient(account, recipient):
+    vcards.remove_vcard(account=account, recipient=recipient)
     return wbmanage(action='delete', ruleset='whitelist', address=recipient, direction='outbound', account=account)
 
-def add_allowed_recipient(account, recipient):
+def add_allowed_recipient(account, recipient, name):
+    vcards.generate_vcard(account=account, recipient=recipient,name=name)
     return wbmanage(action='add', ruleset='whitelist', address=recipient, direction='outbound', account=account)
 
 def add_allowed_recipients(account, **recipients):
-    recipients=' '.join([ recipient for recipient in recipients if recipients[recipient] == True ])
+    users_dict=users_in_dict()
+    recipients = [ recipient for recipient in recipients if recipients[recipient] == True ]
+    recipients_with_names=[{"address": x, "Name": users_dict.get(x).get("Name","")} for x in recipients]
+    vcards.generate_vcards(account=account, recipients=recipients_with_names)
+    recipients=' '.join(recipients)
     return wbmanage(action='add', ruleset='whitelist', address=recipients, direction='outbound', account=account)
 
 

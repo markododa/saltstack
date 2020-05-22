@@ -18,6 +18,11 @@ panels = {
                 "label": "User/Group"
             },
             {
+                "key": "name",
+                "label": "Name"
+            },
+
+            {
                 "key": "action",
                 "label": "Actions",
                 "width": "5%"
@@ -521,7 +526,16 @@ panels = {
                             "value": "",
                             "label": "Allow recipient",
                             "required": True
-                        }, {
+                        },
+                        {
+                            "type": "text",
+                            "name": "name",
+                            "value": "",
+                            "label": "Name",
+                            "required": False
+                        },
+
+                        {
                             "type": "label",
                             "name": "lbl",
                             "value": "example:\n user@domain.com (for user)\n\n @domain.com (for domain)"
@@ -592,7 +606,12 @@ panels = {
             "columns": [{
                 "key": "address",
                 "label": "Allowed to"
-            }, {
+            },
+            {
+                "key": "Name",
+                "label": "Name"
+            },
+            {
                 "key": "action",
                 "label": "Actions",
                 "width": "5%"
