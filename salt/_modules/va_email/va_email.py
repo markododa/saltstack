@@ -1,6 +1,7 @@
-import subprocess, requests, json, re, netaddr, vcards
+import subprocess, requests, json, re, netaddr
+from . import vcards
 from va_utils import check_functionality as panel_check_functionality
-from va_email_panels import panels
+from .va_email_panels import panels
 
 def dovecot_quota():
     """ api-help: Get used quota for all users. """
@@ -11,7 +12,7 @@ def get_panel(panel_name, user = ''):
     if panel_name == "get_allowed_recipients":
         data = get_allowed_recipients(user)
         ppanel['tbl_source']['table'] = data
-        checkboxes = [ {"type":"checkbox","name":val['user'],"value":False,"label":val['user'],"required":True} for key,val in enumerate(list_users()) if val['user'] != user]
+        checkboxes = [ {"type":"checkbox","name":val['username'],"value":False,"label":val['username'],"required":True} for key,val in enumerate(list_users()) if val['username'] != user]
         ppanel['content'][0]['elements'][1]['modal']['content'][0]['elements'] = checkboxes
         return ppanel
 
@@ -131,6 +132,9 @@ def get_conf_vars_file(vars, path):
 
     return get_conf_vars(vars, conf)
 
+def get_psql_users():
+    return __salt__['postgres.psql_query']("select username,name from mailbox", maintenance_db='vmail')
+
 def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
     return_field = return_field.split(" ")
     """ api-help: Lists all users from the ldap database. """
@@ -155,28 +159,37 @@ def get_ldap_users(return_field, path = '/etc/dovecot/dovecot-ldap.conf'):
 
 
 def list_users(email_domain=''):
+    use_ldap = __salt__['pillar.get']('use_ldap',  False)
     """ 
         description: "Lists all users from an LDAP db. In order to list_users, the function uses a return_field, retrieved from the `return_field` pillar key, with userPrincipalName as a default. Then it makes a list of dictionaries with values based on the returnfield and the sAMAccountName value from LDAP, for instance [{'user' : 'username', 'samaccountname' : 'sAMAccountName'}, ...]. To get these values, we use the `get_ldap_users` function. "
         arguments: 
           email_domain: When the users are retrieved from LDAP, we filter them by this argument. If it is empty, we use the first email_domain returned by the email_domains() function, which reads from '/etc/postfix/transport'
         output: "A list of dictionaries as follows: [{'user' : 'test_user@email_domain', 'samaccountname' : 'test_user'}, {'user' : 'test_user2@email_domain', 'samaccountname' : 'test_user2'}, ...]"
     """
-    return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
-    if email_domain == '':
-        email_domain = email_domains()[0]
-    users = get_ldap_users(return_field=return_field+' cn') #NINO treba da gi vraka i grupite vo slucaj koga return_field e userPrincipalName
-    result = [{'user' : x.get(return_field), 'samaccountname' : x.get('sAMAccountName'), 'name': x.get('cn')} for x in users if email_domain in x.get(return_field, '')] 
-    return result
+    if use_ldap == True:
+        return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
+        if email_domain == '':
+            email_domain = email_domains()[0]
+        users = get_ldap_users(return_field=return_field+' cn') #NINO treba da gi vraka i grupite vo slucaj koga return_field e userPrincipalName
+        result = [{'username' : x.get(return_field), 'accountname' : x.get('sAMAccountName'), 'name': x.get('cn')} for x in users if email_domain in x.get(return_field, '')] 
+        return result
 
-def users_in_dict(email_domain=''):
-    return_field = __salt__['pillar.get']('return_field',default='userPrincipalName')
-    if email_domain == '':
-        email_domain = email_domains()[0]
-    users = get_ldap_users(return_field=return_field+' cn')
+    elif use_ldap == False:
+        if email_domain == '':
+            email_domain = email_domains(use_ldap)[0]
+        users = get_psql_users()
+        result = [{ 'username': x.get('username'), 'accountname': x.get('username').split('@')[0], 'name': x.get('name')} for x in users if email_domain in x.get('username') ]
+        return result
+    else:
+        return "Please set use_ldap for the server"
+
+def users_in_dict():
+    use_ldap = __salt__['pillar.get']('use_ldap',  False)
+    users = list_users(email_domain=email_domains(use_ldap)[0])
     result = {}
     for x in users:
-        if x.get(return_field):
-            result[x[return_field]]={'Name': x.get('cn'), 'samaccountname': x.get('sAMAccountName')}
+        if x.get('username'):
+            result[x['username']]={'name': x.get('name'), 'accountname': x.get('accountname')}
     return result
 
 
@@ -198,14 +211,15 @@ def get_blacklist(ruleset='blacklist',direction='inbound', account='@.'):
 def get_allowed_recipients(account):
     """ api-help: Get allowed recipents for account """
     recipients = get_wblist(ruleset='whitelist',  direction='outbound', account=account)
-    users_in_dict=__salt__['mine.get']('va-email.kam.com.mk', 'email_accounts')['va-email.kam.com.mk']
+    minion_id=__salt__['grains.get']('id')
+    users_in_dict=__salt__['mine.get'](minion_id, 'email_accounts')[minion_id]
     result = []
     for x in recipients:
         if type(users_in_dict.get(x["address"])) == dict:
-            name=users_in_dict.get(x["address"]).get("Name","")
+            name=users_in_dict.get(x["address"]).get("name","")
         else:
             name=vcards.get_vcard(account,x["address"]).get("FN","")
-        result.append({"address": x.get("address"), "Name": name})
+        result.append({"address": x.get("address"), "name": name})
     return result
 
 
@@ -233,7 +247,7 @@ def add_allowed_recipient(account, recipient, name):
 def add_allowed_recipients(account, **recipients):
     users_dict=users_in_dict()
     recipients = [ recipient for recipient in recipients if recipients[recipient] == True ]
-    recipients_with_names=[{"address": x, "Name": users_dict.get(x).get("Name","")} for x in recipients]
+    recipients_with_names=[{"address": x, "name": users_dict.get(x).get("name","")} for x in recipients]
     vcards.generate_vcards(account=account, recipients=recipients_with_names)
     recipients=' '.join(recipients)
     return wbmanage(action='add', ruleset='whitelist', address=recipients, direction='outbound', account=account)
@@ -308,9 +322,13 @@ def get_dns_config():
         domains.append(url[0:-1],' TXT ',dkim)
     return domains
 
-def email_domains():
+def email_domains(use_ldap=True):
     """ api-help: Get provisioned e-mail domains on the mail server. """
-    return open('/etc/postfix/transport', 'r').read().lower().split(' dovecot\n')
+    if use_ldap == True:
+        return open('/etc/postfix/transport', 'r').read().lower().split(' dovecot\n')
+    elif use_ldap == False:
+        return [ x['domain'] for x in __salt__['postgres.psql_query']("select domain from domain", maintenance_db='vmail')]
+
 
 
 def str_is_error(s):

@@ -11,10 +11,10 @@ panels = {
             "name": "table_users",
             "reducers": ["table", "panel", "alert"],
             "columns": [{
-                "key": "user",
+                "key": "username",
                 "label": "E-mail address"
             }, {
-                "key": "samaccountname",
+                "key": "accountname",
                 "label": "User/Group"
             },
             {
@@ -45,7 +45,7 @@ panels = {
             #			"name": "List rules"
             #		}
             #	],
-            "id": ["user"]
+            "id": ["username"]
         }
         ]
     },
@@ -608,7 +608,7 @@ panels = {
                 "label": "Allowed to"
             },
             {
-                "key": "Name",
+                "key": "name",
                 "label": "Name"
             },
             {
