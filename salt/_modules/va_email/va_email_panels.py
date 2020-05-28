@@ -617,7 +617,7 @@ panels = {
                 "width": "5%"
             }
             ],
-            "source": "get_allowed_recipient",
+            "source": "get_allowed_recipients",
             "actions": [{
                 "action": "remove_allowed_recipient",
                 "name": "Remove"
