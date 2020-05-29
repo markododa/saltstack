@@ -36,29 +36,29 @@ if [ $version != "artful" ] && [ $version != "jessie" ] && [ $version != "xenial
 fi
 
 if [ $version == "buster" ]; then
-wget -O - https://repo.saltstack.com/py3/debian/10/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
-echo 'deb http://repo.saltstack.com/py3/debian/10/amd64/latest buster main' > /etc/apt/sources.list.d/salt.list
+wget -O - https://repo.saltstack.com/py3/debian/10/amd64/2019.2/SALTSTACK-GPG-KEY.pub | apt-key add -
+echo 'deb http://repo.saltstack.com/py3/debian/10/amd64/2019.2 buster main' > /etc/apt/sources.list.d/salt.list
 fi
 
 
 if [ $version == "jessie" ]; then
-wget -O - https://repo.saltstack.com/apt/debian/8/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
-echo 'deb http://repo.saltstack.com/apt/debian/8/amd64/latest jessie main' > /etc/apt/sources.list.d/salt.list
+wget -O - https://repo.saltstack.com/apt/debian/8/amd64/2019.2/SALTSTACK-GPG-KEY.pub | apt-key add -
+echo 'deb http://repo.saltstack.com/apt/debian/8/amd64/2019.2 jessie main' > /etc/apt/sources.list.d/salt.list
 fi
 
 if [ $version == "stretch" ]; then
-wget -O - https://repo.saltstack.com/apt/debian/9/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
-echo 'deb http://repo.saltstack.com/apt/debian/9/amd64/latest stretch main' > /etc/apt/sources.list.d/salt.list
+wget -O - https://repo.saltstack.com/apt/debian/9/amd64/2019.2/SALTSTACK-GPG-KEY.pub | apt-key add -
+echo 'deb http://repo.saltstack.com/apt/debian/9/amd64/2019.2 stretch main' > /etc/apt/sources.list.d/salt.list
 fi
 
 if [ $version == "xenial" ]; then
-wget -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
-echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' > /etc/apt/sources.list.d/salt.list
+wget -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/2019.2/SALTSTACK-GPG-KEY.pub | apt-key add -
+echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/2019.2 xenial main' > /etc/apt/sources.list.d/salt.list
 fi
 
 if [ $version == "artful" ]; then
-wget -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest/SALTSTACK-GPG-KEY.pub | apt-key add -
-echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/latest xenial main' > /etc/apt/sources.list.d/salt.list
+wget -O - https://repo.saltstack.com/apt/ubuntu/16.04/amd64/2019.2/SALTSTACK-GPG-KEY.pub | apt-key add -
+echo 'deb http://repo.saltstack.com/apt/ubuntu/16.04/amd64/2019.2 xenial main' > /etc/apt/sources.list.d/salt.list
 fi
 
 apt-get update -y

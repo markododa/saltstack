@@ -1,6 +1,6 @@
 panels = {
     "email.user": {
-        "title": "List users",
+        "title": "Email accounts",
         "tbl_source": {
             "table_users": {
                 "source": "list_users"
@@ -11,23 +11,41 @@ panels = {
             "name": "table_users",
             "reducers": ["table", "panel", "alert"],
             "columns": [{
-                "key": "user",
+                "key": "username",
                 "label": "E-mail address"
             }, {
-                "key": "samaccountname",
+                "key": "accountname",
                 "label": "User/Group"
+            },
+            {
+                "key": "name",
+                "label": "Name"
+            },
+
+            {
+                "key": "action",
+                "label": "Actions",
+                "width": "5%"
             }
+
             ],
             "source": "list_users",
-            #	"panels": {
-            #		"list_rules": "email.rules"
-            #	},
+            "actions": [{
+                "action": "get_allowed_recipients",
+                "name": "Manage recipients",
+                "class": "danger"
+            }
+            ],
+
+            	"panels": {
+            		"get_allowed_recipients": "get_allowed_recipients"
+            	},
             #	"actions": [{
             #			"action": "list_rules",
             #			"name": "List rules"
             #		}
             #	],
-            "id": ["user"]
+            "id": ["username"]
         }
         ]
     },
@@ -162,7 +180,7 @@ panels = {
         ]
     },
     "email.filterlists": {
-        "title": "Mail filters",
+        "title": "Global mail restrictions",
         "tbl_source": {
             "tablew": {
                 "source": "get_whitelist"
@@ -178,12 +196,12 @@ panels = {
             "reducers": ["panel"],
             "elements": [{
                 "type": "Button",
-                "name": "Add to whitelist",
+                "name": "Add to inbound whitelist",
                 "glyph": "plus",
                 "action": "modal",
                 "reducers": ["modal"],
                 "modal": {
-                    "title": "Add item to whitelist",
+                    "title": "Add item to inbound whitelist",
                     "refresh_action": "get_whitelist",
                     "table_name": "table",
                     "buttons": [{
@@ -210,7 +228,7 @@ panels = {
                         }, {
                             "type": "label",
                             "name": "lbl",
-                            "value": "example:a single user: username@domain.com\na single domain: @domain.com\nentire domain and all its sub-domains: @.domain.com\nanyone: @. (the ending dot is required)"
+                            "value": "example: user: username@domain.com\ndomain: @domain.com\ndomain with sub-domains: @.domain.com\nEveryone: @. (With the ending dot)"
                         }
                         ]
                     }, {
@@ -219,7 +237,7 @@ panels = {
                         "class": "right",
                         "elements": [{
                             "type": "Heading",
-                            "name": "Fill the form to add item to the whitelist"
+                            "name": "Fill the form to add item to the inbound whitelist"
                         }, {
                             "type": "Paragraph",
                             "name": "The changed data for user will be automatically synchronized."
@@ -230,12 +248,12 @@ panels = {
                 }
             }, {
                 "type": "Button",
-                "name": "Add to blacklist",
+                "name": "Add to inbound blacklist",
                 "glyph": "plus",
                 "action": "modal",
                 "reducers": ["modal"],
                 "modal": {
-                    "title": "Add item to blacklist",
+                    "title": "Add item to inbound blacklist",
                     "refresh_action": "get_blacklist",
                     "table_name": "table",
                     "buttons": [{
@@ -262,7 +280,8 @@ panels = {
                         }, {
                             "type": "label",
                             "name": "lbl",
-                            "value": "example:a single user: username@domain.com\na single domain: @domain.com\nentire domain and all its sub-domains: @.domain.com\nanyone: @. (the ending dot is required)"
+                            "value": "example: user: username@domain.com\ndomain: @domain.com\ndomain with sub-domains: @.domain.com\nEveryone: @. (With the ending dot)"
+
                         }
                         ]
                     }, {
@@ -271,7 +290,7 @@ panels = {
                         "class": "right",
                         "elements": [{
                             "type": "Heading",
-                            "name": "Fill the form to add item to the blacklist"
+                            "name": "Fill the form to add item to the inbound blacklist"
                         }, {
                             "type": "Paragraph",
                             "name": "The changed data for user will be automatically synchronized."
@@ -287,8 +306,8 @@ panels = {
             "name": "tablew",
             "reducers": ["table", "panel", "alert"],
             "columns": [{
-                "key": "filter_id",
-                "label": "Whitelist items"
+                "key": "address",
+                "label": "Inbound whitelist items"
             }, {
                 "key": "action",
                 "label": "Actions",
@@ -302,7 +321,7 @@ panels = {
                 "class": "danger"
             }
             ],
-            "id": ["filter_id"]
+            "id": ["address"]
         }, {
             "type": "Form",
             "name": "form2",
@@ -314,8 +333,8 @@ panels = {
             "name": "tableb",
             "reducers": ["table", "panel", "alert"],
             "columns": [{
-                "key": "filter_id",
-                "label": "Blacklist items"
+                "key": "address",
+                "label": "Inbound blacklist items"
             }, {
                 "key": "action",
                 "label": "Actions",
@@ -329,7 +348,7 @@ panels = {
                 "class": "danger"
             }
             ],
-            "id": ["filter_id"]
+            "id": ["address"]
         }
         ]
     },
@@ -464,11 +483,11 @@ panels = {
         }
         ]
     },
-    "email.rules": {
-        "title": "List rules",
+    "get_allowed_recipients": {
+        "title": "Allowed recipients",
         "tbl_source": {
             "table": {
-                "source": "get_user_rules"
+                "source": "get_allowed_recipents"
             }
         },
         "content": [{
@@ -478,13 +497,13 @@ panels = {
             "reducers": ["panel"],
             "elements": [{
                 "type": "Button",
-                "name": "Add rule",
+                "name": "Add Recipient",
                 "glyph": "plus",
                 "action": "modal",
                 "reducers": ["modal"],
                 "modal": {
-                    "title": "Add rule",
-                    "refresh_action": "get_user_rules",
+                    "title": "Add Recipient",
+                    "refresh_action": "get_allowed_recipients",
                     "table_name": "table",
                     "buttons": [{
                         "type": "Button",
@@ -494,7 +513,7 @@ panels = {
                         "type": "Button",
                         "name": "Add",
                         "class": "primary",
-                        "action": "add_user_recipient"
+                        "action": "add_allowed_recipient"
                     }
                     ],
                     "content": [{
@@ -503,14 +522,23 @@ panels = {
                         "class": "left",
                         "elements": [{
                             "type": "text",
-                            "name": "Rule",
+                            "name": "recipient",
                             "value": "",
                             "label": "Allow recipient",
                             "required": True
-                        }, {
+                        },
+                        {
+                            "type": "text",
+                            "name": "name",
+                            "value": "",
+                            "label": "Name",
+                            "required": False
+                        },
+
+                        {
                             "type": "label",
                             "name": "lbl",
-                            "value": "example:\n- user@domain.com (for particular user)\n- @domain.com (for whole domain *@domain.com)"
+                            "value": "example:\n user@domain.com (for user)\n\n @domain.com (for domain)"
                         }
                         ]
                     }, {
@@ -530,13 +558,13 @@ panels = {
                 }
             }, {
                 "type": "Button",
-                "name": "Add multiple users",
+                "name": "Add multiple recipients",
                 "glyph": "plus",
                 "action": "modal",
                 "reducers": ["modal"],
                 "modal": {
-                    "title": "Add rule",
-                    "refresh_action": "get_user_rules",
+                    "title": "Select recipients from domain",
+                    "refresh_action": "get_allowed_recipients",
                     "table_name": "table",
                     "buttons": [{
                         "type": "Button",
@@ -546,7 +574,7 @@ panels = {
                         "type": "Button",
                         "name": "Add",
                         "class": "primary",
-                        "action": ["add_multiple_user_recipients"]
+                        "action": ["add_allowed_recipients"]
                     }
                     ],
                     "content": [{
@@ -576,21 +604,26 @@ panels = {
             "name": "table",
             "reducers": ["table", "panel", "alert", "modal"],
             "columns": [{
-                "key": "rule",
-                "label": "Rule"
-            }, {
+                "key": "address",
+                "label": "Allowed to"
+            },
+            {
+                "key": "name",
+                "label": "Name"
+            },
+            {
                 "key": "action",
                 "label": "Actions",
                 "width": "5%"
             }
             ],
-            "source": "get_user_rules",
+            "source": "get_allowed_recipients",
             "actions": [{
-                "action": "rm_user_recipient",
+                "action": "remove_allowed_recipient",
                 "name": "Remove"
             }
             ],
-            "id": ["rule"]
+            "id": ["address"]
         }
         ]
     }
