@@ -7,7 +7,7 @@ status_path = "~/.vdirsyncer/status/"
 [pair {account_name}]
 a = "{account_name}_folder"
 b = "{account_name}_remote"
-conflict_resolution = "b wins"
+conflict_resolution = "a wins"
 collections = ["from a", "from b"]
 
 [storage {account_name}_folder]
