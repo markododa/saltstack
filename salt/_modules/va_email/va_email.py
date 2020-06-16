@@ -12,7 +12,8 @@ def get_panel(panel_name, user = ''):
     if panel_name == "get_allowed_recipients":
         data = get_allowed_recipients(user)
         ppanel['tbl_source']['table'] = data
-        checkboxes = [ {"type":"checkbox","name":val['username'],"value":False,"label":val['username'],"required":True} for key,val in enumerate(list_users()) if val['username'] != user]
+        existing = [ x["address"] for x in get_allowed_recipients(user)]
+        checkboxes = [ {"type":"checkbox","name":val['username'],"value":False,"label":val["name"]+": "+val['username'],"required":True} for key,val in enumerate(list_users()) if val['username'] not in existing and val['username'] != user ]
         ppanel['content'][0]['elements'][1]['modal']['content'][0]['elements'] = checkboxes
         return ppanel
 
