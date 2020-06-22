@@ -575,7 +575,7 @@ panels = {
                         "name": "Add",
                         "class": "primary",
                         "action": ["add_allowed_recipients"]
-                    }
+                    },
                     ],
                     "content": [{
                         "type": "Form",
