@@ -558,7 +558,7 @@ panels = {
                 }
             }, {
                 "type": "Button",
-                "name": "Add multiple recipients",
+                "name": "Manage domain recipients",
                 "glyph": "plus",
                 "action": "modal",
                 "reducers": ["modal"],
@@ -572,7 +572,7 @@ panels = {
                         "action": "cancel"
                     }, {
                         "type": "Button",
-                        "name": "Add",
+                        "name": "Apply",
                         "class": "primary",
                         "action": ["add_allowed_recipients"]
                     },
@@ -580,20 +580,8 @@ panels = {
                     "content": [{
                         "type": "Form",
                         "name": "form",
-                        "class": "left",
+                        "class": "col-md-8",
                         "elements": []
-                    }, {
-                        "type": "Div",
-                        "name": "div",
-                        "class": "right",
-                        "elements": [{
-                            "type": "Heading",
-                            "name": "Fill the form to change rule for user"
-                        }, {
-                            "type": "Paragraph",
-                            "name": "The changed data for user will be automatically synchronized with Email server."
-                        }
-                        ]
                     }
                     ]
                 }

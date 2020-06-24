@@ -54,7 +54,7 @@ def create_vcard_config(account, config_update=False):
     config_path=vcard_root+account+'/config'
     if not os.path.exists(config_path) or config_update==True:
         with open(config_path, 'w') as config_file:
-            config_file.write(vdirsync_config.format(account=account, account_name=account_name, path=vcard_root, login_user=login_user, login_pass=login_pass, fingerprint=fingerprint, mx_host=mx_host))
+            config_file.write(vdirsync_config.format(account=account, account_name=account_name.replace('.','_').replace('-','_'), path=vcard_root, login_user=login_user, login_pass=login_pass, fingerprint=fingerprint, mx_host=mx_host))
             config_file.close()
             return True
     else:

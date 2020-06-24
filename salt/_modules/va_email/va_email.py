@@ -13,7 +13,7 @@ def get_panel(panel_name, user = ''):
         data = get_allowed_recipients(user)
         ppanel['tbl_source']['table'] = data
         existing = [ x["address"] for x in get_allowed_recipients(user)]
-        checkboxes = [ {"type":"checkbox","name":val['username'],"value":False,"label":val["name"]+": "+val['username'],"required":True} for key,val in enumerate(list_users()) if val['username'] not in existing and val['username'] != user ]
+        checkboxes = [ {"type":"checkbox","name":val['username'],"value": val['username'] in existing,"label":val["username"].split('@')[0]+" ( "+val['name']+" )","required":True} for key,val in enumerate(list_users()) if val['username'] != user ]
         ppanel['content'][0]['elements'][1]['modal']['content'][0]['elements'] = checkboxes
         return ppanel
 
@@ -247,12 +247,24 @@ def add_allowed_recipient(account, recipient, name):
 
 def add_allowed_recipients(account, **recipients):
     users_dict=users_in_dict()
-    recipients = [ recipient for recipient in recipients if recipients[recipient] == True ]
-    recipients_with_names=[{"address": x, "name": users_dict.get(x).get("name","")} for x in recipients]
-    vcards.generate_vcards(account=account, recipients=recipients_with_names)
-    recipients=' '.join(recipients)
-    return wbmanage(action='add', ruleset='whitelist', address=recipients, direction='outbound', account=account)
+    existing = [ x["address"] for x in get_allowed_recipients(account)]
+    new_recipients = [ recipient for recipient in recipients if recipients[recipient] == True and recipient not in existing]
+    removed_recipients = [ recipient for recipient in recipients if recipients[recipient] == False and recipient in existing]
+    recipients_with_names=[{"address": x, "name": users_dict.get(x).get("name","")} for x in new_recipients]
+    new_recipients=' '.join(new_recipients)
+    message=""
+    if new_recipients != "":
+        vcards.generate_vcards(account=account, recipients=recipients_with_names)
+        wbmanage(action='add', ruleset='whitelist', address=new_recipients, direction='outbound', account=account)
+        message+="Added users: "+new_recipients+"\n"
+    if len(removed_recipients) != 0:
+        for recipient in removed_recipients:
+            remove_allowed_recipient(account, recipient)
+        message+="Removed users: "+' '.join(removed_recipients)
 
+    if message == "":
+        message+="No change done"
+    return message
 
 def add_filter_whitelist(filter=''):
     """ api-help: Add whitelist rule. """
