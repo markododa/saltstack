@@ -41,6 +41,9 @@ install_samba:
     - user: root
     - group: root
     - mode: 644
+    - context:
+      domain: {% filter upper %} {{ domain }} {% endfilter %}
+
 
 /etc/ntp.conf:
   file.managed:
@@ -98,12 +101,6 @@ ntpcnf:
     - pattern: DCIP
     - repl: {{ dcip }}
 
-krb5:
-  file.replace:
-    - name: /etc/krb5.conf
-    - pattern: DOMAIN
-    - repl: {{ domain }}
-    
 hosts:
   file.replace:
     - name: /etc/hosts
