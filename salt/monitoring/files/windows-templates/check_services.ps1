@@ -24,13 +24,13 @@ else{
     $ServicesStopped=""
     ForEach ($Service in $Services){
         if ($(Get-Service -Name $($Service.Name)).Status -eq "running"){
-            $ServicesStopped += "$($Service.Name)(Started manually),"
+            $ServicesStopped += "$($Service.DisplayName)(Started manually),"
             If ($ExitCode -eq 0){
                 $ExitCode = 1
             }
         }
         Else{
-            $ServicesStopped += "$($Service.Name)(Stopped),"
+            $ServicesStopped += "$($Service.DisplayName) $($Service.Name)(Stopped),"
             $ExitCode = 2
         }
     }
