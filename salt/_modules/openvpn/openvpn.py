@@ -17,6 +17,10 @@ def revoke_user(username):
     else:
         return False
 
+def gen_crl():
+	__salt__['cmd.run']('/etc/openvpn/easyrsa/easyrsa gen-crl',cwd='/etc/openvpn/easyrsa')
+	return True
+
 def list_users(list_samba_users = False):
     certs = open('/etc/openvpn/easyrsa/pki/index.txt', 'r')
     next(certs)
