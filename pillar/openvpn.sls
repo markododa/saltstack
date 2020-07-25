@@ -8,6 +8,8 @@
 #     dh_files: ['4096'] # This creates a dh file with 4096 bits.
 
 openvpn:
+  lookup:
+    dh_files: ['4096'] # This creates a dh file with 4096 bits.
   server:
     srvr:
       server: '10.18.0.0 255.255.255.0'
