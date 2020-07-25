@@ -20,6 +20,7 @@ openvpn:
       ccd_dir: /etc/openvpn/ccd
       client_to_client: True
       cipher: AES-256-CBC
+      keepalive: 10 120
   client:
     client:
       cipher: AES-256-CBC
