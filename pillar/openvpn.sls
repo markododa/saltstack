@@ -17,7 +17,10 @@ openvpn:
       log: /var/log/openvpn.log
       ccd_dir: /etc/openvpn/ccd
       client_to_client: True
+      cipher: AES-256-CBC
   client:
     client:
+      cipher: AES-256-CBC
       remote:
         - {{ credentials.domain }} 8443
+        
