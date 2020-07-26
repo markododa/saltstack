@@ -167,6 +167,12 @@ restart_functionality_monitoring:
     - content: '  enable_flapping = true'
     - after: template Host "generic-host" {
     - mode: ensure
+    
+/etc/icinga2/conf.d/templates.conf:
+  file.line:
+    - content: '  enable_flapping = true'
+    - after: template Service "generic-service" {
+    - mode: ensure
 
 {% for service in ['mail-host-notification', 'mail-service-notification'] %}
 {{ service }}:
