@@ -57,6 +57,7 @@ $output_jobs_none_counter 		= 0
 $output_jobs_working_counter 	= 0
 $output_jobs_skipped_counter 	= 0
 
+$WarningPreference = 'SilentlyContinue'
 #Get all Veeam backup jobs
 $jobs = Get-VBRJob
 
